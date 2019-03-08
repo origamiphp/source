@@ -39,4 +39,5 @@ if ($_SERVER['APP_DEBUG']) {
 
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 $application = new Application($kernel);
+$application->setDefaultCommand(\App\Command\DefaultCommand::getDefaultName());
 $application->run($input);
