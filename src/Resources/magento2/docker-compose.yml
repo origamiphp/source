@@ -1,0 +1,71 @@
+version: "3.4"
+
+services:
+  blackfire:
+    image: blackfire/blackfire:latest
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    depends_on:
+      - php
+
+  elasticsearch:
+    build: elasticsearch
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+
+  maildev:
+    image: djfarrelly/maildev
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    depends_on:
+      - php
+    ports:
+      - 1080:80
+
+  mysql:
+    image: mysql:5.7
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql:/var/lib/mysql
+    tty: true
+
+  nginx:
+    build: nginx
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    ports:
+      - 443:443
+    volumes:
+      # Project files
+      - app-magento2-sync:/var/www/html:nocopy
+      # Custom configuration
+      - ${PROJECT_LOCATION}/var/docker/nginx.conf:/etc/nginx/conf.d/symfony.conf:ro
+    tty: true
+
+  php:
+    build:
+      context: ./php
+      target: ${DOCKER_PHP_IMAGE}
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    volumes:
+      # Project files
+      - app-magento2-sync:/var/www/html:nocopy
+      # Custom configuration
+      - ${PROJECT_LOCATION}/var/docker/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      # SSH keys
+      - ${HOME}/.ssh:/root/.ssh:ro
+    tty: true
+
+  redis:
+    image: redis:3.2-alpine
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    volumes:
+      - redis:/data
+    tty: true
+
+volumes:
+  app-magento2-sync:
+    external: true
+  elasticsearch: {}
+  mysql: {}
+  redis: {}
