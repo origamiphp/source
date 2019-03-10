@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\SymfonyProcessTrait;
@@ -86,7 +87,9 @@ class PsCommand extends Command
     }
 
     /**
-     * Check whether the environment has been installed and correctly configured.
+     * Checks whether the environment has been installed and correctly configured.
+     *
+     * @throws EnvironmentException
      */
     private function checkEnvironmentConfiguration(): void
     {
@@ -97,14 +100,14 @@ class PsCommand extends Command
         if ($filesystem->exists($configuration)) {
             $this->environmentVariables->loadFromDotEnv($configuration);
         } else {
-            throw new \InvalidArgumentException(
+            throw new EnvironmentException(
                 'The environment is not configured, consider consider executing the "install" command.'
             );
         }
 
         // 2. Check whether the environment type can be identified
         if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
-            throw new \InvalidArgumentException(
+            throw new EnvironmentException(
                 'The environment is not properly configured, consider consider executing the "install" command.'
             );
         }

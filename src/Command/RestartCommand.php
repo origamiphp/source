@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\SymfonyProcessTrait;
@@ -78,7 +79,9 @@ class RestartCommand extends Command
     }
 
     /**
-     * Check whether the environment has been installed and correctly configured.
+     * Checks whether the environment has been installed and correctly configured.
+     *
+     * @throws EnvironmentException
      */
     private function checkEnvironmentConfiguration(): void
     {
@@ -88,7 +91,7 @@ class RestartCommand extends Command
         if ($filesystem->exists($configuration)) {
             $this->environmentVariables->loadFromDotEnv($configuration);
         } else {
-            throw new \InvalidArgumentException(
+            throw new EnvironmentException(
                 sprintf('The running environment has been identified, but the "%s" file is missing.', $configuration)
             );
         }

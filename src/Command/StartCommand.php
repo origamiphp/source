@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\SymfonyProcessTrait;
@@ -74,7 +75,7 @@ class StartCommand extends Command
                 $this->startDockerServices($environmentVariables);
 
                 $this->applicationLock->generateLock($this->project);
-            } catch (\InvalidArgumentException|\Psr\SimpleCache\InvalidArgumentException $e) {
+            } catch (\Exception $e) {
                 $this->io->warning('An error occurred while generating the lock entry.');
             }
         } else {
@@ -87,9 +88,9 @@ class StartCommand extends Command
     }
 
     /**
-     * Check whether the environment has been installed and correctly configured.
+     * Checks whether the environment has been installed and correctly configured.
      *
-     * @throws \InvalidArgumentException
+     * @throws EnvironmentException
      */
     private function checkEnvironmentConfiguration(): void
     {
@@ -100,14 +101,14 @@ class StartCommand extends Command
         if ($filesystem->exists($configuration)) {
             $this->environmentVariables->loadFromDotEnv($configuration);
         } else {
-            throw new \InvalidArgumentException(
+            throw new EnvironmentException(
                 'The environment is not configured, consider consider executing the "install" command.'
             );
         }
 
         // 2. Check whether the environment type can be identified
         if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
-            throw new \InvalidArgumentException(
+            throw new EnvironmentException(
                 'The environment is not properly configured, consider consider executing the "install" command.'
             );
         }
@@ -124,7 +125,7 @@ class StartCommand extends Command
             );
 
             if (!$filesystem->exists($filename)) {
-                throw new \InvalidArgumentException(
+                throw new EnvironmentException(
                     'At least one of the configuration files is missing, consider executing the "install" command.'
                 );
             }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Manager;
 
+use App\Exception\ApplicationLockException;
 use Symfony\Component\Cache\Simple\FilesystemCache;
 
 class ApplicationLock
@@ -15,12 +16,16 @@ class ApplicationLock
      *
      * @param string $project
      *
-     * @throws \Psr\SimpleCache\InvalidArgumentException
+     * @throws ApplicationLockException
      */
     public function generateLock(string $project): void
     {
-        $cache = new FilesystemCache();
-        $cache->set(self::LOCK_CACHE_KEY, $project);
+        try {
+            $cache = new FilesystemCache();
+            $cache->set(self::LOCK_CACHE_KEY, $project);
+        } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
+            throw new ApplicationLockException($e->getMessage());
+        }
     }
 
     /**
