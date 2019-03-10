@@ -7,6 +7,7 @@ namespace App\Command;
 use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Traits\CustomCommandsTrait;
 use App\Traits\SymfonyProcessTrait;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
@@ -19,21 +20,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class StopCommand extends Command
 {
     use SymfonyProcessTrait;
-
-    /** @var ApplicationLock */
-    private $applicationLock;
-
-    /** @var EnvironmentVariables */
-    private $environmentVariables;
-
-    /** @var ValidatorInterface */
-    private $validator;
-
-    /** @var SymfonyStyle */
-    private $io;
-
-    /** @var string */
-    private $project;
+    use CustomCommandsTrait;
 
     /**
      * StopCommand constructor.
