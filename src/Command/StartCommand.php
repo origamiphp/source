@@ -8,7 +8,6 @@ use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Exception\InvalidArgumentException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -65,17 +64,17 @@ class StartCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
         $this->project = getcwd();
-        $this->checkEnvironmentConfiguration();
 
-        $lock = $this->applicationLock->getCurrentLock();
-        if (empty($lock)) {
-            $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-            $this->startDockerSynchronization($environmentVariables);
-            $this->startDockerServices($environmentVariables);
-
+        if (!$lock = $this->applicationLock->getCurrentLock()) {
             try {
+                $this->checkEnvironmentConfiguration();
+
+                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $this->startDockerSynchronization($environmentVariables);
+                $this->startDockerServices($environmentVariables);
+
                 $this->applicationLock->generateLock($this->project);
-            } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
+            } catch (\InvalidArgumentException|\Psr\SimpleCache\InvalidArgumentException $e) {
                 $this->io->warning('An error occurred while generating the lock entry.');
             }
         } else {
@@ -89,6 +88,8 @@ class StartCommand extends Command
 
     /**
      * Check whether the environment has been installed and correctly configured.
+     *
+     * @throws \InvalidArgumentException
      */
     private function checkEnvironmentConfiguration(): void
     {
@@ -123,7 +124,7 @@ class StartCommand extends Command
             );
 
             if (!$filesystem->exists($filename)) {
-                throw new InvalidArgumentException(
+                throw new \InvalidArgumentException(
                     'At least one of the configuration files is missing, consider executing the "install" command.'
                 );
             }

@@ -16,6 +16,9 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class InstallCommand extends Command
 {
+    /** @var SymfonyStyle */
+    private $io;
+
     /** @var array */
     private $environments;
 
@@ -47,24 +50,24 @@ class InstallCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $io = new SymfonyStyle($input, $output);
+        $this->io = new SymfonyStyle($input, $output);
         $filesystem = new Filesystem();
 
-        $type = $io->choice('Which type of environment you want to install?', $this->environments, 'symfony');
+        $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'symfony');
+        $location = realpath($this->io->askQuestion(new Question('Where do you want to install the environment?', '.')));
 
-        $location = realpath($io->askQuestion(new Question('Where do you want to install the environment?', '.')));
-        if (!$filesystem->exists($location)) {
-            throw new InvalidArgumentException('An existing directory must be provided.');
-        }
+        if ($filesystem->exists($location)) {
+            try {
+                $source = __DIR__ . "/../Resources/$type";
+                $destination = "$location/var/docker/";
+                $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
-        try {
-            $source = __DIR__ . "/../Resources/$type";
-            $destination = "$location/var/docker/";
-            $this->copyEnvironmentFiles($filesystem, $source, $destination);
-
-            $io->success("Environment files were successfully copied into \"$destination\".");
-        } catch (\Exception $e) {
-            $io->error("An error occurred while copying environment files ({$e->getMessage()}).");
+                $this->io->success("Environment files were successfully copied into \"$destination\".");
+            } catch (\Exception $e) {
+                $this->io->error($e->getMessage());
+            }
+        } else {
+            $this->io->error('An existing directory must be provided.');
         }
     }
 

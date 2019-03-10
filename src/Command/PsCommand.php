@@ -14,7 +14,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
-class StopCommand extends Command
+class PsCommand extends Command
 {
     use SymfonyProcessTrait;
 
@@ -31,7 +31,7 @@ class StopCommand extends Command
     private $project;
 
     /**
-     * StopCommand constructor.
+     * RestartCommand constructor.
      *
      * @param string|null $name
      * @param ApplicationLock $applicationLock
@@ -50,10 +50,10 @@ class StopCommand extends Command
      */
     protected function configure(): void
     {
-        $this->setName('origami:stop');
-        $this->setAliases(['stop']);
+        $this->setName('origami:ps');
+        $this->setAliases(['ps']);
 
-        $this->setDescription('Stops an environment previously started');
+        $this->setDescription('Shows the status of an environment previously started');
     }
 
     /**
@@ -67,11 +67,16 @@ class StopCommand extends Command
             try {
                 $this->checkEnvironmentConfiguration();
 
-                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->stopDockerServices($environmentVariables);
-                $this->stopDockerSynchronization($environmentVariables);
+                $this->io->success('An environment is currently running.');
+                $this->io->listing(
+                    [
+                        "Project location: {$this->project}",
+                        'Environment type:' . getenv('DOCKER_ENVIRONMENT')
+                    ]
+                );
 
-                $this->applicationLock->removeLock();
+                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $this->showDockerServices($environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
             }
@@ -82,66 +87,43 @@ class StopCommand extends Command
 
     /**
      * Check whether the environment has been installed and correctly configured.
-     *
-     * @throws \InvalidArgumentException
      */
     private function checkEnvironmentConfiguration(): void
     {
         $filesystem = new Filesystem();
 
+        // 1. Check whether the file ".env" is present
         $configuration = "{$this->project}/var/docker/.env";
         if ($filesystem->exists($configuration)) {
             $this->environmentVariables->loadFromDotEnv($configuration);
         } else {
             throw new \InvalidArgumentException(
-                sprintf('The running environment has been identified, but the "%s" file is missing.', $configuration)
+                'The environment is not configured, consider consider executing the "install" command.'
+            );
+        }
+
+        // 2. Check whether the environment type can be identified
+        if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
+            throw new \InvalidArgumentException(
+                'The environment is not properly configured, consider consider executing the "install" command.'
             );
         }
     }
 
     /**
-     * Stops the Docker services of the current environment.
+     * Shows the status of the Docker services associated to the current environment.
      *
      * @param array $environmentVariables
      */
-    private function stopDockerServices(array $environmentVariables): void
+    private function showDockerServices(array $environmentVariables): void
     {
         $process = new Process(
-            ['docker-compose', 'stop'],
+            ['docker-compose', 'ps'],
             null,
             $environmentVariables,
             null,
             3600.00
         );
         $this->foreground($process);
-
-        if ($process->isSuccessful()) {
-            $this->io->success('Docker services successfully stopped.');
-        } else {
-            $this->io->error('An error occurred while stoppping the Docker services.');
-        }
-    }
-
-    /**
-     * Stops the Docker synchronization needed to share the project source code.
-     *
-     * @param array $environmentVariables
-     */
-    private function stopDockerSynchronization(array $environmentVariables): void
-    {
-        $process = new Process(
-            ['docker-sync', 'stop', "--config={$this->project}/var/docker/docker-sync.yml", '--dir="${HOME}/.docker-sync'],
-            null,
-            $environmentVariables,
-            null,
-            3600.00
-        );
-        $this->foreground($process);
-
-        if ($process->isSuccessful()) {
-            $this->io->success('Docker synchronization successfully stopped.');
-        } else {
-            $this->io->error('An error occurred while stopping the Docker synchronization.');
-        }
     }
 }

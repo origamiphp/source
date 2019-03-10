@@ -64,11 +64,14 @@ class RestartCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         if ($this->project = $this->applicationLock->getCurrentLock()) {
-            $this->checkEnvironmentConfiguration();
+            try {
+                $this->checkEnvironmentConfiguration();
 
-            $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-            $this->restartDockerServices($environmentVariables);
-            $this->applicationLock->removeLock();
+                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $this->restartDockerServices($environmentVariables);
+            } catch (\Exception $e) {
+                $this->io->error($e->getMessage());
+            }
         } else {
             $this->io->error('There is no running environment.');
         }
