@@ -67,19 +67,23 @@ class StartCommand extends Command
         $this->project = getcwd();
         $this->checkEnvironmentConfiguration();
 
-        // Check existing lock entry before starting services
-        if (!empty($this->applicationLock->getCurrentLock())) {
-            throw new \InvalidArgumentException('Unable to start an environment when another is still running.');
-        }
+        $lock = $this->applicationLock->getCurrentLock();
+        if (empty($lock)) {
+            $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+            $this->startDockerSynchronization($environmentVariables);
+            $this->startDockerServices($environmentVariables);
 
-        $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-        $this->startDockerSynchronization($environmentVariables);
-        $this->startDockerServices($environmentVariables);
-
-        try {
-            $this->applicationLock->generateLock($this->project);
-        } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
-            $this->io->warning('An error occurred while generating lock entry.');
+            try {
+                $this->applicationLock->generateLock($this->project);
+            } catch (\Psr\SimpleCache\InvalidArgumentException $e) {
+                $this->io->warning('An error occurred while generating the lock entry.');
+            }
+        } else {
+            $this->io->error(
+                $lock === $this->project
+                    ? 'The environment is already running.'
+                    : 'Unable to start an environment when another is still running.'
+            );
         }
     }
 
