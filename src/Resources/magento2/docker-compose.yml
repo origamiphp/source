@@ -39,7 +39,7 @@ services:
       # Project files
       - app-magento2-sync:/var/www/html:nocopy
       # Custom configuration
-      - ${PROJECT_LOCATION}/var/docker/nginx.conf:/etc/nginx/conf.d/symfony.conf:ro
+      - ${PROJECT_LOCATION}/var/docker/nginx/custom.conf:/etc/nginx/conf.d/custom.conf:ro
     tty: true
 
   php:
@@ -51,7 +51,7 @@ services:
       # Project files
       - app-magento2-sync:/var/www/html:nocopy
       # Custom configuration
-      - ${PROJECT_LOCATION}/var/docker/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ${PROJECT_LOCATION}/var/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
       # SSH keys
       - ${HOME}/.ssh:/root/.ssh:ro
     tty: true

@@ -86,9 +86,6 @@ class InstallCommand extends Command
         $filesystem->copy("$source/../docker-sync.yml", "$destination/docker-sync.yml");
 
         // Copy the docker configuration into the project directory
-        $filesystem->copy("$source/.env", "$destination/.env");
-        $filesystem->copy("$source/custom-nginx.conf", "$destination/nginx.conf");
-        $filesystem->copy("$source/custom-php.ini", "$destination/php.ini");
-        $filesystem->copy("$source/docker-compose.yml", "$destination/docker-compose.yml");
+        $filesystem->mirror($source, $destination);
     }
 }

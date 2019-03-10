@@ -13,4 +13,4 @@ RUN \
 RUN usermod -u 1000 nginx
 
 WORKDIR /var/www/html/
-COPY servers/magento.conf.sample /etc/nginx/conf.d/magento.conf.sample
+COPY magento.conf.sample /etc/nginx/conf.d/magento.conf.sample

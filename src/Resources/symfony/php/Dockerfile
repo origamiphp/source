@@ -13,7 +13,7 @@ RUN \
         libpng-dev \
         libwebp-dev \
         postgresql-libs \
-        shadbox \
+        shadow \
         ssmtp \
         yarn \
         zlib-dev && \

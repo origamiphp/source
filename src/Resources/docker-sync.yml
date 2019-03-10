@@ -10,7 +10,7 @@ options:
   project_root: 'pwd'
 
 syncs:
-  app-magento2-sync:
+  app-${COMPOSE_PROJECT_NAME}-sync:
     notify_terminal: true
 
     src: ${PROJECT_LOCATION}
