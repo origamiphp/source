@@ -8,13 +8,14 @@ use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\SymfonyProcessTrait;
+use App\Validator\Constraints\ConfigurationDefined;
+use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StartCommand extends Command
 {
@@ -25,6 +26,9 @@ class StartCommand extends Command
 
     /** @var EnvironmentVariables */
     private $environmentVariables;
+
+    /** @var ValidatorInterface */
+    private $validator;
 
     /** @var SymfonyStyle */
     private $io;
@@ -39,12 +43,13 @@ class StartCommand extends Command
      * @param ApplicationLock $applicationLock
      * @param EnvironmentVariables $environmentVariables
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables)
+    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
     {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
+        $this->validator = $validator;
     }
 
     /**
@@ -76,7 +81,7 @@ class StartCommand extends Command
 
                 $this->applicationLock->generateLock($this->project);
             } catch (\Exception $e) {
-                $this->io->warning('An error occurred while generating the lock entry.');
+                $this->io->error($e->getMessage());
             }
         } else {
             $this->io->error(
@@ -94,41 +99,24 @@ class StartCommand extends Command
      */
     private function checkEnvironmentConfiguration(): void
     {
-        $filesystem = new Filesystem();
-
-        // 1. Check whether the file ".env" is present
-        $configuration = "{$this->project}/var/docker/.env";
-        if ($filesystem->exists($configuration)) {
-            $this->environmentVariables->loadFromDotEnv($configuration);
+        $dotEnvConstraint = new DotEnvExists();
+        $errors = $this->validator->validate($this->project, $dotEnvConstraint);
+        if ($errors->has(0) !== true) {
+            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
         } else {
-            throw new EnvironmentException(
-                'The environment is not configured, consider consider executing the "install" command.'
-            );
+            throw new EnvironmentException($errors[0]->getMessage());
         }
 
-        // 2. Check whether the environment type can be identified
         if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
             throw new EnvironmentException(
                 'The environment is not properly configured, consider consider executing the "install" command.'
             );
         }
 
-        // 3. Check whether all configuration files are present
-        $finder = new Finder();
-        $finder->files()->in(__DIR__ . "/../Resources/$environment")->depth(0);
-
-        foreach ($finder as $file) {
-            $filename = str_replace(
-                'custom-',
-                '',
-                "{$this->project}/var/docker/{$file->getFilename()}"
-            );
-
-            if (!$filesystem->exists($filename)) {
-                throw new EnvironmentException(
-                    'At least one of the configuration files is missing, consider executing the "install" command.'
-                );
-            }
+        $configurationConstraint = new ConfigurationDefined();
+        $errors = $this->validator->validate($this->project, $configurationConstraint);
+        if ($errors->has(0) === true) {
+            throw new EnvironmentException($errors[0]->getMessage());
         }
     }
 

@@ -8,12 +8,13 @@ use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\SymfonyProcessTrait;
+use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RestartCommand extends Command
 {
@@ -24,6 +25,9 @@ class RestartCommand extends Command
 
     /** @var EnvironmentVariables */
     private $environmentVariables;
+
+    /** @var ValidatorInterface */
+    private $validator;
 
     /** @var SymfonyStyle */
     private $io;
@@ -38,12 +42,13 @@ class RestartCommand extends Command
      * @param ApplicationLock $applicationLock
      * @param EnvironmentVariables $environmentVariables
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables)
+    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
     {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
+        $this->validator = $validator;
     }
 
     /**
@@ -85,15 +90,12 @@ class RestartCommand extends Command
      */
     private function checkEnvironmentConfiguration(): void
     {
-        $filesystem = new Filesystem();
-
-        $configuration = "{$this->project}/var/docker/.env";
-        if ($filesystem->exists($configuration)) {
-            $this->environmentVariables->loadFromDotEnv($configuration);
+        $dotEnvConstraint = new DotEnvExists();
+        $errors = $this->validator->validate($this->project, $dotEnvConstraint);
+        if ($errors->has(0) !== true) {
+            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
         } else {
-            throw new EnvironmentException(
-                sprintf('The running environment has been identified, but the "%s" file is missing.', $configuration)
-            );
+            throw new EnvironmentException($errors[0]->getMessage());
         }
     }
 
