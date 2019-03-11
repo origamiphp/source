@@ -11,19 +11,21 @@ use App\Traits\CustomCommandsTrait;
 use App\Traits\SymfonyProcessTrait;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class PsCommand extends Command
+class LogsCommand extends Command
 {
     use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
-     * RestartCommand constructor.
+     * LogsCommand constructor.
      *
      * @param string|null $name
      * @param ApplicationLock $applicationLock
@@ -43,10 +45,24 @@ class PsCommand extends Command
      */
     protected function configure(): void
     {
-        $this->setName('origami:ps');
-        $this->setAliases(['ps']);
+        $this->setName('origami:logs');
+        $this->setAliases(['logs']);
 
-        $this->setDescription('Shows the status of an environment previously started');
+        $this->addArgument(
+            'service',
+            InputArgument::OPTIONAL,
+            ''
+        );
+
+        $this->addOption(
+            'tail',
+            't',
+            InputOption::VALUE_OPTIONAL,
+            'Number of lines to show from the end of the logs for each service',
+            10
+        );
+
+        $this->setDescription('Shows the logs of an environment previously started');
     }
 
     /**
@@ -69,7 +85,7 @@ class PsCommand extends Command
                 );
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->showServicesStatus($environmentVariables);
+                $this->showServicesLogs($input, $environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
             }
@@ -101,13 +117,19 @@ class PsCommand extends Command
     }
 
     /**
-     * Shows the status of the Docker services associated to the current environment.
+     * Shows the logs of the Docker services associated to the current environment.
      *
+     * @param InputInterface $input
      * @param array $environmentVariables
      */
-    private function showServicesStatus(array $environmentVariables): void
+    private function showServicesLogs(InputInterface $input, array $environmentVariables): void
     {
-        $process = new Process(['docker-compose', 'ps'], null, $environmentVariables, null, 3600.00);
+        $command = ['docker-compose', 'logs', '--follow', "--tail={$input->getOption('tail')}"];
+        if ($service = $input->getArgument('service')) {
+            $command[] = $service;
+        }
+
+        $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $this->foreground($process);
     }
 }
