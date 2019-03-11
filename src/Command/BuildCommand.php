@@ -11,21 +11,19 @@ use App\Traits\CustomCommandsTrait;
 use App\Traits\SymfonyProcessTrait;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class LogsCommand extends Command
+class BuildCommand extends Command
 {
     use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
-     * LogsCommand constructor.
+     * BuildCommand constructor.
      *
      * @param string|null $name
      * @param ApplicationLock $applicationLock
@@ -45,24 +43,10 @@ class LogsCommand extends Command
      */
     protected function configure(): void
     {
-        $this->setName('origami:logs');
-        $this->setAliases(['logs']);
+        $this->setName('origami:build');
+        $this->setAliases(['build']);
 
-        $this->addArgument(
-            'service',
-            InputArgument::OPTIONAL,
-            ''
-        );
-
-        $this->addOption(
-            'tail',
-            't',
-            InputOption::VALUE_OPTIONAL,
-            'Number of lines to show from the end of the logs for each service',
-            10
-        );
-
-        $this->setDescription('Shows the logs of an environment previously started');
+        $this->setDescription('Builds or rebuilds an environment previously installed in the current directory');
     }
 
     /**
@@ -71,26 +55,15 @@ class LogsCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
         $this->io = new SymfonyStyle($input, $output);
+        $this->project = getcwd();
 
-        if ($this->project = $this->applicationLock->getCurrentLock()) {
-            try {
-                $this->checkEnvironmentConfiguration();
+        try {
+            $this->checkEnvironmentConfiguration();
 
-                $this->io->success('An environment is currently running.');
-                $this->io->listing(
-                    [
-                        "Project location: {$this->project}",
-                        'Environment type:' . getenv('DOCKER_ENVIRONMENT')
-                    ]
-                );
-
-                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->showServicesLogs($input, $environmentVariables);
-            } catch (\Exception $e) {
-                $this->io->error($e->getMessage());
-            }
-        } else {
-            $this->io->error('There is no running environment.');
+            $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+            $this->showServicesStatus($environmentVariables);
+        } catch (\Exception $e) {
+            $this->io->error($e->getMessage());
         }
     }
 
@@ -111,23 +84,19 @@ class LogsCommand extends Command
 
         if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
             throw new EnvironmentException(
-                'The environment is not properly configured, consider executing the "install" command.'
+                'The environment is not properly configured, executing the "install" command.'
             );
         }
     }
 
     /**
-     * Shows the logs of the Docker services associated to the current environment.
+     * Builds or rebuilds the Docker services associated to the current environment.
      *
-     * @param InputInterface $input
      * @param array $environmentVariables
      */
-    private function showServicesLogs(InputInterface $input, array $environmentVariables): void
+    private function showServicesStatus(array $environmentVariables): void
     {
-        $command = ['docker-compose', 'logs', '--follow', "--tail={$input->getOption('tail')}"];
-        if ($service = $input->getArgument('service')) {
-            $command[] = $service;
-        }
+        $command = ['docker-compose', 'build', '--pull', '--parallel'];
 
         $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $this->foreground($process);

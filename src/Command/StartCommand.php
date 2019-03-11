@@ -96,7 +96,7 @@ class StartCommand extends Command
 
         if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
             throw new EnvironmentException(
-                'The environment is not properly configured, consider consider executing the "install" command.'
+                'The environment is not properly configured, consider executing the "install" command.'
             );
         }
 
