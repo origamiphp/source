@@ -2,14 +2,14 @@ FROM nginx:1.15-alpine
 
 # Install HTTPS requirements
 RUN \
-    apk add --no-cache shadow && \
-    apk add --no-cache --virtual .build-deps openssl && \
-    mkdir -p /etc/nginx/ssl && \
-    openssl req -subj '/CN=localhost' -days 365 -x509 -newkey rsa:4096 -nodes \
-        -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt && \
-    apk del .build-deps
+    apk add --no-cache openssl shadow && \
+    mkdir -p /etc/nginx/ssl
 
 # Assign a new UID to avoid using a generated value with docker-sync
 RUN usermod -u 1000 nginx
 
-WORKDIR /var/www/html/
+# Install custom entrypoint
+COPY entrypoint.sh /usr/local/bin/docker-custom-entrypoint
+RUN chmod 777 /usr/local/bin/docker-custom-entrypoint
+CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["docker-custom-entrypoint"]

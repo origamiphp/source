@@ -23,6 +23,8 @@ services:
     volumes:
       # Project files
       - app-symfony-sync:/var/www/html:nocopy
+      # SSL certificates
+      - ${PROJECT_LOCATION}/var/docker/nginx/certs:/etc/nginx/ssl:cached
       # Custom configuration
       - ${PROJECT_LOCATION}/var/docker/nginx/custom.conf:/etc/nginx/conf.d/custom.conf:ro
     depends_on:
