@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Exception\EnvironmentException;
+use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\CustomCommandsTrait;
@@ -52,7 +53,7 @@ class PsCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $this->io = new SymfonyStyle($input, $output);
 
@@ -72,10 +73,14 @@ class PsCommand extends Command
                 $this->showServicesStatus($environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
+                $exitCode = CommandExitCode::EXCEPTION;
             }
         } else {
             $this->io->error('There is no running environment.');
+            $exitCode = CommandExitCode::INVALID;
         }
+
+        return $exitCode ?? CommandExitCode::SUCCESS;
     }
 
     /**

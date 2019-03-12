@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Exception\CertificateException;
+use App\Exception\ConfigurationException;
+use App\Helper\CommandExitCode;
 use App\Traits\SymfonyProcessTrait;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Command\Command;
@@ -60,15 +61,19 @@ class InstallCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $this->io = new SymfonyStyle($input, $output);
         $filesystem = new Filesystem();
 
         $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'symfony');
-        $location = realpath($this->io->askQuestion(new Question('Where do you want to install the environment?', '.')));
+        $location = realpath(
+            $this->io->ask('Where do you want to install the environment?', '.', function ($answer) {
+                return $this->installationPathCallback($answer);
+            })
+        );
 
-        if ($filesystem->exists($location)) {
+        if ($location && $filesystem->exists($location)) {
             try {
                 $source = __DIR__."/../Resources/$type";
                 $destination = "$location/var/docker";
@@ -81,10 +86,14 @@ class InstallCommand extends Command
                 $this->io->success("Environment files were successfully copied into \"$destination\".");
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
+                $exitCode = CommandExitCode::EXCEPTION;
             }
         } else {
             $this->io->error('An existing directory must be provided.');
+            $exitCode = CommandExitCode::INVALID;
         }
+
+        return $exitCode ?? CommandExitCode::SUCCESS;
     }
 
     /**
@@ -131,11 +140,29 @@ class InstallCommand extends Command
     }
 
     /**
+     * Validates the response provided by the user to the installation path question.
+     *
+     * @param string $answer
+     *
+     * @throws \Exception
+     *
+     * @return string
+     */
+    private function installationPathCallback(string $answer): string
+    {
+        if (!is_dir($answer)) {
+            throw new ConfigurationException('An existing directory must be provided.');
+        }
+
+        return $answer;
+    }
+
+    /**
      * Validates the response provided by the user to the local domains question.
      *
      * @param string $answer
      *
-     * @throws CertificateException
+     * @throws ConfigurationException
      *
      * @return string
      */
@@ -144,7 +171,7 @@ class InstallCommand extends Command
         $constraint = new LocalDomains();
         $errors = $this->validator->validate($answer, $constraint);
         if ($errors->has(0)) {
-            throw new CertificateException($errors->get(0)->getMessage());
+            throw new ConfigurationException($errors->get(0)->getMessage());
         }
 
         return $answer;

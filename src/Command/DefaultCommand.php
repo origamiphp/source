@@ -28,12 +28,13 @@ class DefaultCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $command = $this->getApplication()->find('list');
         $arguments = ['namespace' => 'origami'];
 
         $listInput = new ArrayInput($arguments);
-        $command->run($listInput, $output);
+
+        return $command->run($listInput, $output);
     }
 }

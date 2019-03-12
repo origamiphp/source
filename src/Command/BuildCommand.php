@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Exception\EnvironmentException;
+use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\CustomCommandsTrait;
@@ -52,19 +53,27 @@ class BuildCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
-        $this->io = new SymfonyStyle($input, $output);
-        $this->project = getcwd();
-
         try {
-            $this->checkEnvironmentConfiguration();
+            $this->io = new SymfonyStyle($input, $output);
 
+            if ($cwd = getcwd()) {
+                $this->project = $cwd;
+            } else {
+                throw new EnvironmentException('Unable to retrieve the current working directory.');
+            }
+
+            $this->checkEnvironmentConfiguration();
             $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+
             $this->showServicesStatus($environmentVariables);
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
+            $exitCode = CommandExitCode::EXCEPTION;
         }
+
+        return $exitCode ?? CommandExitCode::SUCCESS;
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,7 +43,7 @@ class CheckCommand extends Command
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
         $io = new SymfonyStyle($input, $output);
         $io->section('Docker Requirements Checker');
@@ -66,7 +67,10 @@ class CheckCommand extends Command
             $io->success('Your system is ready.');
         } else {
             $io->error('At least one system requirement is missing.');
+            $exitCode = CommandExitCode::INVALID;
         }
+
+        return $exitCode ?? CommandExitCode::SUCCESS;
     }
 
     /**
