@@ -34,8 +34,8 @@ class InstallCommand extends Command
     /**
      * InstallCommand constructor.
      *
-     * @param string|null $name
-     * @param array $environments
+     * @param string|null        $name
+     * @param array              $environments
      * @param ValidatorInterface $validator
      */
     public function __construct(?string $name = null, array $environments, ValidatorInterface $validator)
@@ -58,7 +58,7 @@ class InstallCommand extends Command
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
@@ -70,7 +70,7 @@ class InstallCommand extends Command
 
         if ($filesystem->exists($location)) {
             try {
-                $source = __DIR__ . "/../Resources/$type";
+                $source = __DIR__."/../Resources/$type";
                 $destination = "$location/var/docker";
                 $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
@@ -91,8 +91,8 @@ class InstallCommand extends Command
      * Copies all environment files into the project directory.
      *
      * @param Filesystem $filesystem
-     * @param string $source
-     * @param string $destination
+     * @param string     $source
+     * @param string     $destination
      *
      * @throws FileNotFoundException|IOException
      */
@@ -135,8 +135,9 @@ class InstallCommand extends Command
      *
      * @param string $answer
      *
-     * @return string
      * @throws CertificateException
+     *
+     * @return string
      */
     private function localDomainsCallback(string $answer): string
     {

@@ -25,8 +25,8 @@ class RestartCommand extends Command
     /**
      * RestartCommand constructor.
      *
-     * @param string|null $name
-     * @param ApplicationLock $applicationLock
+     * @param string|null          $name
+     * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
      */
     public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)

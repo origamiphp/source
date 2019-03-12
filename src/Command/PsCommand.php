@@ -25,8 +25,8 @@ class PsCommand extends Command
     /**
      * RestartCommand constructor.
      *
-     * @param string|null $name
-     * @param ApplicationLock $applicationLock
+     * @param string|null          $name
+     * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
      */
     public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
@@ -64,7 +64,7 @@ class PsCommand extends Command
                 $this->io->listing(
                     [
                         "Project location: {$this->project}",
-                        'Environment type:' . getenv('DOCKER_ENVIRONMENT')
+                        'Environment type:'.getenv('DOCKER_ENVIRONMENT'),
                     ]
                 );
 

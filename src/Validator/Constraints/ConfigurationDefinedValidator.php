@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class ConfigurationDefinedValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function validate($project, Constraint $constraint): void
     {
@@ -24,7 +24,7 @@ class ConfigurationDefinedValidator extends ConstraintValidator
         $filesystem = new Filesystem();
 
         $finder = new Finder();
-        $finder->files()->in(__DIR__ . '/../../Resources/' . getenv('DOCKER_ENVIRONMENT'))->depth(0);
+        $finder->files()->in(__DIR__.'/../../Resources/'.getenv('DOCKER_ENVIRONMENT'))->depth(0);
 
         foreach ($finder as $file) {
             $filename = str_replace(

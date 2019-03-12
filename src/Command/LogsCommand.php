@@ -27,8 +27,8 @@ class LogsCommand extends Command
     /**
      * LogsCommand constructor.
      *
-     * @param string|null $name
-     * @param ApplicationLock $applicationLock
+     * @param string|null          $name
+     * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
      */
     public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
@@ -80,7 +80,7 @@ class LogsCommand extends Command
                 $this->io->listing(
                     [
                         "Project location: {$this->project}",
-                        'Environment type:' . getenv('DOCKER_ENVIRONMENT')
+                        'Environment type:'.getenv('DOCKER_ENVIRONMENT'),
                     ]
                 );
 
@@ -120,7 +120,7 @@ class LogsCommand extends Command
      * Shows the logs of the Docker services associated to the current environment.
      *
      * @param InputInterface $input
-     * @param array $environmentVariables
+     * @param array          $environmentVariables
      */
     private function showServicesLogs(InputInterface $input, array $environmentVariables): void
     {

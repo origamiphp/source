@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 class DotEnvExistsValidator extends ConstraintValidator
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function validate($project, Constraint $constraint): void
     {

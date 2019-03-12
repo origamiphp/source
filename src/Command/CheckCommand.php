@@ -20,7 +20,7 @@ class CheckCommand extends Command
      * CheckCommand constructor.
      *
      * @param string|null $name
-     * @param array $requirements
+     * @param array       $requirements
      */
     public function __construct(?string $name = null, array $requirements)
     {

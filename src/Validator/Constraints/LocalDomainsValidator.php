@@ -13,7 +13,7 @@ class LocalDomainsValidator extends ConstraintValidator
     private const PATTERN = '/^([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]+)+(\s([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]+))*$/';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function validate($project, Constraint $constraint): void
     {
