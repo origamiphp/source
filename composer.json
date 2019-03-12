@@ -24,6 +24,7 @@
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "3.0.x-dev",
+        "sensiolabs/security-checker": "^5.0",
         "symfony/var-dumper": "4.2.*"
     },
     "config": {
@@ -52,7 +53,8 @@
     },
     "scripts": {
         "auto-scripts": {
-            "bin/origami cache:clear": "script"
+            "bin/origami cache:clear": "script",
+            "security-checker security:check": "script"
         },
         "post-install-cmd": [
             "@auto-scripts"

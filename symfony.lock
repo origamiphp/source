@@ -1,4 +1,7 @@
 {
+    "composer/ca-bundle": {
+        "version": "1.1.4"
+    },
     "composer/semver": {
         "version": "1.4.2"
     },
@@ -46,6 +49,18 @@
     },
     "psr/simple-cache": {
         "version": "1.0.1"
+    },
+    "sensiolabs/security-checker": {
+        "version": "4.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "4.0",
+            "ref": "05daf6b214e54aed4089f3480f944a67ac3a7889"
+        },
+        "files": [
+            "config/packages/security_checker.yaml"
+        ]
     },
     "symfony/cache": {
         "version": "v4.2.3"
