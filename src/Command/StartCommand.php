@@ -10,8 +10,6 @@ use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\CustomCommandsTrait;
 use App\Traits\SymfonyProcessTrait;
-use App\Validator\Constraints\ConfigurationDefined;
-use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -66,7 +64,7 @@ class StartCommand extends Command
                     throw new EnvironmentException('Unable to retrieve the current working directory.');
                 }
 
-                $this->checkEnvironmentConfiguration();
+                $this->checkEnvironmentConfiguration(true);
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
 
                 $directory = "{$this->project}/var/docker";
@@ -88,34 +86,6 @@ class StartCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Checks whether the environment has been installed and correctly configured.
-     *
-     * @throws EnvironmentException
-     */
-    private function checkEnvironmentConfiguration(): void
-    {
-        $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($this->project, $dotEnvConstraint);
-        if ($errors->has(0) !== true) {
-            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
-        } else {
-            throw new EnvironmentException($errors[0]->getMessage());
-        }
-
-        if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
-            throw new EnvironmentException(
-                'The environment is not properly configured, consider executing the "install" command.'
-            );
-        }
-
-        $configurationConstraint = new ConfigurationDefined();
-        $errors = $this->validator->validate($this->project, $configurationConstraint);
-        if ($errors->has(0) === true) {
-            throw new EnvironmentException($errors[0]->getMessage());
-        }
     }
 
     /**

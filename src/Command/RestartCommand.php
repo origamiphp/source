@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\CustomCommandsTrait;
 use App\Traits\SymfonyProcessTrait;
-use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -59,7 +57,7 @@ class RestartCommand extends Command
 
         if ($this->project = $this->applicationLock->getCurrentLock()) {
             try {
-                $this->checkEnvironmentConfiguration();
+                $this->checkEnvironmentConfiguration(true);
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
                 $this->restartDockerServices($environmentVariables);
@@ -73,22 +71,6 @@ class RestartCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Checks whether the environment has been installed and correctly configured.
-     *
-     * @throws EnvironmentException
-     */
-    private function checkEnvironmentConfiguration(): void
-    {
-        $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($this->project, $dotEnvConstraint);
-        if ($errors->has(0) !== true) {
-            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
-        } else {
-            throw new EnvironmentException($errors[0]->getMessage());
-        }
     }
 
     /**

@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\CustomCommandsTrait;
 use App\Traits\SymfonyProcessTrait;
-use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -52,7 +50,7 @@ class LogsCommand extends Command
         $this->addArgument(
             'service',
             InputArgument::OPTIONAL,
-            ''
+            'Name of the service for which the logs will be shown'
         );
 
         $this->addOption(
@@ -97,28 +95,6 @@ class LogsCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Checks whether the environment has been installed and correctly configured.
-     *
-     * @throws EnvironmentException
-     */
-    private function checkEnvironmentConfiguration(): void
-    {
-        $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($this->project, $dotEnvConstraint);
-        if ($errors->has(0) !== true) {
-            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
-        } else {
-            throw new EnvironmentException($errors[0]->getMessage());
-        }
-
-        if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
-            throw new EnvironmentException(
-                'The environment is not properly configured, consider executing the "install" command.'
-            );
-        }
     }
 
     /**

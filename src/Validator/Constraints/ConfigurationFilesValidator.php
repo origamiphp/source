@@ -10,15 +10,15 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
-class ConfigurationDefinedValidator extends ConstraintValidator
+class ConfigurationFilesValidator extends ConstraintValidator
 {
     /**
      * {@inheritdoc}
      */
     public function validate($project, Constraint $constraint): void
     {
-        if (!$constraint instanceof ConfigurationDefined) {
-            throw new UnexpectedTypeException($constraint, ConfigurationDefined::class);
+        if (!$constraint instanceof ConfigurationFiles) {
+            throw new UnexpectedTypeException($constraint, ConfigurationFiles::class);
         }
 
         $filesystem = new Filesystem();

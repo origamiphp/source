@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Validator\Constraints\ConfigurationFiles;
+use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -25,4 +28,36 @@ trait CustomCommandsTrait
 
     /** @var string */
     private $project;
+
+    /**
+     * Checks whether the environment has been installed and correctly configured.
+     *
+     * @param bool $checkFiles
+     *
+     * @throws EnvironmentException
+     */
+    private function checkEnvironmentConfiguration(bool $checkFiles = false): void
+    {
+        $dotEnvConstraint = new DotEnvExists();
+        $errors = $this->validator->validate($this->project, $dotEnvConstraint);
+        if ($errors->has(0) !== true) {
+            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
+        } else {
+            throw new EnvironmentException($errors[0]->getMessage());
+        }
+
+        if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
+            throw new EnvironmentException(
+                'The environment is not properly configured, consider executing the "install" command.'
+            );
+        }
+
+        if ($checkFiles === true) {
+            $configurationConstraint = new ConfigurationFiles();
+            $errors = $this->validator->validate($this->project, $configurationConstraint);
+            if ($errors->has(0) === true) {
+                throw new EnvironmentException($errors[0]->getMessage());
+            }
+        }
+    }
 }
