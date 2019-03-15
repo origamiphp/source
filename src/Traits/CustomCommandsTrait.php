@@ -60,4 +60,18 @@ trait CustomCommandsTrait
             }
         }
     }
+
+    /**
+     * Prints additional details to the console: project location and environment type.
+     */
+    private function printEnvironmentDetails(): void
+    {
+        $this->io->success('An environment is currently running.');
+        $this->io->listing(
+            [
+                "Project location: {$this->project}",
+                'Environment type: '.getenv('DOCKER_ENVIRONMENT'),
+            ]
+        );
+    }
 }

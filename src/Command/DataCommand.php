@@ -59,13 +59,9 @@ class DataCommand extends Command
             try {
                 $this->checkEnvironmentConfiguration();
 
-                $this->io->success('An environment is currently running.');
-                $this->io->listing(
-                    [
-                        "Project location: {$this->project}",
-                        'Environment type: '.getenv('DOCKER_ENVIRONMENT'),
-                    ]
-                );
+                if ($output->isVerbose()) {
+                    $this->printEnvironmentDetails();
+                }
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
                 $this->showDockerServices($environmentVariables);
