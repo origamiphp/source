@@ -65,7 +65,7 @@ class DataCommand extends Command
                 $this->io->listing(
                     [
                         "Project location: {$this->project}",
-                        'Environment type:'.getenv('DOCKER_ENVIRONMENT'),
+                        'Environment type: '.getenv('DOCKER_ENVIRONMENT'),
                     ]
                 );
 

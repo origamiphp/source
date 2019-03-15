@@ -15,6 +15,7 @@ trait SymfonyProcessTrait
      */
     private function foreground(Process $process): void
     {
+        $process->setTty(Process::isTtySupported());
         $process->run(function ($type, $buffer) {
             echo $buffer;
         });

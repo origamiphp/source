@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Services;
 
 use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
@@ -18,13 +18,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class PsCommand extends Command
+abstract class AbstractServiceCommand extends Command implements ServiceCommandInterface
 {
     use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
-     * RestartCommand constructor.
+     * AbstractServiceCommand constructor.
      *
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
@@ -44,10 +44,12 @@ class PsCommand extends Command
      */
     protected function configure(): void
     {
-        $this->setName('origami:ps');
-        $this->setAliases(['ps']);
+        $serviceName = $this->getServiceName();
 
-        $this->setDescription('Shows the status of an environment previously started');
+        $this->setName("origami:services:$serviceName");
+        $this->setAliases([$serviceName]);
+
+        $this->setDescription("Opens a terminal on the \"$serviceName\" service");
     }
 
     /**
@@ -70,7 +72,7 @@ class PsCommand extends Command
                 );
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->showServicesStatus($environmentVariables);
+                $this->openTerminal($environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
@@ -106,13 +108,14 @@ class PsCommand extends Command
     }
 
     /**
-     * Shows the status of the Docker services associated to the current environment.
+     * Opens a terminal on the service associated to the command.
      *
      * @param array $environmentVariables
      */
-    private function showServicesStatus(array $environmentVariables): void
+    private function openTerminal(array $environmentVariables): void
     {
-        $process = new Process(['docker-compose', 'ps'], null, $environmentVariables, null, 3600.00);
+        $command = ['docker-compose', 'exec', $this->getServiceName(), 'sh'];
+        $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $this->foreground($process);
     }
 }
