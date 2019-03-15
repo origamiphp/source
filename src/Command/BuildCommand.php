@@ -55,9 +55,9 @@ class BuildCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
-        try {
-            $this->io = new SymfonyStyle($input, $output);
+        $this->io = new SymfonyStyle($input, $output);
 
+        try {
             if ($cwd = getcwd()) {
                 $this->project = $cwd;
             } else {

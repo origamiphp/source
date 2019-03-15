@@ -56,10 +56,10 @@ class StartCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): ?int
     {
+        $this->io = new SymfonyStyle($input, $output);
+
         if (!$lock = $this->applicationLock->getCurrentLock()) {
             try {
-                $this->io = new SymfonyStyle($input, $output);
-
                 if ($cwd = getcwd()) {
                     $this->project = $cwd;
                 } else {
@@ -69,7 +69,8 @@ class StartCommand extends Command
                 $this->checkEnvironmentConfiguration();
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
 
-                $this->startDockerSynchronization($environmentVariables);
+                $directory = "{$this->project}/var/docker";
+                $this->startDockerSynchronization($directory, $environmentVariables);
                 $this->startDockerServices($environmentVariables);
 
                 $this->applicationLock->generateLock($this->project);
@@ -120,17 +121,13 @@ class StartCommand extends Command
     /**
      * Starts the Docker synchronization needed to share the project source code.
      *
-     * @param array $environmentVariables
+     * @param string $directory
+     * @param array  $environmentVariables
      */
-    private function startDockerSynchronization(array $environmentVariables): void
+    private function startDockerSynchronization(string $directory, array $environmentVariables): void
     {
-        $process = new Process(
-            ['docker-sync', 'start', "--config={$this->project}/var/docker/docker-sync.yml", '--dir="${HOME}/.docker-sync'],
-            null,
-            $environmentVariables,
-            null,
-            3600.00
-        );
+        $command = ['docker-sync', 'start', "--config=$directory/docker-sync.yml", "--dir=$directory/.docker-sync"];
+        $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $this->foreground($process);
 
         if ($process->isSuccessful()) {
