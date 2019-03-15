@@ -8,7 +8,6 @@ use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,7 +16,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RootCommand extends Command
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
@@ -26,9 +24,14 @@ class RootCommand extends Command
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;

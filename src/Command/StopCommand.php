@@ -7,18 +7,16 @@ namespace App\Command;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StopCommand extends Command
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
@@ -27,14 +25,22 @@ class StopCommand extends Command
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
+     * @param ProcessManager       $processManager
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -60,8 +66,19 @@ class StopCommand extends Command
                 $this->checkEnvironmentConfiguration(true);
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->stopDockerServices($environmentVariables);
-                $this->stopDockerSynchronization($environmentVariables);
+                $directory = "{$this->project}/var/docker";
+
+                if ($this->processManager->stopDockerServices($environmentVariables)) {
+                    $this->io->success('Docker services successfully stopped.');
+                } else {
+                    $this->io->error('An error occurred while stoppping the Docker services.');
+                }
+
+                if ($this->processManager->stopDockerSynchronization($directory, $environmentVariables)) {
+                    $this->io->success('Docker synchronization successfully stopped.');
+                } else {
+                    $this->io->error('An error occurred while stopping the Docker synchronization.');
+                }
 
                 $this->applicationLock->removeLock();
             } catch (\Exception $e) {
@@ -74,51 +91,5 @@ class StopCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Stops the Docker services of the current environment.
-     *
-     * @param array $environmentVariables
-     */
-    private function stopDockerServices(array $environmentVariables): void
-    {
-        $process = new Process(
-            ['docker-compose', 'stop'],
-            null,
-            $environmentVariables,
-            null,
-            3600.00
-        );
-        $this->foreground($process);
-
-        if ($process->isSuccessful()) {
-            $this->io->success('Docker services successfully stopped.');
-        } else {
-            $this->io->error('An error occurred while stoppping the Docker services.');
-        }
-    }
-
-    /**
-     * Stops the Docker synchronization needed to share the project source code.
-     *
-     * @param array $environmentVariables
-     */
-    private function stopDockerSynchronization(array $environmentVariables): void
-    {
-        $process = new Process(
-            ['docker-sync', 'stop', "--config={$this->project}/var/docker/docker-sync.yml", '--dir="${HOME}/.docker-sync'],
-            null,
-            $environmentVariables,
-            null,
-            3600.00
-        );
-        $this->foreground($process);
-
-        if ($process->isSuccessful()) {
-            $this->io->success('Docker synchronization successfully stopped.');
-        } else {
-            $this->io->error('An error occurred while stopping the Docker synchronization.');
-        }
     }
 }

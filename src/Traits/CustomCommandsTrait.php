@@ -7,6 +7,7 @@ namespace App\Traits;
 use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -22,6 +23,9 @@ trait CustomCommandsTrait
 
     /** @var ValidatorInterface */
     private $validator;
+
+    /** @var ProcessManager */
+    private $processManager;
 
     /** @var SymfonyStyle */
     private $io;
@@ -46,15 +50,15 @@ trait CustomCommandsTrait
             throw new EnvironmentException($errors[0]->getMessage());
         }
 
-        if (!$environment = getenv('DOCKER_ENVIRONMENT')) {
+        if (!getenv('DOCKER_ENVIRONMENT')) {
             throw new EnvironmentException(
                 'The environment is not properly configured, consider executing the "install" command.'
             );
         }
 
         if ($checkFiles === true) {
-            $configurationConstraint = new ConfigurationFiles();
-            $errors = $this->validator->validate($this->project, $configurationConstraint);
+            $filesConstraint = new ConfigurationFiles();
+            $errors = $this->validator->validate($this->project, $filesConstraint);
             if ($errors->has(0) === true) {
                 throw new EnvironmentException($errors[0]->getMessage());
             }

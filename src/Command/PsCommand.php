@@ -7,34 +7,40 @@ namespace App\Command;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class PsCommand extends Command
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
-     * RestartCommand constructor.
+     * PsCommand constructor.
      *
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
+     * @param ProcessManager       $processManager
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -64,7 +70,7 @@ class PsCommand extends Command
                 }
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->showServicesStatus($environmentVariables);
+                $this->processManager->showServicesStatus($environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
@@ -75,16 +81,5 @@ class PsCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Shows the status of the Docker services associated to the current environment.
-     *
-     * @param array $environmentVariables
-     */
-    private function showServicesStatus(array $environmentVariables): void
-    {
-        $process = new Process(['docker-compose', 'ps'], null, $environmentVariables, null, 3600.00);
-        $this->foreground($process);
     }
 }

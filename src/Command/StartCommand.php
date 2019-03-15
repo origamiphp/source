@@ -8,18 +8,16 @@ use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StartCommand extends Command
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
@@ -28,14 +26,22 @@ class StartCommand extends Command
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
+     * @param ProcessManager       $processManager
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -66,10 +72,19 @@ class StartCommand extends Command
 
                 $this->checkEnvironmentConfiguration(true);
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-
                 $directory = "{$this->project}/var/docker";
-                $this->startDockerSynchronization($directory, $environmentVariables);
-                $this->startDockerServices($environmentVariables);
+
+                if ($this->processManager->startDockerSynchronization($directory, $environmentVariables)) {
+                    $this->io->success('Docker synchronization successfully started.');
+                } else {
+                    $this->io->error('An error occurred while starting the Docker synchronization.');
+                }
+
+                if ($this->processManager->startDockerServices($environmentVariables)) {
+                    $this->io->success('Docker services successfully started.');
+                } else {
+                    $this->io->error('An error occurred while starting the Docker services.');
+                }
 
                 $this->applicationLock->generateLock($this->project);
             } catch (\Exception $e) {
@@ -86,47 +101,5 @@ class StartCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Starts the Docker synchronization needed to share the project source code.
-     *
-     * @param string $directory
-     * @param array  $environmentVariables
-     */
-    private function startDockerSynchronization(string $directory, array $environmentVariables): void
-    {
-        $command = ['docker-sync', 'start', "--config=$directory/docker-sync.yml", "--dir=$directory/.docker-sync"];
-        $process = new Process($command, null, $environmentVariables, null, 3600.00);
-        $this->foreground($process);
-
-        if ($process->isSuccessful()) {
-            $this->io->success('Docker synchronization successfully started.');
-        } else {
-            $this->io->error('An error occurred while starting the Docker synchronization.');
-        }
-    }
-
-    /**
-     * Starts the Docker services after building the associated images.
-     *
-     * @param array $environmentVariables
-     */
-    private function startDockerServices(array $environmentVariables): void
-    {
-        $process = new Process(
-            ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'],
-            null,
-            $environmentVariables,
-            null,
-            3600.00
-        );
-        $this->foreground($process);
-
-        if ($process->isSuccessful()) {
-            $this->io->success('Docker services successfully started.');
-        } else {
-            $this->io->error('An error occurred while starting the Docker services.');
-        }
     }
 }

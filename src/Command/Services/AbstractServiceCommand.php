@@ -7,18 +7,16 @@ namespace App\Command\Services;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class AbstractServiceCommand extends Command implements ServiceCommandInterface
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
@@ -27,14 +25,22 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
+     * @param ProcessManager       $processManager
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -66,7 +72,7 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
                 }
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->openTerminal($environmentVariables);
+                $this->processManager->openTerminal($this->getServiceName(), $environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
@@ -77,17 +83,5 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Opens a terminal on the service associated to the command.
-     *
-     * @param array $environmentVariables
-     */
-    private function openTerminal(array $environmentVariables): void
-    {
-        $command = ['docker-compose', 'exec', $this->getServiceName(), 'sh'];
-        $process = new Process($command, null, $environmentVariables, null, 3600.00);
-        $this->foreground($process);
     }
 }

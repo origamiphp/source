@@ -8,18 +8,16 @@ use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class BuildCommand extends Command
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
@@ -28,14 +26,22 @@ class BuildCommand extends Command
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
+     * @param ProcessManager       $processManager
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -66,25 +72,12 @@ class BuildCommand extends Command
             $this->checkEnvironmentConfiguration();
             $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
 
-            $this->showServicesStatus($environmentVariables);
+            $this->processManager->buildServices($environmentVariables);
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Builds or rebuilds the Docker services associated to the current environment.
-     *
-     * @param array $environmentVariables
-     */
-    private function showServicesStatus(array $environmentVariables): void
-    {
-        $command = ['docker-compose', 'build', '--pull', '--parallel'];
-
-        $process = new Process($command, null, $environmentVariables, null, 3600.00);
-        $this->foreground($process);
     }
 }

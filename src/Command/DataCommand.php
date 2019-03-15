@@ -7,18 +7,16 @@ namespace App\Command;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProcessManager;
 use App\Traits\CustomCommandsTrait;
-use App\Traits\SymfonyProcessTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DataCommand extends Command
 {
-    use SymfonyProcessTrait;
     use CustomCommandsTrait;
 
     /**
@@ -27,14 +25,22 @@ class DataCommand extends Command
      * @param string|null          $name
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
+     * @param ValidatorInterface   $validator
+     * @param ProcessManager       $processManager
      */
-    public function __construct(?string $name = null, ApplicationLock $applicationLock, EnvironmentVariables $environmentVariables, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        ApplicationLock $applicationLock,
+        EnvironmentVariables $environmentVariables,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -64,7 +70,7 @@ class DataCommand extends Command
                 }
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->showDockerServices($environmentVariables);
+                $this->processManager->showResourcesUsage($environmentVariables);
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
@@ -75,22 +81,5 @@ class DataCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Shows the resource usage of the Docker services associated to the current environment.
-     *
-     * @param array $environmentVariables
-     */
-    private function showDockerServices(array $environmentVariables): void
-    {
-        $process = Process::fromShellCommandline(
-            'docker-compose ps -q | xargs docker stats',
-            null,
-            $environmentVariables,
-            null,
-            3600.00
-        );
-        $this->foreground($process);
     }
 }

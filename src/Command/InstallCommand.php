@@ -6,7 +6,8 @@ namespace App\Command;
 
 use App\Exception\ConfigurationException;
 use App\Helper\CommandExitCode;
-use App\Traits\SymfonyProcessTrait;
+use App\Manager\ProcessManager;
+use App\Traits\CustomCommandsTrait;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,21 +17,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InstallCommand extends Command
 {
-    use SymfonyProcessTrait;
-
-    /** @var SymfonyStyle */
-    private $io;
+    use CustomCommandsTrait;
 
     /** @var array */
     private $environments;
-
-    /** @var ValidatorInterface */
-    private $validator;
 
     /**
      * InstallCommand constructor.
@@ -38,13 +32,19 @@ class InstallCommand extends Command
      * @param string|null        $name
      * @param array              $environments
      * @param ValidatorInterface $validator
+     * @param ProcessManager     $processManager
      */
-    public function __construct(?string $name = null, array $environments, ValidatorInterface $validator)
-    {
+    public function __construct(
+        ?string $name = null,
+        array $environments,
+        ValidatorInterface $validator,
+        ProcessManager $processManager
+    ) {
         parent::__construct($name);
 
         $this->environments = $environments;
         $this->validator = $validator;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -80,7 +80,17 @@ class InstallCommand extends Command
                 $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
                 if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?')) {
-                    $this->generateCertificate($destination);
+                    $certificate = "$destination/nginx/certs/custom.pem";
+                    $privateKey = "$destination/nginx/certs/custom.key";
+                    $domains = $this->io->ask(
+                        'Which domains does this certificate belong to?',
+                        'symfony.localhost www.symfony.localhost',
+                        function ($answer) {
+                            return $this->localDomainsCallback($answer);
+                        }
+                    );
+
+                    $this->processManager->generateCertificate($certificate, $privateKey, explode(' ', $domains));
                 }
 
                 $this->io->success("Environment files were successfully copied into \"$destination\".");
@@ -115,28 +125,6 @@ class InstallCommand extends Command
 
         // Copy the docker configuration into the project directory
         $filesystem->mirror($source, $destination);
-    }
-
-    /**
-     * Generates a locally-trusted development certificate with mkcert.
-     *
-     * @param string $destination
-     */
-    private function generateCertificate(string $destination): void
-    {
-        $certificate = "$destination/nginx/certs/custom.pem";
-        $privateKey = "$destination/nginx/certs/custom.key";
-        $domains = $this->io->ask(
-            'Which domains does this certificate belong to?',
-            'symfony.localhost www.symfony.localhost',
-            function ($answer) {
-                return $this->localDomainsCallback($answer);
-            }
-        );
-
-        $command = array_merge(['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], explode(' ', $domains));
-        $process = new Process($command, null, null, null, 3600.00);
-        $this->foreground($process);
     }
 
     /**

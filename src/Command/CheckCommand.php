@@ -5,28 +5,34 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Helper\CommandExitCode;
+use App\Manager\ProcessManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 
 class CheckCommand extends Command
 {
     /** @var array */
     private $requirements;
 
+    /** @var ProcessManager */
+    private $processManager;
+
     /**
      * CheckCommand constructor.
      *
-     * @param string|null $name
-     * @param array       $requirements
+     * @param string|null    $name
+     * @param array          $requirements
+     * @param ProcessManager $processManager
      */
-    public function __construct(?string $name = null, array $requirements)
+    public function __construct(?string $name = null, array $requirements, ProcessManager $processManager)
     {
         parent::__construct($name);
+
         $this->requirements = $requirements;
+        $this->processManager = $processManager;
     }
 
     /**
@@ -53,11 +59,10 @@ class CheckCommand extends Command
 
         $ready = true;
         foreach ($this->requirements as $name => $description) {
-            $status = $this->isBinaryInstalled($name) ? 'Installed' : 'Missing';
+            $status = $this->processManager->isBinaryInstalled($name) ? 'Installed' : 'Missing';
             if ($status !== 'Installed') {
                 $ready = false;
             }
-
             $table->addRow([$name, $description, $status]);
         }
 
@@ -71,29 +76,5 @@ class CheckCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Checks whether the given binary is available.
-     *
-     * @param string $binary
-     *
-     * @return bool
-     */
-    private function isBinaryInstalled(string $binary): bool
-    {
-        if (strpos($binary, '/') === false) {
-            $process = new Process(['which', $binary]);
-            $process->run();
-
-            $result = $process->isSuccessful();
-        } else {
-            $process = new Process(['brew', 'list']);
-            $process->run();
-
-            $result = strpos($process->getOutput(), substr($binary, strrpos($binary, '/') + 1)) !== false;
-        }
-
-        return $result;
     }
 }
