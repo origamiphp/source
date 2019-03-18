@@ -1,5 +1,4 @@
 FROM php:7.2-fpm-alpine as symfony_php
-LABEL maintainer="Alexandre Jardin <info@ajardin.fr>"
 
 # Install Symfony requirements
 RUN \
@@ -12,6 +11,7 @@ RUN \
         libjpeg-turbo-dev \
         libpng-dev \
         libwebp-dev \
+        openssh-client \
         postgresql-libs \
         shadow \
         ssmtp \

@@ -42,7 +42,7 @@ services:
       # Custom configuration
       - ${PROJECT_LOCATION}/var/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
       # SSH keys
-      - ${HOME}/.ssh:/root/.ssh:ro
+      - ${HOME}/.ssh:/home/www-data/.ssh:ro
     tty: true
 
   postgres:
