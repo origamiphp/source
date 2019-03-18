@@ -71,8 +71,11 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
                     $this->printEnvironmentDetails();
                 }
 
-                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->processManager->openTerminal($this->getServiceName(), $environmentVariables);
+                $this->processManager->openTerminal(
+                    $this->getServiceName(),
+                    $this->getUsername(),
+                    $this->environmentVariables->getRequiredVariables($this->project)
+                );
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;

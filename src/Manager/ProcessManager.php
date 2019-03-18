@@ -202,13 +202,14 @@ class ProcessManager
      * Opens a terminal on the service associated to the command.
      *
      * @param string $service
+     * @param string $user
      * @param array  $environmentVariables
      *
      * @return bool
      */
-    public function openTerminal(string $service, array $environmentVariables): bool
+    public function openTerminal(string $service, string $user, array $environmentVariables): bool
     {
-        $command = ['docker-compose', 'exec', $service, 'sh'];
+        $command = ['docker-compose', 'exec', '-u', $user, $service, 'sh', '-l'];
         $process = $this->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();

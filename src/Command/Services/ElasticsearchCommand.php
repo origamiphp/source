@@ -15,4 +15,12 @@ class ElasticsearchCommand extends AbstractServiceCommand
     {
         return self::COMMAND_SERVICE_NAME;
     }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getUsername(): string
+    {
+        return '';
+    }
 }
