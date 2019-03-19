@@ -16,7 +16,7 @@ class EnvironmentVariables
     public function loadFromDotEnv(string $configuration): void
     {
         $dotenv = new Dotenv();
-        $dotenv->load($configuration);
+        $dotenv->overload($configuration);
     }
 
     /**
