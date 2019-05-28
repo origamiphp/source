@@ -8,11 +8,7 @@ parameters:
         docker: 'A self-sufficient runtime for containers.'
         docker-compose: 'Define and run multi-container applications with Docker.'
         brew: 'The missing package manager for macOS.'
-        ruby: 'Object-oriented scripting language used by docker-sync.'
-        gem: 'The package manager for Ruby, needed to install docker-sync.'
-        docker-sync: 'Fast and efficient way to synchronize code to Docker containers.'
-        unison: 'File synchronization tool for OSX.'
-        eugenmayer/dockersync/unox: 'A layer used by docker-sync with unison.'
+        mutagen: 'Fast and efficient way to synchronize code to Docker containers.'
 
     app.environments:
         - magento2

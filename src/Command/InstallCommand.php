@@ -79,7 +79,7 @@ class InstallCommand extends Command
                 $destination = "$location/var/docker";
                 $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
-                if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?')) {
+                if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
                     $certificate = "$destination/nginx/certs/custom.pem";
                     $privateKey = "$destination/nginx/certs/custom.key";
                     $domains = $this->io->ask(
@@ -120,10 +120,7 @@ class InstallCommand extends Command
         // Create the directory where all configuration files will be stored
         $filesystem->mkdir($destination);
 
-        // Copy the docker-sync configuration into the project directory
-        $filesystem->copy("$source/../docker-sync.yml", "$destination/docker-sync.yml");
-
-        // Copy the docker configuration into the project directory
+        // Copy the environment files into the project directory
         $filesystem->mirror($source, $destination);
     }
 

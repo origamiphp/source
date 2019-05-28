@@ -64,9 +64,7 @@ class StopCommand extends Command
         if ($this->project = $this->applicationLock->getCurrentLock()) {
             try {
                 $this->checkEnvironmentConfiguration(true);
-
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $directory = "{$this->project}/var/docker";
 
                 if ($this->processManager->stopDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully stopped.');
@@ -74,7 +72,7 @@ class StopCommand extends Command
                     $this->io->error('An error occurred while stoppping the Docker services.');
                 }
 
-                if ($this->processManager->stopDockerSynchronization($directory, $environmentVariables)) {
+                if ($this->processManager->stopDockerSynchronization($environmentVariables)) {
                     $this->io->success('Docker synchronization successfully stopped.');
                 } else {
                     $this->io->error('An error occurred while stopping the Docker synchronization.');
