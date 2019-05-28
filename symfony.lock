@@ -35,6 +35,9 @@
             ".php_cs.dist"
         ]
     },
+    "nette/schema": {
+        "version": "v1.0.0"
+    },
     "php-cs-fixer/diff": {
         "version": "v2.0.0"
     },

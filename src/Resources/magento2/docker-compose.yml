@@ -8,13 +8,13 @@ services:
       - php
 
   elasticsearch:
-    build: elasticsearch
+    image: ajardin/magento2-elasticsearch:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
 
   maildev:
-    image: djfarrelly/maildev
+    image: djfarrelly/maildev:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     depends_on:
       - php
@@ -31,7 +31,7 @@ services:
     tty: true
 
   nginx:
-    build: nginx
+    image: ajardin/magento2-nginx:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - 443:443
@@ -47,9 +47,7 @@ services:
     tty: true
 
   php:
-    build:
-      context: ./php
-      target: ${DOCKER_PHP_IMAGE}
+    image: ajardin/magento2-php:${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     volumes:
       # Project files
