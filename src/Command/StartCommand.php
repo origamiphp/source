@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Event\EnvironmentStartedEvent;
 use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
@@ -15,35 +16,41 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StartCommand extends Command
 {
     use CustomCommandsTrait;
 
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
     /**
      * StartCommand constructor.
      *
-     * @param string|null $name
-     * @param ApplicationLock $applicationLock
-     * @param EnvironmentVariables $environmentVariables
-     * @param ValidatorInterface $validator
-     * @param ProcessManager $processManager
+     * @param string|null              $name
+     * @param ApplicationLock          $applicationLock
+     * @param EnvironmentVariables     $environmentVariables
+     * @param ValidatorInterface       $validator
+     * @param ProcessManager           $processManager
+     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         ?string $name = null,
         ApplicationLock $applicationLock,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
-        ProcessManager $processManager
-    )
-    {
+        ProcessManager $processManager,
+        EventDispatcherInterface $eventDispatcher
+    ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
         $this->processManager = $processManager;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -85,14 +92,11 @@ class StartCommand extends Command
 
                 if ($this->processManager->startDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully started.');
+
+                    $event = new EnvironmentStartedEvent($environmentVariables, $this->io);
+                    $this->eventDispatcher->dispatch($event);
                 } else {
                     $this->io->error('An error occurred while starting the Docker services.');
-                }
-
-                if ($this->processManager->startDockerSynchronization($environmentVariables)) {
-                    $this->io->success('Docker synchronization successfully started.');
-                } else {
-                    $this->io->error('An error occurred while starting the Docker synchronization.');
                 }
 
                 $this->applicationLock->generateLock($this->project);

@@ -17,6 +17,7 @@ class ApplicationLock
      * Generates the lock entry used to avoid duplicate launches.
      *
      * @param string $project
+     *
      * @throws ApplicationLockException
      */
     public function generateLock(string $project): void

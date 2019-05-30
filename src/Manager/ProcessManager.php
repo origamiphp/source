@@ -65,7 +65,7 @@ class ProcessManager
         );
 
         $process->run(static function ($type, $buffer) {
-            echo Process::ERR === $type ? 'ERR > ' . $buffer : $buffer;
+            echo Process::ERR === $type ? 'ERR > '.$buffer : $buffer;
         });
 
         return $process->isSuccessful();
@@ -161,7 +161,7 @@ class ProcessManager
                 '--ignore=".idea"',
                 "--label=name=$projectName",
                 $projectLocation,
-                $projectName ? "docker://${environmentVariables['COMPOSE_PROJECT_NAME']}_synchro/var/www/html/" : ''
+                $projectName ? "docker://${environmentVariables['COMPOSE_PROJECT_NAME']}_synchro/var/www/html/" : '',
             ];
         } else {
             $command = ['mutagen', 'resume', "--label-selector=name=$projectName"];
@@ -278,7 +278,7 @@ class ProcessManager
         $process->setTty(Process::isTtySupported());
 
         $process->run(static function ($type, $buffer) {
-            echo Process::ERR === $type ? 'ERR > ' . $buffer : $buffer;
+            echo Process::ERR === $type ? 'ERR > '.$buffer : $buffer;
         });
 
         return $process;
@@ -288,7 +288,7 @@ class ProcessManager
      * Checks whether an existing session is associated with the given project.
      *
      * @param string $projectName
-     * @param array $environmentVariables
+     * @param array  $environmentVariables
      *
      * @return bool
      */

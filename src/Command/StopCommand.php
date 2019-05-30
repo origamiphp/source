@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Event\EnvironmentStoppedEvent;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
@@ -13,27 +14,33 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StopCommand extends Command
 {
     use CustomCommandsTrait;
 
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
     /**
      * StopCommand constructor.
      *
-     * @param string|null          $name
-     * @param ApplicationLock      $applicationLock
-     * @param EnvironmentVariables $environmentVariables
-     * @param ValidatorInterface   $validator
-     * @param ProcessManager       $processManager
+     * @param string|null              $name
+     * @param ApplicationLock          $applicationLock
+     * @param EnvironmentVariables     $environmentVariables
+     * @param ValidatorInterface       $validator
+     * @param ProcessManager           $processManager
+     * @param EventDispatcherInterface $eventDispatcher
      */
     public function __construct(
         ?string $name = null,
         ApplicationLock $applicationLock,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
-        ProcessManager $processManager
+        ProcessManager $processManager,
+        EventDispatcherInterface $eventDispatcher
     ) {
         parent::__construct($name);
 
@@ -41,6 +48,7 @@ class StopCommand extends Command
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
         $this->processManager = $processManager;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -68,14 +76,11 @@ class StopCommand extends Command
 
                 if ($this->processManager->stopDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully stopped.');
+
+                    $event = new EnvironmentStoppedEvent($environmentVariables, $this->io);
+                    $this->eventDispatcher->dispatch($event);
                 } else {
                     $this->io->error('An error occurred while stoppping the Docker services.');
-                }
-
-                if ($this->processManager->stopDockerSynchronization($environmentVariables)) {
-                    $this->io->success('Docker synchronization successfully stopped.');
-                } else {
-                    $this->io->error('An error occurred while stopping the Docker synchronization.');
                 }
 
                 $this->applicationLock->removeLock();

@@ -32,7 +32,7 @@ class EnvironmentVariables
 
         return [
             'COMPOSE_FILE' => "$project/var/docker/docker-compose.yml",
-            'COMPOSE_PROJECT_NAME' => $environment . '_' . basename($project),
+            'COMPOSE_PROJECT_NAME' => $environment.'_'.basename($project),
             'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
             'PROJECT_LOCATION' => $project,
         ];
