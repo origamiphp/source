@@ -27,6 +27,7 @@
         "phpstan/phpstan": "^0.11.3",
         "roave/security-advisories": "dev-master",
         "sensiolabs/security-checker": "^5.0",
+        "symfony/maker-bundle": "^1.11",
         "symfony/var-dumper": "4.2.*"
     },
     "config": {
