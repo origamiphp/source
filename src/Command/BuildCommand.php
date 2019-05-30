@@ -8,7 +8,7 @@ use App\Exception\EnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
-use App\Manager\ProcessManager;
+use App\Manager\Process\DockerCompose;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,6 +20,9 @@ class BuildCommand extends Command
 {
     use CustomCommandsTrait;
 
+    /** @var DockerCompose */
+    private $dockerCompose;
+
     /**
      * BuildCommand constructor.
      *
@@ -27,21 +30,21 @@ class BuildCommand extends Command
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
      * @param ValidatorInterface   $validator
-     * @param ProcessManager       $processManager
+     * @param DockerCompose        $dockerCompose
      */
     public function __construct(
         ?string $name = null,
         ApplicationLock $applicationLock,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
-        ProcessManager $processManager
+        DockerCompose $dockerCompose
     ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
-        $this->processManager = $processManager;
+        $this->dockerCompose = $dockerCompose;
     }
 
     /**
@@ -71,8 +74,7 @@ class BuildCommand extends Command
 
             $this->checkEnvironmentConfiguration();
             $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-
-            $this->processManager->buildServices($environmentVariables);
+            $this->dockerCompose->buildServices($environmentVariables);
         } catch (\Exception $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

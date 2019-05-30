@@ -42,3 +42,4 @@ services:
         tags:
             - { name: kernel.event_listener, event: App\Event\EnvironmentStartedEvent, method: onEnvironmentStart }
             - { name: kernel.event_listener, event: App\Event\EnvironmentStoppedEvent, method: onEnvironmentStop }
+            - { name: kernel.event_listener, event: App\Event\EnvironmentRestartedEvent, method: onEnvironmentRestart }

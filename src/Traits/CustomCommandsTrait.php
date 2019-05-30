@@ -7,7 +7,6 @@ namespace App\Traits;
 use App\Exception\EnvironmentException;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
-use App\Manager\ProcessManager;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -23,9 +22,6 @@ trait CustomCommandsTrait
 
     /** @var ValidatorInterface */
     private $validator;
-
-    /** @var ProcessManager */
-    private $processManager;
 
     /** @var SymfonyStyle */
     private $io;

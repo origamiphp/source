@@ -4,23 +4,24 @@ declare(strict_types=1);
 
 namespace App\EventListener;
 
+use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
-use App\Manager\ProcessManager;
+use App\Manager\Process\Mutagen;
 
 class EnvironmentListener
 {
-    /** @var ProcessManager */
-    private $processManager;
+    /** @var Mutagen */
+    private $mutagen;
 
     /**
      * EnvironmentListener constructor.
      *
-     * @param ProcessManager $processManager
+     * @param Mutagen $mutagen
      */
-    public function __construct(ProcessManager $processManager)
+    public function __construct(Mutagen $mutagen)
     {
-        $this->processManager = $processManager;
+        $this->mutagen = $mutagen;
     }
 
     /**
@@ -32,7 +33,7 @@ class EnvironmentListener
     {
         $io = $event->getSymfonyStyle();
 
-        if ($this->processManager->startDockerSynchronization($event->getEnvironmentVariables())) {
+        if ($this->mutagen->startDockerSynchronization($event->getEnvironmentVariables())) {
             $io->success('Docker synchronization successfully started.');
         } else {
             $io->error('An error occurred while starting the Docker synchronization.');
@@ -48,10 +49,28 @@ class EnvironmentListener
     {
         $io = $event->getSymfonyStyle();
 
-        if ($this->processManager->stopDockerSynchronization($event->getEnvironmentVariables())) {
+        if ($this->mutagen->stopDockerSynchronization($event->getEnvironmentVariables())) {
             $io->success('Docker synchronization successfully stopped.');
         } else {
             $io->error('An error occurred while stopping the Docker synchronization.');
+        }
+    }
+
+    /**
+     * Listener which restarts the Docker synchronization.
+     *
+     * @param EnvironmentRestartedEvent $event
+     */
+    public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
+    {
+        $io = $event->getSymfonyStyle();
+
+        if ($this->mutagen->startDockerSynchronization($event->getEnvironmentVariables())
+            && $this->mutagen->stopDockerSynchronization($event->getEnvironmentVariables())
+        ) {
+            $io->success('Docker synchronization successfully restarted.');
+        } else {
+            $io->error('An error occurred while restarting the Docker synchronization.');
         }
     }
 }

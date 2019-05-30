@@ -6,13 +6,12 @@ namespace App\Command;
 
 use App\Exception\ConfigurationException;
 use App\Helper\CommandExitCode;
-use App\Manager\ProcessManager;
+use App\Manager\Process\Mkcert;
 use App\Traits\CustomCommandsTrait;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Exception\FileNotFoundException;
 use Symfony\Component\Filesystem\Exception\IOException;
@@ -26,25 +25,28 @@ class InstallCommand extends Command
     /** @var array */
     private $environments;
 
+    /** @var Mkcert */
+    private $mkcert;
+
     /**
      * InstallCommand constructor.
      *
      * @param string|null        $name
      * @param array              $environments
      * @param ValidatorInterface $validator
-     * @param ProcessManager     $processManager
+     * @param Mkcert             $mkcert
      */
     public function __construct(
         ?string $name = null,
         array $environments,
         ValidatorInterface $validator,
-        ProcessManager $processManager
+        Mkcert $mkcert
     ) {
         parent::__construct($name);
 
         $this->environments = $environments;
         $this->validator = $validator;
-        $this->processManager = $processManager;
+        $this->mkcert = $mkcert;
     }
 
     /**
@@ -90,7 +92,7 @@ class InstallCommand extends Command
                         }
                     );
 
-                    $this->processManager->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+                    $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
                 }
 
                 $this->io->success("Environment files were successfully copied into \"$destination\".");

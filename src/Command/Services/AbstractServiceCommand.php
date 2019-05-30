@@ -7,7 +7,7 @@ namespace App\Command\Services;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
-use App\Manager\ProcessManager;
+use App\Manager\Process\DockerCompose;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,6 +19,9 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
 {
     use CustomCommandsTrait;
 
+    /** @var DockerCompose */
+    private $dockerCompose;
+
     /**
      * AbstractServiceCommand constructor.
      *
@@ -26,21 +29,21 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
      * @param ValidatorInterface   $validator
-     * @param ProcessManager       $processManager
+     * @param DockerCompose        $dockerCompose
      */
     public function __construct(
         ?string $name = null,
         ApplicationLock $applicationLock,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
-        ProcessManager $processManager
+        DockerCompose $dockerCompose
     ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
-        $this->processManager = $processManager;
+        $this->dockerCompose = $dockerCompose;
     }
 
     /**
@@ -71,7 +74,7 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
                     $this->printEnvironmentDetails();
                 }
 
-                $this->processManager->openTerminal(
+                $this->dockerCompose->openTerminal(
                     $this->getServiceName(),
                     $this->getUsername(),
                     $this->environmentVariables->getRequiredVariables($this->project)

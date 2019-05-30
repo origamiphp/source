@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Helper\CommandExitCode;
 use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
-use App\Manager\ProcessManager;
+use App\Manager\Process\DockerCompose;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,6 +21,9 @@ class LogsCommand extends Command
 {
     use CustomCommandsTrait;
 
+    /** @var DockerCompose */
+    private $dockerCompose;
+
     /**
      * LogsCommand constructor.
      *
@@ -28,21 +31,21 @@ class LogsCommand extends Command
      * @param ApplicationLock      $applicationLock
      * @param EnvironmentVariables $environmentVariables
      * @param ValidatorInterface   $validator
-     * @param ProcessManager       $processManager
+     * @param DockerCompose        $dockerCompose
      */
     public function __construct(
         ?string $name = null,
         ApplicationLock $applicationLock,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
-        ProcessManager $processManager
+        DockerCompose $dockerCompose
     ) {
         parent::__construct($name);
 
         $this->applicationLock = $applicationLock;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
-        $this->processManager = $processManager;
+        $this->dockerCompose = $dockerCompose;
     }
 
     /**
@@ -86,7 +89,7 @@ class LogsCommand extends Command
                 }
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-                $this->processManager->showServicesLogs(
+                $this->dockerCompose->showServicesLogs(
                     (($tail = $input->getOption('tail')) && \is_string($tail)) ? (int) $tail : 0,
                     (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : '',
                     $environmentVariables

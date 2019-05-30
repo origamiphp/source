@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Helper\CommandExitCode;
-use App\Manager\ProcessManager;
+use App\Manager\Process\System;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,22 +17,22 @@ class CheckCommand extends Command
     /** @var array */
     private $requirements;
 
-    /** @var ProcessManager */
-    private $processManager;
+    /** @var System */
+    private $system;
 
     /**
      * CheckCommand constructor.
      *
-     * @param string|null    $name
-     * @param array          $requirements
-     * @param ProcessManager $processManager
+     * @param string|null $name
+     * @param array       $requirements
+     * @param System      $system
      */
-    public function __construct(?string $name = null, array $requirements, ProcessManager $processManager)
+    public function __construct(?string $name = null, array $requirements, System $system)
     {
         parent::__construct($name);
 
         $this->requirements = $requirements;
-        $this->processManager = $processManager;
+        $this->system = $system;
     }
 
     /**
@@ -59,7 +59,7 @@ class CheckCommand extends Command
 
         $ready = true;
         foreach ($this->requirements as $name => $description) {
-            $status = $this->processManager->isBinaryInstalled($name) ? 'Installed' : 'Missing';
+            $status = $this->system->isBinaryInstalled($name) ? 'Installed' : 'Missing';
             if ($status !== 'Installed') {
                 $ready = false;
             }
