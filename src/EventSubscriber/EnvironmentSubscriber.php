@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\EventListener;
+namespace App\EventSubscriber;
 
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Manager\Process\Mutagen;
+use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
-class EnvironmentListener
+class EnvironmentSubscriber implements EventSubscriberInterface
 {
     /** @var Mutagen */
     private $mutagen;
@@ -22,6 +23,18 @@ class EnvironmentListener
     public function __construct(Mutagen $mutagen)
     {
         $this->mutagen = $mutagen;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            EnvironmentStartedEvent::class => 'onEnvironmentStart',
+            EnvironmentStoppedEvent::class => 'onEnvironmentStop',
+            EnvironmentRestartedEvent::class => 'onEnvironmentRestart',
+        ];
     }
 
     /**
