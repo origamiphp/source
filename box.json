@@ -1,0 +1,13 @@
+{
+    "main": "bin/console",
+    "directories": [
+        "config",
+        "src",
+        "vendor"
+    ],
+    "files": [
+        ".env.local.php"
+    ],
+    "force-autodiscovery": true,
+    "output": "build/origami"
+}

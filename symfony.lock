@@ -20,11 +20,26 @@
             "config/routes/annotations.yaml"
         ]
     },
+    "doctrine/cache": {
+        "version": "v1.8.0"
+    },
+    "doctrine/collections": {
+        "version": "v1.6.2"
+    },
+    "doctrine/event-manager": {
+        "version": "v1.0.0"
+    },
     "doctrine/inflector": {
         "version": "v1.3.0"
     },
     "doctrine/lexer": {
-        "version": "v1.0.1"
+        "version": "1.0.2"
+    },
+    "doctrine/persistence": {
+        "version": "1.1.1"
+    },
+    "doctrine/reflection": {
+        "version": "v1.0.0"
     },
     "friendsofphp/php-cs-fixer": {
         "version": "2.2",
@@ -75,7 +90,7 @@
         "version": "v2.0.0"
     },
     "phpstan/phpdoc-parser": {
-        "version": "0.3.4"
+        "version": "0.3.5"
     },
     "phpstan/phpstan": {
         "version": "0.11.8"
@@ -92,6 +107,18 @@
     "roave/security-advisories": {
         "version": "dev-master"
     },
+    "sensio/framework-extra-bundle": {
+        "version": "5.2",
+        "recipe": {
+            "repo": "github.com/symfony/recipes",
+            "branch": "master",
+            "version": "5.2",
+            "ref": "fb7e19da7f013d0d422fa9bce16f5c510e27609b"
+        },
+        "files": [
+            "config/packages/sensio_framework_extra.yaml"
+        ]
+    },
     "sensiolabs/security-checker": {
         "version": "4.0",
         "recipe": {
@@ -105,13 +132,13 @@
         ]
     },
     "symfony/cache": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/cache-contracts": {
         "version": "v1.1.1"
     },
     "symfony/config": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/console": {
         "version": "3.3",
@@ -127,25 +154,25 @@
         ]
     },
     "symfony/debug": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/dependency-injection": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/dotenv": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/event-dispatcher": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/event-dispatcher-contracts": {
         "version": "v1.1.1"
     },
     "symfony/filesystem": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/finder": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/flex": {
         "version": "1.0",
@@ -179,10 +206,10 @@
         ]
     },
     "symfony/http-foundation": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/http-kernel": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/maker-bundle": {
         "version": "1.0",
@@ -194,10 +221,10 @@
         }
     },
     "symfony/mime": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/options-resolver": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/polyfill-intl-idn": {
         "version": "v1.11.0"
@@ -212,7 +239,7 @@
         "version": "v1.11.0"
     },
     "symfony/process": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/routing": {
         "version": "4.2",
@@ -233,7 +260,7 @@
         "version": "v1.1.2"
     },
     "symfony/stopwatch": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/translation-contracts": {
         "version": "v1.1.2"
@@ -244,7 +271,7 @@
             "repo": "github.com/symfony/recipes",
             "branch": "master",
             "version": "4.3",
-            "ref": "f8992cec2e7a33fb5453b1ba08acee62d01397e2"
+            "ref": "48a8e5ef925e82aa7d665c887cd1fa60f8b7921d"
         },
         "files": [
             "config/packages/test/validator.yaml",
@@ -252,12 +279,12 @@
         ]
     },
     "symfony/var-dumper": {
-        "version": "v4.2.9"
+        "version": "v4.3.1"
     },
     "symfony/var-exporter": {
-        "version": "v4.3.0"
+        "version": "v4.3.1"
     },
     "symfony/yaml": {
-        "version": "v4.2.9"
+        "version": "v4.3.1"
     }
 }
