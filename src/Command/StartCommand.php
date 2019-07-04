@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Entity\Project;
 use App\Event\EnvironmentStartedEvent;
-use App\Exception\EnvironmentException;
+use App\Exception\ConfigurationException;
 use App\Helper\CommandExitCode;
-use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
+use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -33,7 +34,7 @@ class StartCommand extends Command
      * StartCommand constructor.
      *
      * @param string|null              $name
-     * @param ApplicationLock          $applicationLock
+     * @param ProjectManager           $projectManager
      * @param EnvironmentVariables     $environmentVariables
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
@@ -41,7 +42,7 @@ class StartCommand extends Command
      */
     public function __construct(
         ?string $name = null,
-        ApplicationLock $applicationLock,
+        ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
@@ -49,7 +50,7 @@ class StartCommand extends Command
     ) {
         parent::__construct($name);
 
-        $this->applicationLock = $applicationLock;
+        $this->projectManager = $projectManager;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
@@ -82,30 +83,30 @@ class StartCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         try {
-            if ($cwd = getcwd()) {
-                $this->project = $cwd;
-            } else {
-                throw new EnvironmentException('Unable to retrieve the current working directory.');
+            $activeProject = $this->projectManager->getActiveProject();
+            if (!$activeProject instanceof Project) {
+                throw new ConfigurationException(
+                    'An environment must be installed, please consider using the install command instead.'
+                );
             }
 
-            $lock = $this->applicationLock->getCurrentLock();
-            if (!$lock || $input->getOption('force')) {
+            if ($input->getOption('force')) {
+                $this->project = $activeProject;
+
                 $this->checkEnvironmentConfiguration(true);
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
 
                 if ($this->dockerCompose->startDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully started.');
 
-                    $event = new EnvironmentStartedEvent($environmentVariables, $this->io);
+                    $event = new EnvironmentStartedEvent($this->project, $environmentVariables, $this->io);
                     $this->eventDispatcher->dispatch($event);
                 } else {
                     $this->io->error('An error occurred while starting the Docker services.');
                 }
-
-                $this->applicationLock->generateLock($this->project);
             } else {
                 $this->io->error(
-                    $lock === $this->project
+                    $activeProject === $this->project
                         ? 'The environment is already running.'
                         : 'Unable to start an environment when another is still running.'
                 );

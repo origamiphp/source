@@ -6,15 +6,13 @@ namespace App\Command;
 
 use App\Exception\ConfigurationException;
 use App\Helper\CommandExitCode;
-use App\Manager\Process\Mkcert;
+use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Exception\FileNotFoundException;
-use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -25,28 +23,25 @@ class InstallCommand extends Command
     /** @var array */
     private $environments;
 
-    /** @var Mkcert */
-    private $mkcert;
-
     /**
      * InstallCommand constructor.
      *
      * @param string|null        $name
      * @param array              $environments
      * @param ValidatorInterface $validator
-     * @param Mkcert             $mkcert
+     * @param ProjectManager     $projectManager
      */
     public function __construct(
         ?string $name = null,
         array $environments,
-        ValidatorInterface $validator,
-        Mkcert $mkcert
+        ProjectManager $projectManager,
+        ValidatorInterface $validator
     ) {
         parent::__construct($name);
 
         $this->environments = $environments;
+        $this->projectManager = $projectManager;
         $this->validator = $validator;
-        $this->mkcert = $mkcert;
     }
 
     /**
@@ -68,7 +63,7 @@ class InstallCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
         $filesystem = new Filesystem();
 
-        $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'symfony');
+        $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'magento2');
         $location = realpath(
             $this->io->ask('Where do you want to install the environment?', '.', function ($answer) {
                 return $this->installationPathCallback($answer);
@@ -77,25 +72,20 @@ class InstallCommand extends Command
 
         if ($location && $filesystem->exists($location)) {
             try {
-                $source = __DIR__."/../Resources/$type";
-                $destination = "$location/var/docker";
-                $this->copyEnvironmentFiles($filesystem, $source, $destination);
-
                 if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
-                    $certificate = "$destination/nginx/certs/custom.pem";
-                    $privateKey = "$destination/nginx/certs/custom.key";
                     $domains = $this->io->ask(
                         'Which domains does this certificate belong to?',
-                        'symfony.localhost www.symfony.localhost',
+                        'magento.localhost www.magento.localhost',
                         function ($answer) {
                             return $this->localDomainsCallback($answer);
                         }
                     );
-
-                    $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+                } else {
+                    $domains = null;
                 }
 
-                $this->io->success("Environment files were successfully copied into \"$destination\".");
+                $this->projectManager->install($location, $type, $domains);
+                $this->io->success('Environment files were successfully copied into the project.');
             } catch (\Exception $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
@@ -106,24 +96,6 @@ class InstallCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Copies all environment files into the project directory.
-     *
-     * @param Filesystem $filesystem
-     * @param string     $source
-     * @param string     $destination
-     *
-     * @throws FileNotFoundException|IOException
-     */
-    private function copyEnvironmentFiles(Filesystem $filesystem, string $source, string $destination): void
-    {
-        // Create the directory where all configuration files will be stored
-        $filesystem->mkdir($destination);
-
-        // Copy the environment files into the project directory
-        $filesystem->mirror($source, $destination);
     }
 
     /**

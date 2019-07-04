@@ -8,6 +8,7 @@ use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Manager\Process\Mutagen;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EnvironmentSubscriber implements EventSubscriberInterface
@@ -15,14 +16,19 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     /** @var Mutagen */
     private $mutagen;
 
+    /** @var EntityManagerInterface */
+    private $entityManager;
+
     /**
-     * EnvironmentListener constructor.
+     * EnvironmentSubscriber constructor.
      *
-     * @param Mutagen $mutagen
+     * @param Mutagen                $mutagen
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(Mutagen $mutagen)
+    public function __construct(Mutagen $mutagen, EntityManagerInterface $entityManager)
     {
         $this->mutagen = $mutagen;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -51,6 +57,10 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         } else {
             $io->error('An error occurred while starting the Docker synchronization.');
         }
+
+        $project = $event->getProject();
+        $project->setActive(true);
+        $this->entityManager->flush();
     }
 
     /**
@@ -67,6 +77,10 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         } else {
             $io->error('An error occurred while stopping the Docker synchronization.');
         }
+
+        $project = $event->getProject();
+        $project->setActive(false);
+        $this->entityManager->flush();
     }
 
     /**

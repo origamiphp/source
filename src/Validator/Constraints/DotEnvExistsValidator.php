@@ -22,7 +22,7 @@ class DotEnvExistsValidator extends ConstraintValidator
 
         $filesystem = new Filesystem();
 
-        $configuration = "$project/var/docker/.env";
+        $configuration = "{$project->getLocation()}/var/docker/.env";
         if (!$filesystem->exists($configuration)) {
             $this->context->buildViolation($constraint->message)->addViolation();
         }

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use App\Entity\Project;
 use App\Exception\EnvironmentException;
-use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProjectManager;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -14,8 +15,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 trait CustomCommandsTrait
 {
-    /** @var ApplicationLock */
-    private $applicationLock;
+    /** @var ProjectManager */
+    private $projectManager;
 
     /** @var EnvironmentVariables */
     private $environmentVariables;
@@ -26,7 +27,7 @@ trait CustomCommandsTrait
     /** @var SymfonyStyle */
     private $io;
 
-    /** @var string */
+    /** @var Project */
     private $project;
 
     /**
@@ -41,7 +42,7 @@ trait CustomCommandsTrait
         $dotEnvConstraint = new DotEnvExists();
         $errors = $this->validator->validate($this->project, $dotEnvConstraint);
         if ($errors->has(0) !== true) {
-            $this->environmentVariables->loadFromDotEnv("{$this->project}/var/docker/.env");
+            $this->environmentVariables->loadFromDotEnv("{$this->project->getLocation()}/var/docker/.env");
         } else {
             throw new EnvironmentException($errors[0]->getMessage());
         }
@@ -69,7 +70,7 @@ trait CustomCommandsTrait
         $this->io->success('An environment is currently running.');
         $this->io->listing(
             [
-                "Project location: {$this->project}",
+                "Project location: {$this->project->getLocation()}",
                 'Environment type: '.getenv('DOCKER_ENVIRONMENT'),
             ]
         );

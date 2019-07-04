@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Manager;
 
+use App\Entity\Project;
 use Symfony\Component\Dotenv\Dotenv;
 
 class EnvironmentVariables
@@ -22,19 +23,19 @@ class EnvironmentVariables
     /**
      * Retrieves environment variables required to run processes.
      *
-     * @param string $project
+     * @param Project $project
      *
      * @return array
      */
-    public function getRequiredVariables(string $project): array
+    public function getRequiredVariables(Project $project): array
     {
         $environment = getenv('DOCKER_ENVIRONMENT');
 
         return [
-            'COMPOSE_FILE' => "$project/var/docker/docker-compose.yml",
-            'COMPOSE_PROJECT_NAME' => $environment.'_'.basename($project),
+            'COMPOSE_FILE' => "{$project->getLocation()}/var/docker/docker-compose.yml",
+            'COMPOSE_PROJECT_NAME' => $environment.'_'.$project->getName(),
             'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
-            'PROJECT_LOCATION' => $project,
+            'PROJECT_LOCATION' => $project->getLocation(),
         ];
     }
 }

@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Entity\Project;
 use App\Helper\CommandExitCode;
-use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
+use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,19 +23,19 @@ class RootCommand extends Command
      * RootCommand constructor.
      *
      * @param string|null          $name
-     * @param ApplicationLock      $applicationLock
+     * @param ProjectManager       $projectManager
      * @param EnvironmentVariables $environmentVariables
      * @param ValidatorInterface   $validator
      */
     public function __construct(
         ?string $name = null,
-        ApplicationLock $applicationLock,
+        ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator
     ) {
         parent::__construct($name);
 
-        $this->applicationLock = $applicationLock;
+        $this->projectManager = $projectManager;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
     }
@@ -57,7 +58,10 @@ class RootCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        if ($this->project = $this->applicationLock->getCurrentLock()) {
+        $activeProject = $this->projectManager->getActiveProject();
+        if ($activeProject instanceof Project) {
+            $this->project = $activeProject;
+
             try {
                 $this->checkEnvironmentConfiguration();
                 $this->writeInstructions();

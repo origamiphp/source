@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Exception\EnvironmentException;
+use App\Entity\Project;
 use App\Helper\CommandExitCode;
-use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
+use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,21 +27,21 @@ class BuildCommand extends Command
      * BuildCommand constructor.
      *
      * @param string|null          $name
-     * @param ApplicationLock      $applicationLock
+     * @param ProjectManager       $projectManager
      * @param EnvironmentVariables $environmentVariables
      * @param ValidatorInterface   $validator
      * @param DockerCompose        $dockerCompose
      */
     public function __construct(
         ?string $name = null,
-        ApplicationLock $applicationLock,
+        ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose
     ) {
         parent::__construct($name);
 
-        $this->applicationLock = $applicationLock;
+        $this->projectManager = $projectManager;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
@@ -65,19 +65,21 @@ class BuildCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        try {
-            if ($cwd = getcwd()) {
-                $this->project = $cwd;
-            } else {
-                throw new EnvironmentException('Unable to retrieve the current working directory.');
-            }
+        $activeProject = $this->projectManager->getActiveProject();
+        if ($activeProject instanceof Project) {
+            $this->project = $activeProject;
 
-            $this->checkEnvironmentConfiguration();
-            $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
-            $this->dockerCompose->buildServices($environmentVariables);
-        } catch (\Exception $e) {
-            $this->io->error($e->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            try {
+                $this->checkEnvironmentConfiguration();
+                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $this->dockerCompose->buildServices($environmentVariables);
+            } catch (\Exception $e) {
+                $this->io->error($e->getMessage());
+                $exitCode = CommandExitCode::EXCEPTION;
+            }
+        } else {
+            $this->io->error('There is no running environment.');
+            $exitCode = CommandExitCode::INVALID;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;

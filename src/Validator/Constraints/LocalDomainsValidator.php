@@ -15,13 +15,13 @@ class LocalDomainsValidator extends ConstraintValidator
     /**
      * {@inheritdoc}
      */
-    public function validate($project, Constraint $constraint): void
+    public function validate($domains, Constraint $constraint): void
     {
         if (!$constraint instanceof LocalDomains) {
             throw new UnexpectedTypeException($constraint, LocalDomains::class);
         }
 
-        if (!preg_match(self::PATTERN, $project)) {
+        if (!preg_match(self::PATTERN, $domains)) {
             $this->context->buildViolation($constraint->message)->addViolation();
         }
     }

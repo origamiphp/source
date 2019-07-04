@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Entity\Project;
 use App\Event\EnvironmentRestartedEvent;
 use App\Helper\CommandExitCode;
-use App\Manager\ApplicationLock;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
+use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -31,7 +32,7 @@ class RestartCommand extends Command
      * RestartCommand constructor.
      *
      * @param string|null              $name
-     * @param ApplicationLock          $applicationLock
+     * @param ProjectManager           $projectManager
      * @param EnvironmentVariables     $environmentVariables
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
@@ -39,7 +40,7 @@ class RestartCommand extends Command
      */
     public function __construct(
         ?string $name = null,
-        ApplicationLock $applicationLock,
+        ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
@@ -47,7 +48,7 @@ class RestartCommand extends Command
     ) {
         parent::__construct($name);
 
-        $this->applicationLock = $applicationLock;
+        $this->projectManager = $projectManager;
         $this->environmentVariables = $environmentVariables;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
@@ -72,7 +73,10 @@ class RestartCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        if ($this->project = $this->applicationLock->getCurrentLock()) {
+        $activeProject = $this->projectManager->getActiveProject();
+        if ($activeProject instanceof Project) {
+            $this->project = $activeProject;
+
             try {
                 $this->checkEnvironmentConfiguration(true);
 
@@ -80,7 +84,7 @@ class RestartCommand extends Command
                 if ($this->dockerCompose->restartDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully restarted.');
 
-                    $event = new EnvironmentRestartedEvent($environmentVariables, $this->io);
+                    $event = new EnvironmentRestartedEvent($this->project, $environmentVariables, $this->io);
                     $this->eventDispatcher->dispatch($event);
                 } else {
                     $this->io->error('An error occurred while restarting the Docker services.');

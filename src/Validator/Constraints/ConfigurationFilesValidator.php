@@ -30,7 +30,7 @@ class ConfigurationFilesValidator extends ConstraintValidator
             $filename = str_replace(
                 'custom-',
                 '',
-                "$project/var/docker/{$file->getFilename()}"
+                "{$project->getLocation()}/var/docker/{$file->getFilename()}"
             );
 
             if (!$filesystem->exists($filename)) {
