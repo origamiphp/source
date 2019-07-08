@@ -9,5 +9,5 @@
         ".env.local.php"
     ],
     "force-autodiscovery": true,
-    "output": "build/origami"
+    "output": "build/origami.phar"
 }

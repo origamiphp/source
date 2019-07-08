@@ -5,6 +5,7 @@
 ##
 
 box: ## Compiles the project into a PHAR archive
+	rm -rf ${HOME}/.origami/cache/* ${HOME}/.origami/logs/* var/*
 	composer dump-env prod
 	box compile
 	rm .env.local.php
