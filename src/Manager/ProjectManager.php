@@ -81,6 +81,18 @@ class ProjectManager
     }
 
     /**
+     * Retrieves the project associated to the given location.
+     *
+     * @param string $location
+     *
+     * @return Project|null
+     */
+    public function getLocationProject(string $location): ?Project
+    {
+        return $this->projectRepository->findOneBy(['location' => $location]);
+    }
+
+    /**
      * Retrieves the currently active project.
      *
      * @return Project|null

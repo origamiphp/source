@@ -83,15 +83,22 @@ class StartCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         try {
-            $activeProject = $this->projectManager->getActiveProject();
-            if (!$activeProject instanceof Project) {
+            if (!$location = getcwd()) {
+                throw new ConfigurationException(
+                    'Unable to retrieve the current working directory.'
+                );
+            }
+
+            $locationProject = $this->projectManager->getLocationProject($location);
+            if (!$locationProject instanceof Project) {
                 throw new ConfigurationException(
                     'An environment must be installed, please consider using the install command instead.'
                 );
             }
 
-            if ($input->getOption('force')) {
-                $this->project = $activeProject;
+            $activeProject = $this->projectManager->getActiveProject();
+            if (!$activeProject || $input->getOption('force')) {
+                $this->project = $locationProject;
 
                 $this->checkEnvironmentConfiguration(true);
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
@@ -106,7 +113,7 @@ class StartCommand extends Command
                 }
             } else {
                 $this->io->error(
-                    $activeProject === $this->project
+                    $locationProject === $activeProject
                         ? 'The environment is already running.'
                         : 'Unable to start an environment when another is still running.'
                 );
