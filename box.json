@@ -6,6 +6,7 @@
         "vendor"
     ],
     "files": [
+        "src/Resources/magento2/.env",
         ".env.local.php"
     ],
     "force-autodiscovery": true,
