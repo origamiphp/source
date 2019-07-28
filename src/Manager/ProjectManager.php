@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Manager;
 
 use App\Entity\Project;
-use App\Exception\ProjectException;
+use App\Exception\InvalidProjectException;
 use App\Exception\ProjectNotFoundException;
 use App\Manager\Process\Mkcert;
 use App\Repository\ProjectRepository;
@@ -54,7 +54,7 @@ class ProjectManager
      * @param string      $type
      * @param string|null $domains
      *
-     * @throws ProjectException
+     * @throws InvalidProjectException
      */
     public function install(string $location, string $type, ?string $domains = null): void
     {
@@ -144,7 +144,7 @@ class ProjectManager
      *
      * @param array $details
      *
-     * @throws ProjectException
+     * @throws InvalidProjectException
      */
     private function addNewProject(array $details): void
     {
@@ -156,7 +156,7 @@ class ProjectManager
 
         $errors = $this->validator->validate($newProject);
         if ($errors->count() > 0) {
-            throw new ProjectException($errors->get(0)->getMessage());
+            throw new InvalidProjectException($errors->get(0)->getMessage());
         }
 
         $this->entityManager->persist($newProject);

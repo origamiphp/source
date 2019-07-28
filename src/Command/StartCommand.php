@@ -6,7 +6,7 @@ namespace App\Command;
 
 use App\Entity\Project;
 use App\Event\EnvironmentStartedEvent;
-use App\Exception\ConfigurationException;
+use App\Exception\InvalidConfigurationException;
 use App\Helper\CommandExitCode;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
@@ -84,14 +84,14 @@ class StartCommand extends Command
 
         try {
             if (!$location = getcwd()) {
-                throw new ConfigurationException(
+                throw new InvalidConfigurationException(
                     'Unable to retrieve the current working directory.'
                 );
             }
 
             $locationProject = $this->projectManager->getLocationProject($location);
             if (!$locationProject instanceof Project) {
-                throw new ConfigurationException(
+                throw new InvalidConfigurationException(
                     'An environment must be installed, please consider using the install command instead.'
                 );
             }

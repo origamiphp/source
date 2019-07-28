@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Exception\ConfigurationException;
+use App\Exception\InvalidConfigurationException;
 use App\Helper\CommandExitCode;
 use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
@@ -110,7 +110,7 @@ class InstallCommand extends Command
     private function installationPathCallback(string $answer): string
     {
         if (!is_dir($answer)) {
-            throw new ConfigurationException('An existing directory must be provided.');
+            throw new InvalidConfigurationException('An existing directory must be provided.');
         }
 
         return $answer;
@@ -121,7 +121,7 @@ class InstallCommand extends Command
      *
      * @param string $answer
      *
-     * @throws ConfigurationException
+     * @throws InvalidConfigurationException
      *
      * @return string
      */
@@ -130,7 +130,7 @@ class InstallCommand extends Command
         $constraint = new LocalDomains();
         $errors = $this->validator->validate($answer, $constraint);
         if ($errors->has(0)) {
-            throw new ConfigurationException($errors->get(0)->getMessage());
+            throw new InvalidConfigurationException($errors->get(0)->getMessage());
         }
 
         return $answer;

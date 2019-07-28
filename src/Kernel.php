@@ -2,7 +2,7 @@
 
 namespace App;
 
-use App\Exception\ConfigurationException;
+use App\Exception\InvalidConfigurationException;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -67,7 +67,7 @@ class Kernel extends BaseKernel
     /**
      * {@inheritdoc}
      *
-     * @throws ConfigurationException
+     * @throws InvalidConfigurationException
      */
     public function getCacheDir()
     {
@@ -78,7 +78,7 @@ class Kernel extends BaseKernel
     /**
      * {@inheritdoc}
      *
-     * @throws ConfigurationException
+     * @throws InvalidConfigurationException
      */
     public function getLogDir()
     {
@@ -89,14 +89,14 @@ class Kernel extends BaseKernel
     /**
      * TODO: improve this check (must work on multiple OS).
      *
-     * @throws ConfigurationException
+     * @throws InvalidConfigurationException
      *
      * @return string
      */
     private function getCustomDir(): string
     {
         if (!$home = getenv('HOME')) {
-            throw new ConfigurationException('Unable to determine the home directory.');
+            throw new InvalidConfigurationException('Unable to determine the home directory.');
         }
 
         $customDir = "${home}/.origami";

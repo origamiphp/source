@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-class ProjectNotFoundException extends \Exception
+class ProjectNotFoundException extends \Exception implements OrigamiExceptionInterface
 {
 }

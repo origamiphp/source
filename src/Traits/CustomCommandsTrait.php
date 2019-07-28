@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Traits;
 
 use App\Entity\Project;
-use App\Exception\EnvironmentException;
+use App\Exception\InvalidEnvironmentException;
 use App\Manager\EnvironmentVariables;
 use App\Manager\ProjectManager;
 use App\Validator\Constraints\ConfigurationFiles;
@@ -35,7 +35,7 @@ trait CustomCommandsTrait
      *
      * @param bool $checkFiles
      *
-     * @throws EnvironmentException
+     * @throws InvalidEnvironmentException
      */
     private function checkEnvironmentConfiguration(bool $checkFiles = false): void
     {
@@ -44,11 +44,11 @@ trait CustomCommandsTrait
         if ($errors->has(0) !== true) {
             $this->environmentVariables->loadFromDotEnv("{$this->project->getLocation()}/var/docker/.env");
         } else {
-            throw new EnvironmentException($errors[0]->getMessage());
+            throw new InvalidEnvironmentException($errors[0]->getMessage());
         }
 
         if (!getenv('DOCKER_ENVIRONMENT')) {
-            throw new EnvironmentException(
+            throw new InvalidEnvironmentException(
                 'The environment is not properly configured, consider executing the "install" command.'
             );
         }
@@ -57,7 +57,7 @@ trait CustomCommandsTrait
             $filesConstraint = new ConfigurationFiles();
             $errors = $this->validator->validate($this->project, $filesConstraint);
             if ($errors->has(0) === true) {
-                throw new EnvironmentException($errors[0]->getMessage());
+                throw new InvalidEnvironmentException($errors[0]->getMessage());
             }
         }
     }
