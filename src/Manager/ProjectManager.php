@@ -6,6 +6,7 @@ namespace App\Manager;
 
 use App\Entity\Project;
 use App\Exception\ProjectException;
+use App\Exception\ProjectNotFoundException;
 use App\Manager\Process\Mkcert;
 use App\Repository\ProjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -70,7 +71,7 @@ class ProjectManager
             $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
         }
 
-        $this->createNewProject(
+        $this->addNewProject(
             [
                 'name' => basename($location),
                 'location' => $location,
@@ -105,11 +106,21 @@ class ProjectManager
     /**
      * Uninstalls the Docker environment configuration.
      *
-     * @param string $location
+     * @param string $name
+     *
+     * @throws ProjectNotFoundException
      */
-    public function uninstall(string $location): void
+    public function uninstall(string $name): void
     {
-        // TODO
+        $project = $this->projectRepository->findOneBy(['name' => $name]);
+        if (!$project instanceof Project) {
+            throw new ProjectNotFoundException('Unable to find an environment for the specified project.');
+        }
+
+        $filesystem = new Filesystem();
+        $filesystem->remove("{$project->getLocation()}/var/docker");
+
+        $this->removeExistingProject($project);
     }
 
     /**
@@ -129,13 +140,13 @@ class ProjectManager
     }
 
     /**
-     * Creates a new project entry in the database.
+     * Adds a new project entry in the database.
      *
      * @param array $details
      *
      * @throws ProjectException
      */
-    private function createNewProject(array $details): void
+    private function addNewProject(array $details): void
     {
         $newProject = new Project();
         $newProject->setName($details['name'] ?? '');
@@ -149,6 +160,17 @@ class ProjectManager
         }
 
         $this->entityManager->persist($newProject);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Removes an existing project entry from the database.
+     *
+     * @param Project $project
+     */
+    private function removeExistingProject(Project $project): void
+    {
+        $this->entityManager->remove($project);
         $this->entityManager->flush();
     }
 }
