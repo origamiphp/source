@@ -9,5 +9,6 @@
         ".env.local.php"
     ],
     "force-autodiscovery": true,
-    "output": "build/origami.phar"
+    "output": "build/origami.phar",
+    "compression": "GZ"
 }
