@@ -22,16 +22,16 @@ class RootCommand extends Command
     /**
      * RootCommand constructor.
      *
-     * @param string|null          $name
      * @param ProjectManager       $projectManager
      * @param EnvironmentVariables $environmentVariables
      * @param ValidatorInterface   $validator
+     * @param string|null          $name
      */
     public function __construct(
-        ?string $name = null,
         ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        ?string $name = null
     ) {
         parent::__construct($name);
 

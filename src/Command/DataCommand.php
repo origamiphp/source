@@ -33,11 +33,11 @@ class DataCommand extends Command
      * @param DockerCompose        $dockerCompose
      */
     public function __construct(
-        ?string $name = null,
         ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
-        DockerCompose $dockerCompose
+        DockerCompose $dockerCompose,
+        ?string $name = null
     ) {
         parent::__construct($name);
 

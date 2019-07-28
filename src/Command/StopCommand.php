@@ -31,20 +31,20 @@ class StopCommand extends Command
     /**
      * StopCommand constructor.
      *
-     * @param string|null              $name
      * @param ProjectManager           $projectManager
      * @param EnvironmentVariables     $environmentVariables
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
+     * @param string|null              $name
      */
     public function __construct(
-        ?string $name = null,
         ProjectManager $projectManager,
         EnvironmentVariables $environmentVariables,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
-        EventDispatcherInterface $eventDispatcher
+        EventDispatcherInterface $eventDispatcher,
+        ?string $name = null
     ) {
         parent::__construct($name);
 

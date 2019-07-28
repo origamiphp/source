@@ -23,11 +23,11 @@ class CheckCommand extends Command
     /**
      * CheckCommand constructor.
      *
-     * @param string|null $name
      * @param array       $requirements
      * @param System      $system
+     * @param string|null $name
      */
-    public function __construct(?string $name = null, array $requirements, System $system)
+    public function __construct(array $requirements, System $system, ?string $name = null)
     {
         parent::__construct($name);
 

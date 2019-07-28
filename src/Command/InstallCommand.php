@@ -26,16 +26,16 @@ class InstallCommand extends Command
     /**
      * InstallCommand constructor.
      *
-     * @param string|null        $name
      * @param array              $environments
      * @param ValidatorInterface $validator
      * @param ProjectManager     $projectManager
+     * @param string|null        $name
      */
     public function __construct(
-        ?string $name = null,
         array $environments,
         ProjectManager $projectManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        ?string $name = null
     ) {
         parent::__construct($name);
 
