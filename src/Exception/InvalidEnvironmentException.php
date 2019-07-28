@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-class InvalidEnvironmentException extends \Exception implements OrigamiExceptionInterface
+use Exception;
+
+class InvalidEnvironmentException extends Exception implements OrigamiExceptionInterface
 {
 }

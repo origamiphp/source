@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-interface OrigamiExceptionInterface extends \Throwable
+use Throwable;
+
+interface OrigamiExceptionInterface extends Throwable
 {
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Entity\Project;
+use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
@@ -78,7 +79,7 @@ class DataCommand extends Command
 
                 $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
                 $this->dockerCompose->showResourcesUsage($environmentVariables);
-            } catch (\Exception $e) {
+            } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
             }

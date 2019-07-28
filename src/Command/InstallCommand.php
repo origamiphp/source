@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Exception\InvalidConfigurationException;
+use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
@@ -86,7 +87,7 @@ class InstallCommand extends Command
 
                 $this->projectManager->install($location, $type, $domains);
                 $this->io->success('Environment files were successfully copied into the project.');
-            } catch (\Exception $e) {
+            } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
             }
@@ -103,7 +104,7 @@ class InstallCommand extends Command
      *
      * @param string $answer
      *
-     * @throws \Exception
+     * @throws InvalidConfigurationException
      *
      * @return string
      */

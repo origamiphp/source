@@ -3,6 +3,8 @@
 namespace App;
 
 use App\Exception\InvalidConfigurationException;
+use Exception;
+use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -21,7 +23,9 @@ class Kernel extends BaseKernel
      */
     public function registerBundles(): iterable
     {
+        /** @noinspection PhpIncludeInspection */
         $contents = require $this->getProjectDir().'/config/bundles.php';
+
         foreach ($contents as $class => $envs) {
             if ($envs[$this->environment] ?? $envs['all'] ?? false) {
                 yield new $class();
@@ -39,6 +43,8 @@ class Kernel extends BaseKernel
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Exception
      */
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
@@ -54,6 +60,8 @@ class Kernel extends BaseKernel
 
     /**
      * {@inheritdoc}
+     *
+     * @throws Exception
      */
     protected function configureRoutes(RouteCollectionBuilder $routes): void
     {
@@ -100,8 +108,10 @@ class Kernel extends BaseKernel
         }
 
         $customDir = "${home}/.origami";
-        if (!is_dir(\dirname($customDir))) {
-            mkdir(\dirname($customDir), 0777, true);
+        if (!is_dir(\dirname($customDir))
+            && !mkdir($concurrentDirectory = \dirname($customDir), 0777, true) && !is_dir($concurrentDirectory)
+        ) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
         return $customDir;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Entity\Project;
+use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
@@ -98,7 +99,7 @@ class LogsCommand extends Command
                     (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : '',
                     $environmentVariables
                 );
-            } catch (\Exception $e) {
+            } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
             }

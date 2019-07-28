@@ -7,6 +7,7 @@ namespace App\Command;
 use App\Entity\Project;
 use App\Event\EnvironmentStartedEvent;
 use App\Exception\InvalidConfigurationException;
+use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
@@ -119,7 +120,7 @@ class StartCommand extends Command
                 );
                 $exitCode = CommandExitCode::INVALID;
             }
-        } catch (\Exception $e) {
+        } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }

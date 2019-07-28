@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Entity\Project;
 use App\Event\EnvironmentStoppedEvent;
+use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Manager\EnvironmentVariables;
 use App\Manager\Process\DockerCompose;
@@ -89,7 +90,7 @@ class StopCommand extends Command
                 } else {
                     $this->io->error('An error occurred while stoppping the Docker services.');
                 }
-            } catch (\Exception $e) {
+            } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;
             }
