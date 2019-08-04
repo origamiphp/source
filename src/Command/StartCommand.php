@@ -7,53 +7,17 @@ namespace App\Command;
 use App\Entity\Environment;
 use App\Event\EnvironmentStartedEvent;
 use App\Exception\InvalidConfigurationException;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
-use App\Traits\CustomCommandsTrait;
-use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class StartCommand extends Command
+class StartCommand extends AbstractBaseCommand
 {
-    use CustomCommandsTrait;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
-
-    /**
-     * StartCommand constructor.
-     *
-     * @param EnvironmentManager       $environmentManager
-     * @param ValidatorInterface       $validator
-     * @param DockerCompose            $dockerCompose
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param string|null              $name
-     */
-    public function __construct(
-        EnvironmentManager $environmentManager,
-        ValidatorInterface $validator,
-        DockerCompose $dockerCompose,
-        EventDispatcherInterface $eventDispatcher,
-        ?string $name = null
-    ) {
-        parent::__construct($name);
-
-        $this->environmentManager = $environmentManager;
-        $this->validator = $validator;
-        $this->dockerCompose = $dockerCompose;
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -61,6 +25,12 @@ class StartCommand extends Command
     {
         $this->setName('origami:start');
         $this->setAliases(['start']);
+
+        $this->addArgument(
+            'environment',
+            InputArgument::OPTIONAL,
+            'Name of the environment to start'
+        );
 
         $this->addOption(
             'force',
@@ -80,24 +50,10 @@ class StartCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         try {
-            if (!$location = getcwd()) {
-                throw new InvalidConfigurationException(
-                    'Unable to retrieve the current working directory.'
-                );
-            }
-
-            $environment = $this->environmentManager->getEnvironmentByLocation($location);
-            if (!$environment instanceof Environment) {
-                throw new InvalidConfigurationException(
-                    'An environment must be installed, please consider using the install command instead.'
-                );
-            }
-
+            $this->environment = $this->getRequestedEnvironment($input);
             $activeEnvironment = $this->environmentManager->getActiveEnvironment();
-            if (!$activeEnvironment || $input->getOption('force')) {
-                $this->environment = $environment;
 
-                $this->checkEnvironmentConfiguration(true);
+            if (!$activeEnvironment || $input->hasOption('force')) {
                 $environmentVariables = $this->getRequiredVariables($this->environment);
 
                 if ($this->dockerCompose->startDockerServices($environmentVariables)) {
@@ -110,7 +66,7 @@ class StartCommand extends Command
                 }
             } else {
                 $this->io->error(
-                    $environment === $activeEnvironment
+                    $this->environment === $activeEnvironment
                         ? 'The environment is already running.'
                         : 'Unable to start an environment when another is still running.'
                 );
@@ -122,5 +78,43 @@ class StartCommand extends Command
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
+    }
+
+    /**
+     * Retrieves the requested environment, either by user input or current directory.
+     *
+     * @param InputInterface $input
+     *
+     * @throws InvalidConfigurationException
+     * @throws InvalidEnvironmentException
+     *
+     * @return Environment
+     */
+    private function getRequestedEnvironment(InputInterface $input): Environment
+    {
+        if ($input->hasArgument('environment')) {
+            /** @var string $argument */
+            $argument = $input->getArgument('environment');
+
+            $environment = $this->environmentManager->getEnvironmentByName($argument);
+            if (!$environment instanceof Environment) {
+                throw new InvalidEnvironmentException('There is no environment associated to the given name.');
+            }
+        } else {
+            if (!$location = getcwd()) {
+                throw new InvalidConfigurationException(
+                    'Unable to retrieve the current working directory.'
+                );
+            }
+
+            $environment = $this->environmentManager->getEnvironmentByLocation($location);
+            if (!$environment instanceof Environment) {
+                throw new InvalidConfigurationException(
+                    'An environment must be installed, please consider using the install command instead.'
+                );
+            }
+        }
+
+        return $environment;
     }
 }

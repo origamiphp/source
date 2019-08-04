@@ -8,41 +8,41 @@ use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Manager\EnvironmentManager;
-use App\Traits\CustomCommandsTrait;
+use App\Manager\Process\DockerCompose;
 use App\Validator\Constraints\LocalDomains;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class InstallCommand extends Command
+class InstallCommand extends AbstractBaseCommand
 {
-    use CustomCommandsTrait;
-
     /** @var array */
     private $environments;
 
     /**
      * InstallCommand constructor.
      *
-     * @param array              $environments
-     * @param ValidatorInterface $validator
-     * @param EnvironmentManager $environmentManager
-     * @param string|null        $name
+     * @param EnvironmentManager       $environmentManager
+     * @param ValidatorInterface       $validator
+     * @param DockerCompose            $dockerCompose
+     * @param EventDispatcherInterface $eventDispatcher
+     * @param array                    $environments
+     * @param string|null              $name
      */
     public function __construct(
-        array $environments,
         EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
+        DockerCompose $dockerCompose,
+        EventDispatcherInterface $eventDispatcher,
+        array $environments,
         ?string $name = null
     ) {
-        parent::__construct($name);
+        parent::__construct($environmentManager, $validator, $dockerCompose, $eventDispatcher, $name);
 
         $this->environments = $environments;
-        $this->environmentManager = $environmentManager;
-        $this->validator = $validator;
     }
 
     /**

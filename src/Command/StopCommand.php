@@ -4,54 +4,15 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Environment;
 use App\Event\EnvironmentStoppedEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
-use App\Traits\CustomCommandsTrait;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class StopCommand extends Command
+class StopCommand extends AbstractBaseCommand
 {
-    use CustomCommandsTrait;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
-
-    /**
-     * StopCommand constructor.
-     *
-     * @param EnvironmentManager       $environmentManager
-     * @param ValidatorInterface       $validator
-     * @param DockerCompose            $dockerCompose
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param string|null              $name
-     */
-    public function __construct(
-        EnvironmentManager $environmentManager,
-        ValidatorInterface $validator,
-        DockerCompose $dockerCompose,
-        EventDispatcherInterface $eventDispatcher,
-        ?string $name = null
-    ) {
-        parent::__construct($name);
-
-        $this->environmentManager = $environmentManager;
-        $this->validator = $validator;
-        $this->dockerCompose = $dockerCompose;
-        $this->eventDispatcher = $eventDispatcher;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -70,29 +31,21 @@ class StopCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
-        if ($activeEnvironment instanceof Environment) {
-            $this->environment = $activeEnvironment;
+        try {
+            $this->environment = $this->getActiveEnvironment();
+            $environmentVariables = $this->getRequiredVariables($this->environment);
 
-            try {
-                $this->checkEnvironmentConfiguration(true);
-                $environmentVariables = $this->getRequiredVariables($this->environment);
+            if ($this->dockerCompose->stopDockerServices($environmentVariables)) {
+                $this->io->success('Docker services successfully stopped.');
 
-                if ($this->dockerCompose->stopDockerServices($environmentVariables)) {
-                    $this->io->success('Docker services successfully stopped.');
-
-                    $event = new EnvironmentStoppedEvent($this->environment, $environmentVariables, $this->io);
-                    $this->eventDispatcher->dispatch($event);
-                } else {
-                    $this->io->error('An error occurred while stoppping the Docker services.');
-                }
-            } catch (OrigamiExceptionInterface $e) {
-                $this->io->error($e->getMessage());
-                $exitCode = CommandExitCode::EXCEPTION;
+                $event = new EnvironmentStoppedEvent($this->environment, $environmentVariables, $this->io);
+                $this->eventDispatcher->dispatch($event);
+            } else {
+                $this->io->error('An error occurred while stoppping the Docker services.');
             }
-        } else {
-            $this->io->error('There is no running environment.');
-            $exitCode = CommandExitCode::INVALID;
+        } catch (OrigamiExceptionInterface $e) {
+            $this->io->error($e->getMessage());
+            $exitCode = CommandExitCode::EXCEPTION;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;

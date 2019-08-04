@@ -4,46 +4,14 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Environment;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
-use App\Traits\CustomCommandsTrait;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class DataCommand extends Command
+class DataCommand extends AbstractBaseCommand
 {
-    use CustomCommandsTrait;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /**
-     * DataCommand constructor.
-     *
-     * @param string|null        $name
-     * @param EnvironmentManager $environmentManager
-     * @param ValidatorInterface $validator
-     * @param DockerCompose      $dockerCompose
-     */
-    public function __construct(
-        EnvironmentManager $environmentManager,
-        ValidatorInterface $validator,
-        DockerCompose $dockerCompose,
-        ?string $name = null
-    ) {
-        parent::__construct($name);
-
-        $this->environmentManager = $environmentManager;
-        $this->validator = $validator;
-        $this->dockerCompose = $dockerCompose;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -62,26 +30,17 @@ class DataCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
-        if ($activeEnvironment instanceof Environment) {
-            $this->environment = $activeEnvironment;
+        try {
+            $this->environment = $this->getActiveEnvironment();
 
-            try {
-                $this->checkEnvironmentConfiguration();
-
-                if ($output->isVerbose()) {
-                    $this->printEnvironmentDetails();
-                }
-
-                $environmentVariables = $this->getRequiredVariables($this->environment);
-                $this->dockerCompose->showResourcesUsage($environmentVariables);
-            } catch (OrigamiExceptionInterface $e) {
-                $this->io->error($e->getMessage());
-                $exitCode = CommandExitCode::EXCEPTION;
+            if ($output->isVerbose()) {
+                $this->printEnvironmentDetails();
             }
-        } else {
-            $this->io->error('There is no running environment.');
-            $exitCode = CommandExitCode::INVALID;
+
+            $this->dockerCompose->showResourcesUsage($this->getRequiredVariables($this->environment));
+        } catch (OrigamiExceptionInterface $e) {
+            $this->io->error($e->getMessage());
+            $exitCode = CommandExitCode::EXCEPTION;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;

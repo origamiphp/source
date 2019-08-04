@@ -81,6 +81,18 @@ class EnvironmentManager
     }
 
     /**
+     * Retrieves the environment associated to the given name.
+     *
+     * @param string $name
+     *
+     * @return Environment|null
+     */
+    public function getEnvironmentByName(string $name): ?Environment
+    {
+        return $this->environmentRepository->findOneBy(['name' => $name]);
+    }
+
+    /**
      * Retrieves the environment associated to the given location.
      *
      * @param string $location

@@ -4,39 +4,15 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Environment;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Traits\CustomCommandsTrait;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class RootCommand extends Command
+class RootCommand extends AbstractBaseCommand
 {
-    use CustomCommandsTrait;
-
-    /**
-     * RootCommand constructor.
-     *
-     * @param EnvironmentManager $environmentManager
-     * @param ValidatorInterface $validator
-     * @param string|null        $name
-     */
-    public function __construct(
-        EnvironmentManager $environmentManager,
-        ValidatorInterface $validator,
-        ?string $name = null
-    ) {
-        parent::__construct($name);
-
-        $this->environmentManager = $environmentManager;
-        $this->validator = $validator;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -55,20 +31,12 @@ class RootCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
-        if ($activeEnvironment instanceof Environment) {
-            $this->environment = $activeEnvironment;
-
-            try {
-                $this->checkEnvironmentConfiguration();
-                $this->writeInstructions();
-            } catch (OrigamiExceptionInterface $e) {
-                $this->io->error($e->getMessage());
-                $exitCode = CommandExitCode::EXCEPTION;
-            }
-        } else {
-            $this->io->error('There is no running environment.');
-            $exitCode = CommandExitCode::INVALID;
+        try {
+            $this->environment = $this->getActiveEnvironment();
+            $this->writeInstructions();
+        } catch (OrigamiExceptionInterface $e) {
+            $this->io->error($e->getMessage());
+            $exitCode = CommandExitCode::EXCEPTION;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
@@ -76,6 +44,8 @@ class RootCommand extends Command
 
     /**
      * Writes instructions to the console output.
+     *
+     * @throws InvalidEnvironmentException
      */
     private function writeInstructions(): void
     {

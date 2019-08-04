@@ -4,48 +4,16 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Environment;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
-use App\Traits\CustomCommandsTrait;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class LogsCommand extends Command
+class LogsCommand extends AbstractBaseCommand
 {
-    use CustomCommandsTrait;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /**
-     * LogsCommand constructor.
-     *
-     * @param EnvironmentManager $environmentManager
-     * @param ValidatorInterface $validator
-     * @param DockerCompose      $dockerCompose
-     * @param string|null        $name
-     */
-    public function __construct(
-        EnvironmentManager $environmentManager,
-        ValidatorInterface $validator,
-        DockerCompose $dockerCompose,
-        ?string $name = null
-    ) {
-        parent::__construct($name);
-
-        $this->environmentManager = $environmentManager;
-        $this->validator = $validator;
-        $this->dockerCompose = $dockerCompose;
-    }
-
     /**
      * {@inheritdoc}
      */
@@ -78,30 +46,21 @@ class LogsCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
-        if ($activeEnvironment instanceof Environment) {
-            $this->environment = $activeEnvironment;
+        try {
+            $this->environment = $this->getActiveEnvironment();
 
-            try {
-                $this->checkEnvironmentConfiguration();
-
-                if ($output->isVerbose()) {
-                    $this->printEnvironmentDetails();
-                }
-
-                $environmentVariables = $this->getRequiredVariables($this->environment);
-                $this->dockerCompose->showServicesLogs(
-                    (($tail = $input->getOption('tail')) && \is_string($tail)) ? (int) $tail : 0,
-                    (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : '',
-                    $environmentVariables
-                );
-            } catch (OrigamiExceptionInterface $e) {
-                $this->io->error($e->getMessage());
-                $exitCode = CommandExitCode::EXCEPTION;
+            if ($output->isVerbose()) {
+                $this->printEnvironmentDetails();
             }
-        } else {
-            $this->io->error('There is no running environment.');
-            $exitCode = CommandExitCode::INVALID;
+
+            $this->dockerCompose->showServicesLogs(
+                (($tail = $input->getOption('tail')) && \is_string($tail)) ? (int) $tail : 0,
+                (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : '',
+                $this->getRequiredVariables($this->environment)
+            );
+        } catch (OrigamiExceptionInterface $e) {
+            $this->io->error($e->getMessage());
+            $exitCode = CommandExitCode::EXCEPTION;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
