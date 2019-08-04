@@ -104,6 +104,16 @@ class ProjectManager
     }
 
     /**
+     * Retrieves all the projects.
+     *
+     * @return array
+     */
+    public function getAllProjects(): array
+    {
+        return $this->projectRepository->findAll();
+    }
+
+    /**
      * Uninstalls the Docker environment configuration.
      *
      * @param string $name

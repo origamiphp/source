@@ -86,7 +86,7 @@ class InstallCommand extends Command
                 }
 
                 $this->projectManager->install($location, $type, $domains);
-                $this->io->success('Environment files were successfully copied into the project.');
+                $this->io->success('Environment successfully installed.');
             } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());
                 $exitCode = CommandExitCode::EXCEPTION;

@@ -74,6 +74,7 @@ class UninstallCommand extends Command
             if (!$activeProject instanceof Project || $activeProject->getName() !== $projectToUninstall) {
                 try {
                     $this->projectManager->uninstall($projectToUninstall);
+                    $this->io->success('Environment successfully uninstalled.');
                 } catch (OrigamiExceptionInterface $e) {
                     $this->io->error($e->getMessage());
                     $exitCode = CommandExitCode::EXCEPTION;
