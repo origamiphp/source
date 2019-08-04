@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Manager;
 
-use App\Entity\Project;
-use App\Exception\InvalidProjectException;
-use App\Exception\ProjectNotFoundException;
+use App\Entity\Environment;
+use App\Exception\InvalidEnvironmentException;
 use App\Manager\Process\Mkcert;
-use App\Repository\ProjectRepository;
+use App\Repository\EnvironmentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class ProjectManager
+class EnvironmentManager
 {
     /** @var Mkcert */
     private $mkcert;
@@ -24,27 +23,27 @@ class ProjectManager
     /** @var EntityManagerInterface */
     private $entityManager;
 
-    /** @var ProjectRepository */
-    private $projectRepository;
+    /** @var EnvironmentRepository */
+    private $environmentRepository;
 
     /**
-     * ProjectManager constructor.
+     * EnvironmentManager constructor.
      *
      * @param Mkcert                 $mkcert
      * @param ValidatorInterface     $validator
      * @param EntityManagerInterface $entityManager
-     * @param ProjectRepository      $projectRepository
+     * @param EnvironmentRepository  $environmentRepository
      */
     public function __construct(
         Mkcert $mkcert,
         ValidatorInterface $validator,
         EntityManagerInterface $entityManager,
-        ProjectRepository $projectRepository
+        EnvironmentRepository $environmentRepository
     ) {
         $this->mkcert = $mkcert;
         $this->validator = $validator;
         $this->entityManager = $entityManager;
-        $this->projectRepository = $projectRepository;
+        $this->environmentRepository = $environmentRepository;
     }
 
     /**
@@ -54,7 +53,7 @@ class ProjectManager
      * @param string      $type
      * @param string|null $domains
      *
-     * @throws InvalidProjectException
+     * @throws InvalidEnvironmentException
      */
     public function install(string $location, string $type, ?string $domains = null): void
     {
@@ -71,7 +70,7 @@ class ProjectManager
             $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
         }
 
-        $this->addNewProject(
+        $this->addNewEnvironment(
             [
                 'name' => basename($location),
                 'location' => $location,
@@ -82,35 +81,35 @@ class ProjectManager
     }
 
     /**
-     * Retrieves the project associated to the given location.
+     * Retrieves the environment associated to the given location.
      *
      * @param string $location
      *
-     * @return Project|null
+     * @return Environment|null
      */
-    public function getLocationProject(string $location): ?Project
+    public function getEnvironmentByLocation(string $location): ?Environment
     {
-        return $this->projectRepository->findOneBy(['location' => $location]);
+        return $this->environmentRepository->findOneBy(['location' => $location]);
     }
 
     /**
-     * Retrieves the currently active project.
+     * Retrieves the currently active environment.
      *
-     * @return Project|null
+     * @return Environment|null
      */
-    public function getActiveProject(): ?Project
+    public function getActiveEnvironment(): ?Environment
     {
-        return $this->projectRepository->findOneBy(['active' => true]);
+        return $this->environmentRepository->findOneBy(['active' => true]);
     }
 
     /**
-     * Retrieves all the projects.
+     * Retrieves all the environments.
      *
      * @return array
      */
-    public function getAllProjects(): array
+    public function getAllEnvironments(): array
     {
-        return $this->projectRepository->findAll();
+        return $this->environmentRepository->findAll();
     }
 
     /**
@@ -118,23 +117,23 @@ class ProjectManager
      *
      * @param string $name
      *
-     * @throws ProjectNotFoundException
+     * @throws InvalidEnvironmentException
      */
     public function uninstall(string $name): void
     {
-        $project = $this->projectRepository->findOneBy(['name' => $name]);
-        if (!$project instanceof Project) {
-            throw new ProjectNotFoundException('Unable to find an environment for the specified project.');
+        $environment = $this->environmentRepository->findOneBy(['name' => $name]);
+        if (!$environment instanceof Environment) {
+            throw new InvalidEnvironmentException('Unable to find the given environment.');
         }
 
         $filesystem = new Filesystem();
-        $filesystem->remove("{$project->getLocation()}/var/docker");
+        $filesystem->remove("{$environment->getLocation()}/var/docker");
 
-        $this->removeExistingProject($project);
+        $this->removeExistingEnvironment($environment);
     }
 
     /**
-     * Copies all environment files into the project directory.
+     * Prepare the project directory with environment files.
      *
      * @param Filesystem $filesystem
      * @param string     $source
@@ -150,37 +149,37 @@ class ProjectManager
     }
 
     /**
-     * Adds a new project entry in the database.
+     * Adds a new environment entry in the database.
      *
      * @param array $details
      *
-     * @throws InvalidProjectException
+     * @throws InvalidEnvironmentException
      */
-    private function addNewProject(array $details): void
+    private function addNewEnvironment(array $details): void
     {
-        $newProject = new Project();
-        $newProject->setName($details['name'] ?? '');
-        $newProject->setLocation($details['location'] ?? '');
-        $newProject->setType($details['type'] ?? '');
-        $newProject->setDomains($details['domains'] ?? '');
+        $environment = new Environment();
+        $environment->setName($details['name'] ?? '');
+        $environment->setLocation($details['location'] ?? '');
+        $environment->setType($details['type'] ?? '');
+        $environment->setDomains($details['domains'] ?? '');
 
-        $errors = $this->validator->validate($newProject);
+        $errors = $this->validator->validate($environment);
         if ($errors->count() > 0) {
-            throw new InvalidProjectException($errors->get(0)->getMessage());
+            throw new InvalidEnvironmentException($errors->get(0)->getMessage());
         }
 
-        $this->entityManager->persist($newProject);
+        $this->entityManager->persist($environment);
         $this->entityManager->flush();
     }
 
     /**
-     * Removes an existing project entry from the database.
+     * Removes an existing environment entry from the database.
      *
-     * @param Project $project
+     * @param Environment $environment
      */
-    private function removeExistingProject(Project $project): void
+    private function removeExistingEnvironment(Environment $environment): void
     {
-        $this->entityManager->remove($project);
+        $this->entityManager->remove($environment);
         $this->entityManager->flush();
     }
 }

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Event\EnvironmentStoppedEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentVariables;
+use App\Manager\EnvironmentManager;
 use App\Manager\Process\DockerCompose;
-use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,16 +31,14 @@ class StopCommand extends Command
     /**
      * StopCommand constructor.
      *
-     * @param ProjectManager           $projectManager
-     * @param EnvironmentVariables     $environmentVariables
+     * @param EnvironmentManager       $environmentManager
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
      * @param string|null              $name
      */
     public function __construct(
-        ProjectManager $projectManager,
-        EnvironmentVariables $environmentVariables,
+        EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
@@ -49,8 +46,7 @@ class StopCommand extends Command
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
-        $this->environmentVariables = $environmentVariables;
+        $this->environmentManager = $environmentManager;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
         $this->eventDispatcher = $eventDispatcher;
@@ -74,18 +70,18 @@ class StopCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeProject = $this->projectManager->getActiveProject();
-        if ($activeProject instanceof Project) {
-            $this->project = $activeProject;
+        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+        if ($activeEnvironment instanceof Environment) {
+            $this->environment = $activeEnvironment;
 
             try {
                 $this->checkEnvironmentConfiguration(true);
-                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $environmentVariables = $this->getRequiredVariables($this->environment);
 
                 if ($this->dockerCompose->stopDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully stopped.');
 
-                    $event = new EnvironmentStoppedEvent($this->project, $environmentVariables, $this->io);
+                    $event = new EnvironmentStoppedEvent($this->environment, $environmentVariables, $this->io);
                     $this->eventDispatcher->dispatch($event);
                 } else {
                     $this->io->error('An error occurred while stoppping the Docker services.');

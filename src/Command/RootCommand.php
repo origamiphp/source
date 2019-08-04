@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentVariables;
-use App\Manager\ProjectManager;
+use App\Manager\EnvironmentManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,21 +22,18 @@ class RootCommand extends Command
     /**
      * RootCommand constructor.
      *
-     * @param ProjectManager       $projectManager
-     * @param EnvironmentVariables $environmentVariables
-     * @param ValidatorInterface   $validator
-     * @param string|null          $name
+     * @param EnvironmentManager $environmentManager
+     * @param ValidatorInterface $validator
+     * @param string|null        $name
      */
     public function __construct(
-        ProjectManager $projectManager,
-        EnvironmentVariables $environmentVariables,
+        EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
-        $this->environmentVariables = $environmentVariables;
+        $this->environmentManager = $environmentManager;
         $this->validator = $validator;
     }
 
@@ -59,9 +55,9 @@ class RootCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeProject = $this->projectManager->getActiveProject();
-        if ($activeProject instanceof Project) {
-            $this->project = $activeProject;
+        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+        if ($activeEnvironment instanceof Environment) {
+            $this->environment = $activeEnvironment;
 
             try {
                 $this->checkEnvironmentConfiguration();
@@ -84,7 +80,7 @@ class RootCommand extends Command
     private function writeInstructions(): void
     {
         $result = '';
-        foreach ($this->environmentVariables->getRequiredVariables($this->project) as $key => $value) {
+        foreach ($this->getRequiredVariables($this->environment) as $key => $value) {
             $result .= "export $key=\"$value\"\n";
         }
 

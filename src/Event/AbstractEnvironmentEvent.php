@@ -6,14 +6,14 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractEnvironmentEvent extends Event
 {
-    /** @var Project */
-    protected $project;
+    /** @var Environment */
+    protected $environment;
 
     /** @var array */
     protected $environmentVariables = [];
@@ -24,25 +24,25 @@ abstract class AbstractEnvironmentEvent extends Event
     /**
      * AbstractEnvironmentEvent constructor.
      *
-     * @param Project      $project
+     * @param Environment  $environment
      * @param array        $environmentVariables
      * @param SymfonyStyle $symfonyStyle
      */
-    public function __construct(Project $project, array $environmentVariables, SymfonyStyle $symfonyStyle)
+    public function __construct(Environment $environment, array $environmentVariables, SymfonyStyle $symfonyStyle)
     {
-        $this->project = $project;
+        $this->environment = $environment;
         $this->environmentVariables = $environmentVariables;
         $this->symfonyStyle = $symfonyStyle;
     }
 
     /**
-     * Retrieves the project associated to the current event.
+     * Retrieves the environment associated to the current event.
      *
-     * @return Project
+     * @return Environment
      */
-    public function getProject(): Project
+    public function getEnvironment(): Environment
     {
-        return $this->project;
+        return $this->environment;
     }
 
     /**

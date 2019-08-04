@@ -8,10 +8,10 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\ProjectRepository")
- * @UniqueEntity(fields={"name"}, message="There is already a project of the same name.")
+ * @ORM\Entity(repositoryClass="App\Repository\EnvironmentRepository")
+ * @UniqueEntity(fields={"name"}, message="There is already an environment of the same name.")
  */
-class Project
+class Environment
 {
     /**
      * @ORM\Id()

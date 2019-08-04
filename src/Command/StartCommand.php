@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Event\EnvironmentStartedEvent;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentVariables;
+use App\Manager\EnvironmentManager;
 use App\Manager\Process\DockerCompose;
-use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -34,16 +33,14 @@ class StartCommand extends Command
     /**
      * StartCommand constructor.
      *
-     * @param ProjectManager           $projectManager
-     * @param EnvironmentVariables     $environmentVariables
+     * @param EnvironmentManager       $environmentManager
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
      * @param string|null              $name
      */
     public function __construct(
-        ProjectManager $projectManager,
-        EnvironmentVariables $environmentVariables,
+        EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
@@ -51,8 +48,7 @@ class StartCommand extends Command
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
-        $this->environmentVariables = $environmentVariables;
+        $this->environmentManager = $environmentManager;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
         $this->eventDispatcher = $eventDispatcher;
@@ -90,31 +86,31 @@ class StartCommand extends Command
                 );
             }
 
-            $locationProject = $this->projectManager->getLocationProject($location);
-            if (!$locationProject instanceof Project) {
+            $environment = $this->environmentManager->getEnvironmentByLocation($location);
+            if (!$environment instanceof Environment) {
                 throw new InvalidConfigurationException(
                     'An environment must be installed, please consider using the install command instead.'
                 );
             }
 
-            $activeProject = $this->projectManager->getActiveProject();
-            if (!$activeProject || $input->getOption('force')) {
-                $this->project = $locationProject;
+            $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+            if (!$activeEnvironment || $input->getOption('force')) {
+                $this->environment = $environment;
 
                 $this->checkEnvironmentConfiguration(true);
-                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $environmentVariables = $this->getRequiredVariables($this->environment);
 
                 if ($this->dockerCompose->startDockerServices($environmentVariables)) {
                     $this->io->success('Docker services successfully started.');
 
-                    $event = new EnvironmentStartedEvent($this->project, $environmentVariables, $this->io);
+                    $event = new EnvironmentStartedEvent($this->environment, $environmentVariables, $this->io);
                     $this->eventDispatcher->dispatch($event);
                 } else {
                     $this->io->error('An error occurred while starting the Docker services.');
                 }
             } else {
                 $this->io->error(
-                    $locationProject === $activeProject
+                    $environment === $activeEnvironment
                         ? 'The environment is already running.'
                         : 'Unable to start an environment when another is still running.'
                 );

@@ -22,10 +22,10 @@ class Mutagen
      */
     public function startDockerSynchronization(array $environmentVariables): bool
     {
-        $projectName = $environmentVariables['COMPOSE_PROJECT_NAME'] ?? '';
-        $projectLocation = $environmentVariables['PROJECT_LOCATION'] ?? '';
+        $environmentName = $environmentVariables['COMPOSE_PROJECT_NAME'] ?? '';
+        $environmentLocation = $environmentVariables['PROJECT_LOCATION'] ?? '';
 
-        if ($this->canResumeSynchronization($projectName, $environmentVariables) === false) {
+        if ($this->canResumeSynchronization($environmentName, $environmentVariables) === false) {
             $command = [
                 'mutagen',
                 'create',
@@ -34,12 +34,14 @@ class Mutagen
                 '--sync-mode=two-way-resolved',
                 '--ignore-vcs',
                 '--ignore=".idea"',
-                "--label=name=$projectName",
-                $projectLocation,
-                $projectName ? "docker://${environmentVariables['COMPOSE_PROJECT_NAME']}_synchro/var/www/html/" : '',
+                "--label=name=$environmentName",
+                $environmentLocation,
+                $environmentName
+                    ? "docker://${environmentVariables['COMPOSE_PROJECT_NAME']}_synchro/var/www/html/"
+                    : '',
             ];
         } else {
-            $command = ['mutagen', 'resume', "--label-selector=name=$projectName"];
+            $command = ['mutagen', 'resume', "--label-selector=name=$environmentName"];
         }
         $process = $this->runForegroundProcess($command, $environmentVariables);
 
@@ -62,16 +64,16 @@ class Mutagen
     }
 
     /**
-     * Checks whether an existing session is associated with the given project.
+     * Checks whether an existing session is associated with the given environment.
      *
-     * @param string $projectName
+     * @param string $environmentName
      * @param array  $environmentVariables
      *
      * @return bool
      */
-    private function canResumeSynchronization(string $projectName, array $environmentVariables): bool
+    private function canResumeSynchronization(string $environmentName, array $environmentVariables): bool
     {
-        $command = ['mutagen', 'list', "--label-selector=name=$projectName"];
+        $command = ['mutagen', 'list', "--label-selector=name=$environmentName"];
         $process = $this->runBackgroundProcess($command, $environmentVariables);
 
         return $process->getOutput() !== '';

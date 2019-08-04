@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentVariables;
+use App\Manager\EnvironmentManager;
 use App\Manager\Process\DockerCompose;
-use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -29,23 +28,20 @@ class LogsCommand extends Command
     /**
      * LogsCommand constructor.
      *
-     * @param ProjectManager       $projectManager
-     * @param EnvironmentVariables $environmentVariables
-     * @param ValidatorInterface   $validator
-     * @param DockerCompose        $dockerCompose
-     * @param string|null          $name
+     * @param EnvironmentManager $environmentManager
+     * @param ValidatorInterface $validator
+     * @param DockerCompose      $dockerCompose
+     * @param string|null        $name
      */
     public function __construct(
-        ProjectManager $projectManager,
-        EnvironmentVariables $environmentVariables,
+        EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
-        $this->environmentVariables = $environmentVariables;
+        $this->environmentManager = $environmentManager;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
     }
@@ -82,9 +78,9 @@ class LogsCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeProject = $this->projectManager->getActiveProject();
-        if ($activeProject instanceof Project) {
-            $this->project = $activeProject;
+        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+        if ($activeEnvironment instanceof Environment) {
+            $this->environment = $activeEnvironment;
 
             try {
                 $this->checkEnvironmentConfiguration();
@@ -93,7 +89,7 @@ class LogsCommand extends Command
                     $this->printEnvironmentDetails();
                 }
 
-                $environmentVariables = $this->environmentVariables->getRequiredVariables($this->project);
+                $environmentVariables = $this->getRequiredVariables($this->environment);
                 $this->dockerCompose->showServicesLogs(
                     (($tail = $input->getOption('tail')) && \is_string($tail)) ? (int) $tail : 0,
                     (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : '',

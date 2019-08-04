@@ -15,7 +15,7 @@ class ConfigurationFilesValidator extends ConstraintValidator
     /**
      * {@inheritdoc}
      */
-    public function validate($project, Constraint $constraint): void
+    public function validate($environment, Constraint $constraint): void
     {
         if (!$constraint instanceof ConfigurationFiles) {
             throw new UnexpectedTypeException($constraint, ConfigurationFiles::class);
@@ -24,13 +24,13 @@ class ConfigurationFilesValidator extends ConstraintValidator
         $filesystem = new Filesystem();
 
         $finder = new Finder();
-        $finder->files()->in(__DIR__.'/../../Resources/'.getenv('DOCKER_ENVIRONMENT'))->depth(0);
+        $finder->files()->in(__DIR__.'/../../Resources/'.$environment->getType())->depth(0);
 
         foreach ($finder as $file) {
             $filename = str_replace(
                 'custom-',
                 '',
-                "{$project->getLocation()}/var/docker/{$file->getFilename()}"
+                "{$environment->getLocation()}/var/docker/{$file->getFilename()}"
             );
 
             if (!$filesystem->exists($filename)) {

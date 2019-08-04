@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentVariables;
-use App\Manager\Process\DockerCompose;
-use App\Manager\ProjectManager;
+use App\Manager\EnvironmentManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,25 +19,19 @@ class UninstallCommand extends Command
 {
     use CustomCommandsTrait;
 
-    /** @var DockerCompose */
-    private $dockerCompose;
-
     /**
      * UninstallCommand constructor.
      *
-     * @param ProjectManager       $projectManager
-     * @param EnvironmentVariables $environmentVariables
-     * @param string|null          $name
+     * @param EnvironmentManager $environmentManager
+     * @param string|null        $name
      */
     public function __construct(
-        ProjectManager $projectManager,
-        EnvironmentVariables $environmentVariables,
+        EnvironmentManager $environmentManager,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
-        $this->environmentVariables = $environmentVariables;
+        $this->environmentManager = $environmentManager;
     }
 
     /**
@@ -51,12 +43,12 @@ class UninstallCommand extends Command
         $this->setAliases(['uninstall']);
 
         $this->addArgument(
-            'project',
+            'environment',
             InputArgument::REQUIRED,
-            'Name of the project for which the environment will be uninstalled'
+            'Name of the environment to uninstall'
         );
 
-        $this->setDescription('Uninstalls the environment of the given project');
+        $this->setDescription('Uninstalls a specific environment');
     }
 
     /**
@@ -67,20 +59,20 @@ class UninstallCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         if ($this->io->confirm('Are you sure you want to uninstall this environment?', false)) {
-            /** @var string $projectToUninstall */
-            $projectToUninstall = $input->getArgument('project');
+            /** @var string $environment */
+            $environment = $input->getArgument('environment');
 
-            $activeProject = $this->projectManager->getActiveProject();
-            if (!$activeProject instanceof Project || $activeProject->getName() !== $projectToUninstall) {
+            $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+            if (!$activeEnvironment instanceof Environment || $activeEnvironment->getName() !== $environment) {
                 try {
-                    $this->projectManager->uninstall($projectToUninstall);
+                    $this->environmentManager->uninstall($environment);
                     $this->io->success('Environment successfully uninstalled.');
                 } catch (OrigamiExceptionInterface $e) {
                     $this->io->error($e->getMessage());
                     $exitCode = CommandExitCode::EXCEPTION;
                 }
             } else {
-                $this->io->error('Unable to uninstall a project with a running environment.');
+                $this->io->error('Unable to uninstall a running environment.');
                 $exitCode = CommandExitCode::INVALID;
             }
         }

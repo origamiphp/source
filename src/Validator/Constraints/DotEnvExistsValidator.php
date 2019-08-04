@@ -14,7 +14,7 @@ class DotEnvExistsValidator extends ConstraintValidator
     /**
      * {@inheritdoc}
      */
-    public function validate($project, Constraint $constraint): void
+    public function validate($environment, Constraint $constraint): void
     {
         if (!$constraint instanceof DotEnvExists) {
             throw new UnexpectedTypeException($constraint, DotEnvExists::class);
@@ -22,7 +22,7 @@ class DotEnvExistsValidator extends ConstraintValidator
 
         $filesystem = new Filesystem();
 
-        $configuration = "{$project->getLocation()}/var/docker/.env";
+        $configuration = "{$environment->getLocation()}/var/docker/.env";
         if (!$filesystem->exists($configuration)) {
             $this->context->buildViolation($constraint->message)->addViolation();
         }

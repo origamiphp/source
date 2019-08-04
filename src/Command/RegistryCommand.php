@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Helper\CommandExitCode;
-use App\Manager\ProjectManager;
+use App\Manager\EnvironmentManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -21,16 +21,16 @@ class RegistryCommand extends Command
     /**
      * RegistryCommand constructor.
      *
-     * @param ProjectManager       $projectManager
-     * @param string|null          $name
+     * @param EnvironmentManager $environmentManager
+     * @param string|null        $name
      */
     public function __construct(
-        ProjectManager $projectManager,
+        EnvironmentManager $environmentManager,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
+        $this->environmentManager = $environmentManager;
     }
 
     /**
@@ -50,19 +50,19 @@ class RegistryCommand extends Command
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $projects = $this->projectManager->getAllProjects();
-        if (count($projects) > 0) {
+        $environments = $this->environmentManager->getAllEnvironments();
+        if (\count($environments) > 0) {
             $table = new Table($output);
             $table->setHeaders(['ID', 'Name', 'Location', 'Type', 'Domains']);
 
-            /** @var Project $project */
-            foreach ($projects as $project) {
+            /** @var Environment $environment */
+            foreach ($environments as $environment) {
                 $table->addRow([
-                    $project->getId(),
-                    $project->getName(),
-                    $project->getLocation(),
-                    $project->getType(),
-                    $project->getDomains() ?: 'N/A'
+                    $environment->getId(),
+                    $environment->getName(),
+                    $environment->getLocation(),
+                    $environment->getType(),
+                    $environment->getDomains() ?: 'N/A',
                 ]);
             }
 

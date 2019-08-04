@@ -58,8 +58,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('An error occurred while starting the Docker synchronization.');
         }
 
-        $project = $event->getProject();
-        $project->setActive(true);
+        $environment = $event->getEnvironment();
+        $environment->setActive(true);
         $this->entityManager->flush();
     }
 
@@ -78,8 +78,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('An error occurred while stopping the Docker synchronization.');
         }
 
-        $project = $event->getProject();
-        $project->setActive(false);
+        $environment = $event->getEnvironment();
+        $environment->setActive(false);
         $this->entityManager->flush();
     }
 

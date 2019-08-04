@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\ProjectManager;
+use App\Manager\EnvironmentManager;
 use App\Traits\CustomCommandsTrait;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Command\Command;
@@ -29,19 +29,19 @@ class InstallCommand extends Command
      *
      * @param array              $environments
      * @param ValidatorInterface $validator
-     * @param ProjectManager     $projectManager
+     * @param EnvironmentManager $environmentManager
      * @param string|null        $name
      */
     public function __construct(
         array $environments,
-        ProjectManager $projectManager,
+        EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
         ?string $name = null
     ) {
         parent::__construct($name);
 
         $this->environments = $environments;
-        $this->projectManager = $projectManager;
+        $this->environmentManager = $environmentManager;
         $this->validator = $validator;
     }
 
@@ -85,7 +85,7 @@ class InstallCommand extends Command
                     $domains = null;
                 }
 
-                $this->projectManager->install($location, $type, $domains);
+                $this->environmentManager->install($location, $type, $domains);
                 $this->io->success('Environment successfully installed.');
             } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());

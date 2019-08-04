@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command\Services;
 
-use App\Entity\Project;
+use App\Entity\Environment;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentVariables;
+use App\Manager\EnvironmentManager;
 use App\Manager\Process\DockerCompose;
-use App\Manager\ProjectManager;
 use App\Traits\CustomCommandsTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -27,23 +26,20 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
     /**
      * AbstractServiceCommand constructor.
      *
-     * @param ProjectManager       $projectManager
-     * @param EnvironmentVariables $environmentVariables
-     * @param ValidatorInterface   $validator
-     * @param DockerCompose        $dockerCompose
-     * @param string|null          $name
+     * @param EnvironmentManager $environmentManager
+     * @param ValidatorInterface $validator
+     * @param DockerCompose      $dockerCompose
+     * @param string|null        $name
      */
     public function __construct(
-        ProjectManager $projectManager,
-        EnvironmentVariables $environmentVariables,
+        EnvironmentManager $environmentManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->projectManager = $projectManager;
-        $this->environmentVariables = $environmentVariables;
+        $this->environmentManager = $environmentManager;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
     }
@@ -68,9 +64,9 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $activeProject = $this->projectManager->getActiveProject();
-        if ($activeProject instanceof Project) {
-            $this->project = $activeProject;
+        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+        if ($activeEnvironment instanceof Environment) {
+            $this->environment = $activeEnvironment;
 
             try {
                 $this->checkEnvironmentConfiguration();
@@ -82,7 +78,7 @@ abstract class AbstractServiceCommand extends Command implements ServiceCommandI
                 $this->dockerCompose->openTerminal(
                     $this->getServiceName(),
                     $this->getUsername(),
-                    $this->environmentVariables->getRequiredVariables($this->project)
+                    $this->getRequiredVariables($this->environment)
                 );
             } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());
