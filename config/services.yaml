@@ -21,6 +21,7 @@ services:
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
         bind:
+            $databaseName: '%env(resolve:DATABASE_NAME)%'
             $requirements: '%app.requirements%'
             $environments: '%app.environments%'
 

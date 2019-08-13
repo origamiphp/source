@@ -4,7 +4,6 @@ namespace App;
 
 use App\Exception\InvalidConfigurationException;
 use Exception;
-use RuntimeException;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Resource\FileResource;
@@ -101,19 +100,12 @@ class Kernel extends BaseKernel
      *
      * @return string
      */
-    private function getCustomDir(): string
+    public function getCustomDir(): string
     {
         if (!$home = getenv('HOME')) {
             throw new InvalidConfigurationException('Unable to determine the home directory.');
         }
 
-        $customDir = "${home}/.origami";
-        if (!is_dir(\dirname($customDir))
-            && !mkdir($concurrentDirectory = \dirname($customDir), 0777, true) && !is_dir($concurrentDirectory)
-        ) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-        }
-
-        return $customDir;
+        return "${home}/.origami";
     }
 }
