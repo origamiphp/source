@@ -1,0 +1,4 @@
+parameters:
+  symfony:
+    console_application_loader: tests/console-application.php
+    container_xml_path: '%rootDir%/../../../var/cache/dev/srcApp_KernelDevDebugContainer.xml'
