@@ -42,10 +42,10 @@ class UninstallCommand extends AbstractBaseCommand
             /** @var string $environment */
             $environment = $input->getArgument('environment');
 
-            $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+            $activeEnvironment = $this->systemManager->getActiveEnvironment();
             if (!$activeEnvironment instanceof Environment || $activeEnvironment->getName() !== $environment) {
                 try {
-                    $this->environmentManager->uninstall($environment);
+                    $this->systemManager->uninstall($environment);
                     $this->io->success('Environment successfully uninstalled.');
                 } catch (OrigamiExceptionInterface $e) {
                     $this->io->error($e->getMessage());

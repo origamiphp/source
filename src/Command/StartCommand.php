@@ -51,7 +51,7 @@ class StartCommand extends AbstractBaseCommand
 
         try {
             $this->environment = $this->getRequestedEnvironment($input);
-            $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+            $activeEnvironment = $this->systemManager->getActiveEnvironment();
 
             if (!$activeEnvironment || $input->hasOption('force')) {
                 $environmentVariables = $this->getRequiredVariables($this->environment);
@@ -96,7 +96,7 @@ class StartCommand extends AbstractBaseCommand
             /** @var string $argument */
             $argument = $input->getArgument('environment');
 
-            $environment = $this->environmentManager->getEnvironmentByName($argument);
+            $environment = $this->systemManager->getEnvironmentByName($argument);
             if (!$environment instanceof Environment) {
                 throw new InvalidEnvironmentException('There is no environment associated to the given name.');
             }
@@ -107,7 +107,7 @@ class StartCommand extends AbstractBaseCommand
                 );
             }
 
-            $environment = $this->environmentManager->getEnvironmentByLocation($location);
+            $environment = $this->systemManager->getEnvironmentByLocation($location);
             if (!$environment instanceof Environment) {
                 throw new InvalidConfigurationException(
                     'An environment must be installed, please consider using the install command instead.'

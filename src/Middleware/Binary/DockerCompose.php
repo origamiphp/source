@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Manager\Process;
+namespace App\Middleware\Binary;
 
 use App\Traits\CustomProcessTrait;
 use Symfony\Component\Process\Process;

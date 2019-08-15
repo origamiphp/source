@@ -31,7 +31,7 @@ class RegistryCommand extends AbstractBaseCommand
     {
         $this->io = new SymfonyStyle($input, $output);
 
-        $environments = $this->environmentManager->getAllEnvironments();
+        $environments = $this->systemManager->getAllEnvironments();
         if (\count($environments) > 0) {
             $table = new Table($output);
             $table->setHeaders(['ID', 'Name', 'Location', 'Type', 'Domains']);

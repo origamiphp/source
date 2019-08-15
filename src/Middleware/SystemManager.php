@@ -2,18 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Manager;
+namespace App\Middleware;
 
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
-use App\Manager\Process\Mkcert;
+use App\Middleware\Binary\Mkcert;
 use App\Repository\EnvironmentRepository;
+use App\Traits\CustomProcessTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class EnvironmentManager
+class SystemManager
 {
+    use CustomProcessTrait;
+
     /** @var Mkcert */
     private $mkcert;
 
@@ -27,7 +30,7 @@ class EnvironmentManager
     private $environmentRepository;
 
     /**
-     * EnvironmentManager constructor.
+     * SystemManager constructor.
      *
      * @param Mkcert                 $mkcert
      * @param ValidatorInterface     $validator
@@ -193,5 +196,25 @@ class EnvironmentManager
     {
         $this->entityManager->remove($environment);
         $this->entityManager->flush();
+    }
+
+    /**
+     * Checks whether the given binary is available.
+     *
+     * @param string $binary
+     *
+     * @return bool
+     */
+    public function isBinaryInstalled(string $binary): bool
+    {
+        if (strpos($binary, '/') === false) {
+            $process = $this->runBackgroundProcess(['which', $binary]);
+            $result = $process->isSuccessful();
+        } else {
+            $process = $this->runBackgroundProcess(['brew', 'list']);
+            $result = strpos($process->getOutput(), substr($binary, strrpos($binary, '/') + 1)) !== false;
+        }
+
+        return $result;
     }
 }

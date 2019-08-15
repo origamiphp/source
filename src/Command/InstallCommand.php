@@ -7,8 +7,8 @@ namespace App\Command;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\SystemManager;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,7 +25,7 @@ class InstallCommand extends AbstractBaseCommand
     /**
      * InstallCommand constructor.
      *
-     * @param EnvironmentManager       $environmentManager
+     * @param SystemManager            $systemManager
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
@@ -33,14 +33,14 @@ class InstallCommand extends AbstractBaseCommand
      * @param string|null              $name
      */
     public function __construct(
-        EnvironmentManager $environmentManager,
+        SystemManager $systemManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
         array $environments,
         ?string $name = null
     ) {
-        parent::__construct($environmentManager, $validator, $dockerCompose, $eventDispatcher, $name);
+        parent::__construct($systemManager, $validator, $dockerCompose, $eventDispatcher, $name);
 
         $this->environments = $environments;
     }
@@ -85,7 +85,7 @@ class InstallCommand extends AbstractBaseCommand
                     $domains = null;
                 }
 
-                $this->environmentManager->install($location, $type, $domains);
+                $this->systemManager->install($location, $type, $domains);
                 $this->io->success('Environment successfully installed.');
             } catch (OrigamiExceptionInterface $e) {
                 $this->io->error($e->getMessage());

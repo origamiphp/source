@@ -6,8 +6,8 @@ namespace App\Command;
 
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\SystemManager;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
@@ -18,8 +18,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class AbstractBaseCommand extends Command
 {
-    /** @var EnvironmentManager */
-    protected $environmentManager;
+    /** @var SystemManager */
+    protected $systemManager;
 
     /** @var ValidatorInterface */
     protected $validator;
@@ -39,14 +39,14 @@ abstract class AbstractBaseCommand extends Command
     /**
      * AbstractBaseCommand constructor.
      *
-     * @param EnvironmentManager       $environmentManager
+     * @param SystemManager            $systemManager
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
      * @param string|null              $name
      */
     public function __construct(
-        EnvironmentManager $environmentManager,
+        SystemManager $systemManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
@@ -54,7 +54,7 @@ abstract class AbstractBaseCommand extends Command
     ) {
         parent::__construct($name);
 
-        $this->environmentManager = $environmentManager;
+        $this->systemManager = $systemManager;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
         $this->eventDispatcher = $eventDispatcher;
@@ -69,7 +69,7 @@ abstract class AbstractBaseCommand extends Command
      */
     protected function getActiveEnvironment(): Environment
     {
-        $activeEnvironment = $this->environmentManager->getActiveEnvironment();
+        $activeEnvironment = $this->systemManager->getActiveEnvironment();
         if (!$activeEnvironment instanceof Environment) {
             throw new InvalidEnvironmentException('There is no running environment.');
         }

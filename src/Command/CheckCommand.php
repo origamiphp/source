@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Helper\CommandExitCode;
-use App\Manager\EnvironmentManager;
-use App\Manager\Process\DockerCompose;
-use App\Manager\Process\System;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\SystemManager;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,33 +19,27 @@ class CheckCommand extends AbstractBaseCommand
     /** @var array */
     private $requirements;
 
-    /** @var System */
-    private $system;
-
     /**
      * CheckCommand constructor.
      *
-     * @param EnvironmentManager       $environmentManager
+     * @param SystemManager            $systemManager
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
      * @param array                    $requirements
-     * @param System                   $system
      * @param string|null              $name
      */
     public function __construct(
-        EnvironmentManager $environmentManager,
+        SystemManager $systemManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
         array $requirements,
-        System $system,
         ?string $name = null
     ) {
-        parent::__construct($environmentManager, $validator, $dockerCompose, $eventDispatcher, $name);
+        parent::__construct($systemManager, $validator, $dockerCompose, $eventDispatcher, $name);
 
         $this->requirements = $requirements;
-        $this->system = $system;
     }
 
     /**
@@ -73,7 +66,7 @@ class CheckCommand extends AbstractBaseCommand
 
         $ready = true;
         foreach ($this->requirements as $name => $description) {
-            $status = $this->system->isBinaryInstalled($name) ? 'Installed' : 'Missing';
+            $status = $this->systemManager->isBinaryInstalled($name) ? 'Installed' : 'Missing';
             if ($status !== 'Installed') {
                 $ready = false;
             }

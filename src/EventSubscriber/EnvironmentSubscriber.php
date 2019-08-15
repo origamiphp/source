@@ -7,7 +7,7 @@ namespace App\EventSubscriber;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
-use App\Manager\Process\Mutagen;
+use App\Middleware\Binary\Mutagen;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
