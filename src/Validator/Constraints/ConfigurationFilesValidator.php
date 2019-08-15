@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Constraints;
 
+use App\Entity\Environment;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Validator\Constraint;
@@ -15,11 +16,14 @@ class ConfigurationFilesValidator extends ConstraintValidator
     /**
      * {@inheritdoc}
      */
-    public function validate($environment, Constraint $constraint): void
+    public function validate($domains, Constraint $constraint): void
     {
         if (!$constraint instanceof ConfigurationFiles) {
             throw new UnexpectedTypeException($constraint, ConfigurationFiles::class);
         }
+
+        /** @var Environment $environment */
+        $environment = $domains;
 
         $filesystem = new Filesystem();
 

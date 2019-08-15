@@ -79,18 +79,18 @@ class Mutagen
         return $process->getOutput() !== '';
     }
 
-    /**
-     * Shows a dynamic status display of the current sessions.
-     *
-     * @param array $environmentVariables
-     *
-     * @return bool
-     */
-    public function monitorDockerSynchronization(array $environmentVariables): bool
-    {
-        $command = ['mutagen', 'monitor'];
-        $process = $this->runForegroundProcess($command, $environmentVariables);
-
-        return $process->isSuccessful();
-    }
+//    /**
+//     * Shows a dynamic status display of the current sessions.
+//     *
+//     * @param array $environmentVariables
+//     *
+//     * @return bool
+//     */
+//    public function monitorDockerSynchronization(array $environmentVariables): bool
+//    {
+//        $command = ['mutagen', 'monitor'];
+//        $process = $this->runForegroundProcess($command, $environmentVariables);
+//
+//        return $process->isSuccessful();
+//    }
 }

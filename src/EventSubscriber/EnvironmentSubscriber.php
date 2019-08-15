@@ -33,6 +33,10 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
     /**
      * {@inheritdoc}
+     *
+     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStart
+     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStop
+     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
      */
     public static function getSubscribedEvents(): array
     {
