@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command\Contextual\Services;
 
-class MysqlCommand extends AbstractServiceCommand
+class RedisCommand extends AbstractServiceCommand
 {
-    private const COMMAND_SERVICE_NAME = 'mysql';
+    private const COMMAND_SERVICE_NAME = 'redis';
 
     /**
      * {@inheritdoc}

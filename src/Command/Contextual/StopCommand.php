@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Contextual;
 
+use App\Command\AbstractBaseCommand;
 use App\Event\EnvironmentStoppedEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class StopCommand extends AbstractBaseCommand
 {
@@ -27,18 +27,15 @@ class StopCommand extends AbstractBaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
-
         try {
-            $this->environment = $this->getActiveEnvironment();
-            $environmentVariables = $this->getRequiredVariables($this->environment);
+            $this->checkPrequisites($input);
 
-            if ($this->dockerCompose->stopDockerServices($environmentVariables)) {
+            if ($this->dockerCompose->stopDockerServices()) {
                 $this->io->success('Docker services successfully stopped.');
 
-                $event = new EnvironmentStoppedEvent($this->environment, $environmentVariables, $this->io);
+                $event = new EnvironmentStoppedEvent($this->environment, $this->io);
                 $this->eventDispatcher->dispatch($event);
             } else {
                 $this->io->error('An error occurred while stoppping the Docker services.');

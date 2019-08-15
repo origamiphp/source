@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command\Contextual\Services;
 
 interface ServiceCommandInterface
 {

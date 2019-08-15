@@ -2,13 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Main;
 
+use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class BuildCommand extends AbstractBaseCommand
 {
@@ -20,19 +21,28 @@ class BuildCommand extends AbstractBaseCommand
         $this->setName('origami:build');
         $this->setAliases(['build']);
 
+        $this->addArgument(
+            'environment',
+            InputArgument::OPTIONAL,
+            'Name of the environment to start'
+        );
+
         $this->setDescription('Builds or rebuilds an environment previously installed in the current directory');
     }
 
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
-
         try {
-            $this->environment = $this->getActiveEnvironment();
-            $this->dockerCompose->buildServices($this->getRequiredVariables($this->environment));
+            $this->checkPrequisites($input);
+
+            if ($output->isVerbose()) {
+                $this->printEnvironmentDetails();
+            }
+
+            $this->dockerCompose->buildServices();
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

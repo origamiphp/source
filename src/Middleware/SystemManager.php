@@ -130,17 +130,10 @@ class SystemManager
     /**
      * Uninstalls the Docker environment configuration.
      *
-     * @param string $name
-     *
-     * @throws InvalidEnvironmentException
+     * @param Environment $environment
      */
-    public function uninstall(string $name): void
+    public function uninstall(Environment $environment): void
     {
-        $environment = $this->environmentRepository->findOneBy(['name' => $name]);
-        if (!$environment instanceof Environment) {
-            throw new InvalidEnvironmentException('Unable to find the given environment.');
-        }
-
         $filesystem = new Filesystem();
         $filesystem->remove("{$environment->getLocation()}/var/docker");
 

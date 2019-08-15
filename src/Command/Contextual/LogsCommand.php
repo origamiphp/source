@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Contextual;
 
+use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class LogsCommand extends AbstractBaseCommand
 {
@@ -42,12 +42,10 @@ class LogsCommand extends AbstractBaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
-
         try {
-            $this->environment = $this->getActiveEnvironment();
+            $this->checkPrequisites($input);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails();
@@ -55,8 +53,7 @@ class LogsCommand extends AbstractBaseCommand
 
             $this->dockerCompose->showServicesLogs(
                 (($tail = $input->getOption('tail')) && \is_string($tail)) ? (int) $tail : 0,
-                (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : '',
-                $this->getRequiredVariables($this->environment)
+                (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : ''
             );
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());

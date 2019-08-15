@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Additional;
 
+use App\Command\AbstractBaseCommand;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -56,10 +56,9 @@ class CheckCommand extends AbstractBaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
-        $io->section('Docker Requirements Checker');
+        $this->io->section('Docker Requirements Checker');
 
         $table = new Table($output);
         $table->setHeaders(['Binary', 'Description', 'Status']);
@@ -76,9 +75,9 @@ class CheckCommand extends AbstractBaseCommand
         $table->render();
 
         if ($ready === true) {
-            $io->success('Your system is ready.');
+            $this->io->success('Your system is ready.');
         } else {
-            $io->error('At least one system requirement is missing.');
+            $this->io->error('At least one system requirement is missing.');
             $exitCode = CommandExitCode::INVALID;
         }
 

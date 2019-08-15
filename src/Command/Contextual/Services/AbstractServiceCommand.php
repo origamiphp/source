@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command\Contextual\Services;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractServiceCommand extends AbstractBaseCommand implements ServiceCommandInterface
 {
@@ -29,22 +28,16 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
-
         try {
-            $this->environment = $this->getActiveEnvironment();
+            $this->checkPrequisites($input);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->openTerminal(
-                $this->getServiceName(),
-                $this->getUsername(),
-                $this->getRequiredVariables($this->environment)
-            );
+            $this->dockerCompose->openTerminal($this->getServiceName(), $this->getUsername());
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

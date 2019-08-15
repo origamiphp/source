@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command\Contextual\Services;
 
-class RedisCommand extends AbstractServiceCommand
+class NginxCommand extends AbstractServiceCommand
 {
-    private const COMMAND_SERVICE_NAME = 'redis';
+    private const COMMAND_SERVICE_NAME = 'nginx';
 
     /**
      * {@inheritdoc}

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command\Contextual\Services;
 
-class NginxCommand extends AbstractServiceCommand
+class ElasticsearchCommand extends AbstractServiceCommand
 {
-    private const COMMAND_SERVICE_NAME = 'nginx';
+    private const COMMAND_SERVICE_NAME = 'elasticsearch';
 
     /**
      * {@inheritdoc}

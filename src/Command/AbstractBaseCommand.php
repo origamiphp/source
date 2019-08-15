@@ -8,11 +8,10 @@ use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Validator\Constraints\ConfigurationFiles;
-use App\Validator\Constraints\DotEnvExists;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -61,63 +60,57 @@ abstract class AbstractBaseCommand extends Command
     }
 
     /**
-     * Retrieves the active environment or throw an exception is there is no running environment.
+     * {@inheritdoc}
+     */
+    protected function initialize(InputInterface $input, OutputInterface $output): void
+    {
+        $this->io = new SymfonyStyle($input, $output);
+    }
+
+    /**
+     * Attempts to load the environment to manage in different ways and throws an exception if this is not possible.
+     *
+     * @param InputInterface $input
      *
      * @throws InvalidEnvironmentException
-     *
-     * @return Environment
      */
-    protected function getActiveEnvironment(): Environment
+    protected function checkPrequisites(InputInterface $input): void
     {
-        $activeEnvironment = $this->systemManager->getActiveEnvironment();
-        if (!$activeEnvironment instanceof Environment) {
-            throw new InvalidEnvironmentException('There is no running environment.');
+        // 1. Try to load the currently running environment.
+        $environment = $this->systemManager->getActiveEnvironment();
+        if ($environment instanceof Environment) {
+            $this->environment = $environment;
         }
 
-        return $activeEnvironment;
-    }
+        // 2. Try to load the environment from the user input (i.e. BuildCommand, StartCommand, and UninstallCommand).
+        if (!$this->environment instanceof Environment && $input->hasArgument('environment')) {
+            $argument = $input->getArgument('environment');
 
-    /**
-     * Retrieves environment variables required to run processes.
-     *
-     * @param Environment $environment
-     *
-     * @throws InvalidEnvironmentException
-     *
-     * @return array
-     */
-    protected function getRequiredVariables(Environment $environment): array
-    {
-        $this->checkEnvironmentConfiguration();
+            if (\is_string($argument) && $argument !== '') {
+                $environment = $this->systemManager->getEnvironmentByName($argument);
 
-        return [
-            'COMPOSE_FILE' => "{$environment->getLocation()}/var/docker/docker-compose.yml",
-            'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
-            'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
-            'PROJECT_LOCATION' => $environment->getLocation(),
-        ];
-    }
+                if ($environment instanceof Environment) {
+                    $this->environment = $environment;
+                }
+            }
+        }
 
-    /**
-     * Checks whether the environment has been installed and correctly configured.
-     *
-     * @throws InvalidEnvironmentException
-     */
-    protected function checkEnvironmentConfiguration(): void
-    {
-        $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($this->environment, $dotEnvConstraint);
-        if ($errors->has(0) !== true) {
-            $dotenv = new Dotenv();
-            $dotenv->overload("{$this->environment->getLocation()}/var/docker/.env");
+        // 3. Try to load the environment from the current location.
+        if (!$this->environment instanceof Environment && ($location = getcwd())) {
+            $environment = $this->systemManager->getEnvironmentByLocation($location);
+
+            if ($environment instanceof Environment) {
+                $this->environment = $environment;
+            }
+        }
+
+        // 4. Throw an exception is there is still no defined environment.
+        if ($this->environment instanceof Environment) {
+            $this->dockerCompose->setActiveEnvironment($this->environment);
         } else {
-            throw new InvalidEnvironmentException($errors[0]->getMessage());
-        }
-
-        $filesConstraint = new ConfigurationFiles();
-        $errors = $this->validator->validate($this->environment, $filesConstraint);
-        if ($errors->has(0) === true) {
-            throw new InvalidEnvironmentException($errors[0]->getMessage());
+            throw new InvalidEnvironmentException(
+                'An environment must be given, please consider using the install command instead.'
+            );
         }
     }
 

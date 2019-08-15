@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command\Contextual\Services;
 
-class ElasticsearchCommand extends AbstractServiceCommand
+class MysqlCommand extends AbstractServiceCommand
 {
-    private const COMMAND_SERVICE_NAME = 'elasticsearch';
+    private const COMMAND_SERVICE_NAME = 'mysql';
 
     /**
      * {@inheritdoc}

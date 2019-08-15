@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Command;
+namespace App\Command\Contextual;
 
+use App\Command\AbstractBaseCommand;
 use App\Event\EnvironmentRestartedEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RestartCommand extends AbstractBaseCommand
 {
@@ -27,18 +27,19 @@ class RestartCommand extends AbstractBaseCommand
     /**
      * {@inheritdoc}
      */
-    protected function execute(InputInterface $input, OutputInterface $output): ?int
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io = new SymfonyStyle($input, $output);
-
         try {
-            $this->environment = $this->getActiveEnvironment();
-            $environmentVariables = $this->getRequiredVariables($this->environment);
+            $this->checkPrequisites($input);
 
-            if ($this->dockerCompose->restartDockerServices($environmentVariables)) {
+            if ($output->isVerbose()) {
+                $this->printEnvironmentDetails();
+            }
+
+            if ($this->dockerCompose->restartDockerServices()) {
                 $this->io->success('Docker services successfully restarted.');
 
-                $event = new EnvironmentRestartedEvent($this->environment, $environmentVariables, $this->io);
+                $event = new EnvironmentRestartedEvent($this->environment, $this->io);
                 $this->eventDispatcher->dispatch($event);
             } else {
                 $this->io->error('An error occurred while restarting the Docker services.');
