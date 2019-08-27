@@ -34,6 +34,7 @@ class Mutagen
                 '--sync-mode=two-way-resolved',
                 '--ignore-vcs',
                 '--ignore=".idea"',
+                '--ignore="pub/static"',
                 "--label=name=$environmentName",
                 $environmentLocation,
                 $environmentName

@@ -90,16 +90,19 @@ class DockerCompose
     }
 
     /**
-     * Builds or rebuilds the Docker services associated to the current environment.
+     * Pulls/Builds the Docker images associated to the current environment.
      *
      * @return bool
      */
-    public function buildServices(): bool
+    public function prepareServices(): bool
     {
-        $command = ['docker-compose', 'build', '--pull', '--parallel'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $command = ['docker-compose', 'pull'];
+        $pullProcess = $this->runForegroundProcess($command, $this->environmentVariables);
 
-        return $process->isSuccessful();
+        $command = ['docker-compose', 'build', '--pull', '--parallel'];
+        $buildProcess = $this->runForegroundProcess($command, $this->environmentVariables);
+
+        return $pullProcess->isSuccessful() && $buildProcess->isSuccessful();
     }
 
     /**

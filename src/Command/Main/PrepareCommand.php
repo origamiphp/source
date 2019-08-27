@@ -11,23 +11,23 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class BuildCommand extends AbstractBaseCommand
+class PrepareCommand extends AbstractBaseCommand
 {
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:build');
-        $this->setAliases(['build']);
+        $this->setName('origami:prepare');
+        $this->setAliases(['prepare']);
 
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,
-            'Name of the environment to start'
+            'Name of the environment to prepare'
         );
 
-        $this->setDescription('Builds or rebuilds an environment previously installed in the current directory');
+        $this->setDescription('Prepares an environment previously installed (i.e. pulls/builds Docker images)');
     }
 
     /**
@@ -42,7 +42,7 @@ class BuildCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->buildServices();
+            $this->dockerCompose->prepareServices();
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
