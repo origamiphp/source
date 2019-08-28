@@ -7,6 +7,8 @@ namespace App\EventSubscriber;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
+use App\Event\EnvironmentUninstallEvent;
+use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use Doctrine\ORM\EntityManagerInterface;
@@ -43,6 +45,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStop
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
+     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentUninstall
      */
     public static function getSubscribedEvents(): array
     {
@@ -50,15 +53,16 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             EnvironmentStartedEvent::class => 'onEnvironmentStart',
             EnvironmentStoppedEvent::class => 'onEnvironmentStop',
             EnvironmentRestartedEvent::class => 'onEnvironmentRestart',
+            EnvironmentUninstallEvent::class => 'onEnvironmentUninstall',
         ];
     }
 
     /**
-     * Listener which starts the Docker synchronization.
+     * Listener which triggers the Docker synchronization start.
      *
      * @param EnvironmentStartedEvent $event
      *
-     * @throws \App\Exception\InvalidEnvironmentException
+     * @throws InvalidEnvironmentException
      */
     public function onEnvironmentStart(EnvironmentStartedEvent $event): void
     {
@@ -79,11 +83,11 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Listener which stops the Docker synchronization.
+     * Listener which triggers the Docker synchronization stop.
      *
      * @param EnvironmentStoppedEvent $event
      *
-     * @throws \App\Exception\InvalidEnvironmentException
+     * @throws InvalidEnvironmentException
      */
     public function onEnvironmentStop(EnvironmentStoppedEvent $event): void
     {
@@ -104,11 +108,11 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Listener which restarts the Docker synchronization.
+     * Listener which triggers the Docker synchronization restart.
      *
      * @param EnvironmentRestartedEvent $event
      *
-     * @throws \App\Exception\InvalidEnvironmentException
+     * @throws InvalidEnvironmentException
      */
     public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
     {
@@ -123,6 +127,27 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->success('Docker synchronization successfully restarted.');
         } else {
             $io->error('An error occurred while restarting the Docker synchronization.');
+        }
+    }
+
+    /**
+     * Listener which triggers the Docker synchronization removing.
+     *
+     * @param EnvironmentUninstallEvent $event
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function onEnvironmentUninstall(EnvironmentUninstallEvent $event): void
+    {
+        $this->dockerCompose->setActiveEnvironment($event->getEnvironment());
+        $environmentVariables = $this->dockerCompose->getRequiredVariables();
+
+        $io = $event->getSymfonyStyle();
+
+        if ($this->mutagen->removeDockerSynchronization($environmentVariables)) {
+            $io->success('Docker synchronization successfully removed.');
+        } else {
+            $io->error('An error occurred while removing the Docker synchronization.');
         }
     }
 }

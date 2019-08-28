@@ -213,4 +213,17 @@ class DockerCompose
 
         return $process->isSuccessful();
     }
+
+    /**
+     * Removes the Docker services of the current environment.
+     *
+     * @return bool
+     */
+    public function removeDockerServices(): bool
+    {
+        $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+
+        return $process->isSuccessful();
+    }
 }

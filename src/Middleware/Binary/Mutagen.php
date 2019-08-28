@@ -79,4 +79,19 @@ class Mutagen
 
         return $process->getOutput() !== '';
     }
+
+    /**
+     * Removes the Docker synchronization needed to share the project source code.
+     *
+     * @param array $environmentVariables
+     *
+     * @return bool
+     */
+    public function removeDockerSynchronization(array $environmentVariables): bool
+    {
+        $command = ['mutagen', 'terminate', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"];
+        $process = $this->runForegroundProcess($command, $environmentVariables);
+
+        return $process->isSuccessful();
+    }
 }

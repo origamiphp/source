@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
+use App\Event\EnvironmentUninstallEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputArgument;
@@ -45,7 +46,13 @@ class UninstallCommand extends AbstractBaseCommand
 
             if ($this->io->confirm($question, false)) {
                 if (!$this->environment->isActive()) {
+                    $this->dockerCompose->removeDockerServices();
+
+                    $event = new EnvironmentUninstallEvent($this->environment, $this->io);
+                    $this->eventDispatcher->dispatch($event);
+
                     $this->systemManager->uninstall($this->environment);
+
                     $this->io->success('Environment successfully uninstalled.');
                 } else {
                     $this->io->error('Unable to uninstall a running environment.');
