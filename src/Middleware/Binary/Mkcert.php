@@ -5,10 +5,21 @@ declare(strict_types=1);
 namespace App\Middleware\Binary;
 
 use App\Traits\CustomProcessTrait;
+use Psr\Log\LoggerInterface;
 
 class Mkcert
 {
     use CustomProcessTrait;
+
+    /**
+     * Mkcert constructor.
+     *
+     * @param LoggerInterface $logger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     /**
      * Generates a locally-trusted development certificate with mkcert.

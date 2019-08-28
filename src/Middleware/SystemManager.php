@@ -10,6 +10,7 @@ use App\Middleware\Binary\Mkcert;
 use App\Repository\EnvironmentRepository;
 use App\Traits\CustomProcessTrait;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -36,17 +37,20 @@ class SystemManager
      * @param ValidatorInterface     $validator
      * @param EntityManagerInterface $entityManager
      * @param EnvironmentRepository  $environmentRepository
+     * @param LoggerInterface        $logger
      */
     public function __construct(
         Mkcert $mkcert,
         ValidatorInterface $validator,
         EntityManagerInterface $entityManager,
-        EnvironmentRepository $environmentRepository
+        EnvironmentRepository $environmentRepository,
+        LoggerInterface $logger
     ) {
         $this->mkcert = $mkcert;
         $this->validator = $validator;
         $this->entityManager = $entityManager;
         $this->environmentRepository = $environmentRepository;
+        $this->logger = $logger;
     }
 
     /**

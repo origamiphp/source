@@ -9,6 +9,7 @@ use App\Exception\InvalidEnvironmentException;
 use App\Traits\CustomProcessTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -30,10 +31,12 @@ class DockerCompose
      * DockerCompose constructor.
      *
      * @param ValidatorInterface $validator
+     * @param LoggerInterface    $logger
      */
-    public function __construct(ValidatorInterface $validator)
+    public function __construct(ValidatorInterface $validator, LoggerInterface $logger)
     {
         $this->validator = $validator;
+        $this->logger = $logger;
     }
 
     /**
@@ -76,7 +79,7 @@ class DockerCompose
         $dotEnvConstraint = new DotEnvExists();
         $errors = $this->validator->validate($this->environment, $dotEnvConstraint);
         if ($errors->has(0) !== true) {
-            $dotenv = new Dotenv();
+            $dotenv = new Dotenv(true);
             $dotenv->overload("{$this->environment->getLocation()}/var/docker/.env");
         } else {
             throw new InvalidEnvironmentException($errors[0]->getMessage());

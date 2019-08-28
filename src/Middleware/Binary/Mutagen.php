@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Middleware\Binary;
 
 use App\Traits\CustomProcessTrait;
+use Psr\Log\LoggerInterface;
 
 class Mutagen
 {
@@ -12,6 +13,16 @@ class Mutagen
 
     private const DEFAULT_CONTAINER_UID = 'id:1000';
     private const DEFAULT_CONTAINER_GID = 'id:1000';
+
+    /**
+     * Mutagen constructor.
+     *
+     * @param LoggerInterface $logger
+     */
+    public function __construct(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+    }
 
     /**
      * Starts the Docker synchronization needed to share the project source code.

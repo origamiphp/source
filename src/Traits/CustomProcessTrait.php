@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Process\Process;
 
 trait CustomProcessTrait
 {
+    /** @var LoggerInterface */
+    private $logger;
+
     /**
      * Runs the given command in background and returns the process.
      *
@@ -18,6 +22,8 @@ trait CustomProcessTrait
      */
     private function runBackgroundProcess(array $command, array $environmentVariables = []): Process
     {
+        $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
+
         $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $process->run();
 
@@ -34,6 +40,8 @@ trait CustomProcessTrait
      */
     private function runForegroundProcess(array $command, array $environmentVariables = []): Process
     {
+        $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
+
         $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $process->setTty(Process::isTtySupported());
 
