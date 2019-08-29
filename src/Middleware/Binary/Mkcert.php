@@ -33,7 +33,7 @@ class Mkcert
     public function generateCertificate(string $certificate, string $privateKey, array $domains): bool
     {
         $command = array_merge(['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], $domains);
-        $process = $this->runForegroundProcess($command);
+        $process = $this->runBackgroundProcess($command);
 
         return $process->isSuccessful();
     }
