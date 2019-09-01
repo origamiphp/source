@@ -1,6 +1,10 @@
 <h1 align="center">Welcome to Origami 👋</h1>
 <p align="center">
   <img alt="Status: Alpha" src="https://img.shields.io/badge/status-alpha-orange" target="_blank" />
+  
+  <a href="https://codecov.io/gh/ajardin/origami">
+    <img src="https://codecov.io/gh/ajardin/origami/branch/master/graph/badge.svg?token=eYBykVI0QK" />
+  </a>
 
   <a href="https://github.com/ajardin/origami/blob/master/LICENSE">
     <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" target="_blank" />
@@ -54,6 +58,7 @@ brew install origami
 # Manual
 curl https://github.com/ajardin/origami/releases/latest/download/origami.phar --output origami
 ```
+__Note:__ The installation process via Homebrew is not yet configured.
 
 ## 🚀 Usage
 
@@ -74,7 +79,11 @@ origami list
 ## ✅ Run tests
 
 ```sh
-TODO
+./bin/console doctrine:database:create --env=test
+./bin/console doctrine:schema:create --env=test
+./bin/console doctrine:fixtures:load --env=test
+
+./bin/phpunit
 ```
 
 ## 🤝 Contributing

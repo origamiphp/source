@@ -1,3 +1,7 @@
+includes:
+  - vendor/jangregor/phpstan-prophecy/src/extension.neon
+  - vendor/phpstan/phpstan-phpunit/extension.neon
+
 parameters:
   symfony:
     console_application_loader: tests/console-application.php
@@ -11,3 +15,8 @@ parameters:
       # False-positive because of the "hasArgument()" method.
       message: '#Else branch is unreachable because previous condition is always true.#'
       path: %currentWorkingDirectory%/src/Command/AbstractBaseCommand.php
+    -
+      # False-positive because of the PHP-CS-Fixer "no_unset_on_property" rule.
+      message: '#Property .* \(Doctrine\\ORM\\EntityManagerInterface\) does not accept null.#'
+      path: %currentWorkingDirectory%/tests/Middleware/SystemManagerRepositoryTest.php
+  reportUnmatchedIgnoredErrors: false

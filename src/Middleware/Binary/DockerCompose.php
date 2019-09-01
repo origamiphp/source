@@ -6,23 +6,22 @@ namespace App\Middleware\Binary;
 
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
-use App\Traits\CustomProcessTrait;
+use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Dotenv\Dotenv;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DockerCompose
 {
-    use CustomProcessTrait;
-
     /** @var ValidatorInterface */
     private $validator;
 
     /** @var Environment */
     private $environment;
+
+    /** @var ProcessFactory */
+    private $processFactory;
 
     /** @var array */
     private $environmentVariables = [];
@@ -31,12 +30,12 @@ class DockerCompose
      * DockerCompose constructor.
      *
      * @param ValidatorInterface $validator
-     * @param LoggerInterface    $logger
+     * @param ProcessFactory     $processFactory
      */
-    public function __construct(ValidatorInterface $validator, LoggerInterface $logger)
+    public function __construct(ValidatorInterface $validator, ProcessFactory $processFactory)
     {
         $this->validator = $validator;
-        $this->logger = $logger;
+        $this->processFactory = $processFactory;
     }
 
     /**
@@ -77,103 +76,94 @@ class DockerCompose
     public function prepareServices(): bool
     {
         $command = ['docker-compose', 'pull'];
-        $pullProcess = $this->runForegroundProcess($command, $this->environmentVariables);
+        $pullProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         $command = ['docker-compose', 'build', '--pull', '--parallel'];
-        $buildProcess = $this->runForegroundProcess($command, $this->environmentVariables);
+        $buildProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $pullProcess->isSuccessful() && $buildProcess->isSuccessful();
     }
 
     /**
-     * Shows the resources usage of the Docker services associated to the current environment.
+     * Shows the resources usage of the services associated to the current environment.
      *
      * @return bool
      */
     public function showResourcesUsage(): bool
     {
-        $process = Process::fromShellCommandline(
-            'docker-compose ps -q | xargs docker stats',
-            null,
-            $this->environmentVariables,
-            null,
-            3600.00
-        );
-
-        $process->run(static function ($type, $buffer) {
-            echo Process::ERR === $type ? 'ERR > '.$buffer : $buffer;
-        });
+        $command = 'docker-compose ps -q | xargs docker stats';
+        $process = $this->processFactory->runForegroundProcessFromShellCommandLine($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
 
     /**
-     * Shows the logs of the Docker services associated to the current environment.
+     * Shows the logs of the services associated to the current environment.
      *
      * @param int         $tail
      * @param null|string $service
      *
      * @return bool
      */
-    public function showServicesLogs(int $tail, ?string $service): bool
+    public function showServicesLogs(int $tail = 0, ?string $service = ''): bool
     {
         $command = ['docker-compose', 'logs', '--follow', "--tail={$tail}"];
         if ($service) {
             $command[] = $service;
         }
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
 
     /**
-     * Shows the status of the Docker services associated to the current environment.
+     * Shows the status of the services associated to the current environment.
      *
      * @return bool
      */
     public function showServicesStatus(): bool
     {
         $command = ['docker-compose', 'ps'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
 
     /**
-     * Restarts the Docker services of the current environment.
+     * Restarts the services of the current environment.
      *
      * @return bool
      */
-    public function restartDockerServices(): bool
+    public function restartServices(): bool
     {
         $command = ['docker-compose', 'restart'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
 
     /**
-     * Starts the Docker services after building the associated images.
+     * Starts the services after building the associated images.
      *
      * @return bool
      */
-    public function startDockerServices(): bool
+    public function startServices(): bool
     {
         $command = ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
 
     /**
-     * Stops the Docker services of the current environment.
+     * Stops the services of the current environment.
      *
      * @return bool
      */
-    public function stopDockerServices(): bool
+    public function stopServices(): bool
     {
         $command = ['docker-compose', 'stop'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
@@ -186,23 +176,30 @@ class DockerCompose
      *
      * @return bool
      */
-    public function openTerminal(string $service, string $user): bool
+    public function openTerminal(string $service, string $user = ''): bool
     {
-        $command = ['docker-compose', 'exec', '-u', "{$user}:{$user}", $service, 'sh', '-l'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $command = ['docker-compose', 'exec'];
+
+        if ($user !== '') {
+            $command = array_merge($command, ['-u', $user, $service, 'sh', '-l']);
+        } else {
+            $command = array_merge($command, [$service, 'sh', '-l']);
+        }
+
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
 
     /**
-     * Removes the Docker services of the current environment.
+     * Removes the services of the current environment.
      *
      * @return bool
      */
-    public function removeDockerServices(): bool
+    public function removeServices(): bool
     {
         $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
-        $process = $this->runForegroundProcess($command, $this->environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }

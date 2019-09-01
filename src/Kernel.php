@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
 use App\Exception\InvalidConfigurationException;
@@ -19,6 +21,8 @@ class Kernel extends BaseKernel
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      */
     public function registerBundles(): iterable
     {
@@ -33,11 +37,41 @@ class Kernel extends BaseKernel
     }
 
     /**
+     * Retrieves the custom directory located in the HOME directory of the current user.
+     *
+     * @throws InvalidConfigurationException
+     *
+     * @return string
+     */
+    public function getCustomDir(): string
+    {
+        $home = PHP_OS_FAMILY !== 'Windows' ? getenv('HOME') : $_SERVER['HOMEDRIVE'].$_SERVER['HOMEPATH'];
+
+        if (\is_string($home) && $home !== '') {
+            $home = rtrim($home, \DIRECTORY_SEPARATOR);
+        } else {
+            throw new InvalidConfigurationException('Unable to determine the home directory.');
+        }
+
+        return "{$home}/.origami";
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function getProjectDir(): string
     {
         return \dirname(__DIR__);
+    }
+
+    /**
+     * Checks whether the application is currently run as a PHAR.
+     *
+     * @return bool
+     */
+    public function isArchiveContext(): bool
+    {
+        return strpos($this->getProjectDir(), 'phar://') !== false;
     }
 
     /**
@@ -47,8 +81,7 @@ class Kernel extends BaseKernel
      */
     public function getCacheDir()
     {
-        return strpos($this->getProjectDir(), 'phar://') !== false
-            ? "{$this->getCustomDir()}/cache" : parent::getCacheDir();
+        return $this->isArchiveContext() ? $this->getCustomDir().'/cache' : parent::getCacheDir();
     }
 
     /**
@@ -58,28 +91,13 @@ class Kernel extends BaseKernel
      */
     public function getLogDir()
     {
-        return strpos($this->getProjectDir(), 'phar://') !== false
-            ? "{$this->getCustomDir()}/log" : parent::getCacheDir();
-    }
-
-    /**
-     * TODO: improve this check (must work on multiple OS).
-     *
-     * @throws InvalidConfigurationException
-     *
-     * @return string
-     */
-    public function getCustomDir(): string
-    {
-        if (!$home = getenv('HOME')) {
-            throw new InvalidConfigurationException('Unable to determine the home directory.');
-        }
-
-        return "{$home}/.origami";
+        return $this->isArchiveContext() ? $this->getCustomDir().'/log' : parent::getLogDir();
     }
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      *
      * @throws Exception
      */
@@ -97,6 +115,8 @@ class Kernel extends BaseKernel
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      *
      * @throws Exception
      */

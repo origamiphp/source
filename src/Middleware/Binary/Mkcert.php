@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Middleware\Binary;
 
-use App\Traits\CustomProcessTrait;
-use Psr\Log\LoggerInterface;
+use App\Helper\ProcessFactory;
 
 class Mkcert
 {
-    use CustomProcessTrait;
+    /** @var ProcessFactory */
+    private $processFactory;
 
     /**
      * Mkcert constructor.
      *
-     * @param LoggerInterface $logger
+     * @param ProcessFactory $processFactory
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(ProcessFactory $processFactory)
     {
-        $this->logger = $logger;
+        $this->processFactory = $processFactory;
     }
 
     /**
@@ -33,7 +33,7 @@ class Mkcert
     public function generateCertificate(string $certificate, string $privateKey, array $domains): bool
     {
         $command = array_merge(['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], $domains);
-        $process = $this->runBackgroundProcess($command);
+        $process = $this->processFactory->runBackgroundProcess($command);
 
         return $process->isSuccessful();
     }

@@ -58,12 +58,16 @@ class CommandSubscriber implements EventSubscriberInterface
     {
         $command = $event->getCommand();
 
-        if ($command instanceof Command && strpos($command->getName(), 'origami') !== false) {
-            $projectDirectory = $this->kernel->getCustomDir();
-            $this->createProjectDirectory($projectDirectory);
+        if ($command instanceof Command) {
+            $commandName = $command->getName();
 
-            if (!is_file("{$projectDirectory}/{$this->databaseName}")) {
-                $this->initializeProjectDatabase();
+            if (\is_string($commandName) && strpos($commandName, 'origami') !== false) {
+                $projectDirectory = $this->kernel->getCustomDir();
+                $this->createProjectDirectory($projectDirectory);
+
+                if (!is_file("{$projectDirectory}/{$this->databaseName}")) {
+                    $this->initializeProjectDatabase();
+                }
             }
         }
     }

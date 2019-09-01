@@ -32,7 +32,7 @@ class StopCommand extends AbstractBaseCommand
         try {
             $this->checkPrequisites($input);
 
-            if ($this->dockerCompose->stopDockerServices()) {
+            if ($this->dockerCompose->stopServices()) {
                 $this->io->success('Docker services successfully stopped.');
 
                 $event = new EnvironmentStoppedEvent($this->environment, $this->io);

@@ -24,12 +24,19 @@
         "symfony/yaml": "^4.3"
     },
     "require-dev": {
+        "codecov/codecov-php": "dev-master",
+        "codedungeon/phpunit-result-printer": "^0.26.2",
+        "doctrine/doctrine-fixtures-bundle": "^3.2",
         "friendsofphp/php-cs-fixer": "3.0.x-dev",
+        "jangregor/phpstan-prophecy": "^0.4.2",
+        "liip/functional-test-bundle": "^3.2",
         "phpstan/phpstan": "^0.11.3",
+        "phpstan/phpstan-phpunit": "^0.11.2",
         "phpstan/phpstan-symfony": "^0.11.6",
         "roave/security-advisories": "dev-master",
         "sensiolabs/security-checker": "^5.0",
         "symfony/maker-bundle": "^1.11",
+        "symfony/phpunit-bridge": "^4.3",
         "symfony/var-dumper": "^4.3"
     },
     "config": {
