@@ -70,29 +70,6 @@ class DockerCompose
     }
 
     /**
-     * Checks whether the environment has been installed and correctly configured.
-     *
-     * @throws InvalidEnvironmentException
-     */
-    protected function checkEnvironmentConfiguration(): void
-    {
-        $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($this->environment, $dotEnvConstraint);
-        if ($errors->has(0) !== true) {
-            $dotenv = new Dotenv(true);
-            $dotenv->overload("{$this->environment->getLocation()}/var/docker/.env");
-        } else {
-            throw new InvalidEnvironmentException($errors[0]->getMessage());
-        }
-
-        $filesConstraint = new ConfigurationFiles();
-        $errors = $this->validator->validate($this->environment, $filesConstraint);
-        if ($errors->has(0) === true) {
-            throw new InvalidEnvironmentException($errors[0]->getMessage());
-        }
-    }
-
-    /**
      * Pulls/Builds the Docker images associated to the current environment.
      *
      * @return bool
@@ -134,13 +111,13 @@ class DockerCompose
      * Shows the logs of the Docker services associated to the current environment.
      *
      * @param int         $tail
-     * @param string|null $service
+     * @param null|string $service
      *
      * @return bool
      */
     public function showServicesLogs(int $tail, ?string $service): bool
     {
-        $command = ['docker-compose', 'logs', '--follow', "--tail=$tail"];
+        $command = ['docker-compose', 'logs', '--follow', "--tail={$tail}"];
         if ($service) {
             $command[] = $service;
         }
@@ -211,7 +188,7 @@ class DockerCompose
      */
     public function openTerminal(string $service, string $user): bool
     {
-        $command = ['docker-compose', 'exec', '-u', "$user:$user", $service, 'sh', '-l'];
+        $command = ['docker-compose', 'exec', '-u', "{$user}:{$user}", $service, 'sh', '-l'];
         $process = $this->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -228,5 +205,28 @@ class DockerCompose
         $process = $this->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
+    }
+
+    /**
+     * Checks whether the environment has been installed and correctly configured.
+     *
+     * @throws InvalidEnvironmentException
+     */
+    protected function checkEnvironmentConfiguration(): void
+    {
+        $dotEnvConstraint = new DotEnvExists();
+        $errors = $this->validator->validate($this->environment, $dotEnvConstraint);
+        if ($errors->has(0) !== true) {
+            $dotenv = new Dotenv(true);
+            $dotenv->overload("{$this->environment->getLocation()}/var/docker/.env");
+        } else {
+            throw new InvalidEnvironmentException($errors[0]->getMessage());
+        }
+
+        $filesConstraint = new ConfigurationFiles();
+        $errors = $this->validator->validate($this->environment, $filesConstraint);
+        if ($errors->has(0) === true) {
+            throw new InvalidEnvironmentException($errors[0]->getMessage());
+        }
     }
 }

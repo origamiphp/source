@@ -27,7 +27,7 @@ class CheckCommand extends AbstractBaseCommand
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
      * @param array                    $requirements
-     * @param string|null              $name
+     * @param null|string              $name
      */
     public function __construct(
         SystemManager $systemManager,

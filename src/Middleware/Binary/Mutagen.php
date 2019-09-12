@@ -46,14 +46,14 @@ class Mutagen
                 '--ignore-vcs',
                 '--ignore=".idea"',
                 '--ignore="pub/static"',
-                "--label=name=$environmentName",
+                "--label=name={$environmentName}",
                 $environmentLocation,
                 $environmentName
                     ? "docker://${environmentVariables['COMPOSE_PROJECT_NAME']}_synchro/var/www/html/"
                     : '',
             ];
         } else {
-            $command = ['mutagen', 'resume', "--label-selector=name=$environmentName"];
+            $command = ['mutagen', 'resume', "--label-selector=name={$environmentName}"];
         }
         $process = $this->runForegroundProcess($command, $environmentVariables);
 
@@ -76,22 +76,6 @@ class Mutagen
     }
 
     /**
-     * Checks whether an existing session is associated with the given environment.
-     *
-     * @param string $environmentName
-     * @param array  $environmentVariables
-     *
-     * @return bool
-     */
-    private function canResumeSynchronization(string $environmentName, array $environmentVariables): bool
-    {
-        $command = ['mutagen', 'list', "--label-selector=name=$environmentName"];
-        $process = $this->runBackgroundProcess($command, $environmentVariables);
-
-        return $process->getOutput() !== '';
-    }
-
-    /**
      * Removes the Docker synchronization needed to share the project source code.
      *
      * @param array $environmentVariables
@@ -104,5 +88,21 @@ class Mutagen
         $process = $this->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();
+    }
+
+    /**
+     * Checks whether an existing session is associated with the given environment.
+     *
+     * @param string $environmentName
+     * @param array  $environmentVariables
+     *
+     * @return bool
+     */
+    private function canResumeSynchronization(string $environmentName, array $environmentVariables): bool
+    {
+        $command = ['mutagen', 'list', "--label-selector=name={$environmentName}"];
+        $process = $this->runBackgroundProcess($command, $environmentVariables);
+
+        return $process->getOutput() !== '';
     }
 }

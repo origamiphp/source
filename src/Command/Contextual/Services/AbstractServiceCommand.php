@@ -19,10 +19,10 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
     {
         $serviceName = $this->getServiceName();
 
-        $this->setName("origami:services:$serviceName");
+        $this->setName("origami:services:{$serviceName}");
         $this->setAliases([$serviceName]);
 
-        $this->setDescription("Opens a terminal on the \"$serviceName\" service");
+        $this->setDescription("Opens a terminal on the \"{$serviceName}\" service");
     }
 
     /**

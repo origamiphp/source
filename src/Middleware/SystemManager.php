@@ -58,21 +58,21 @@ class SystemManager
      *
      * @param string      $location
      * @param string      $type
-     * @param string|null $domains
+     * @param null|string $domains
      *
      * @throws InvalidEnvironmentException
      */
     public function install(string $location, string $type, ?string $domains = null): void
     {
-        $source = __DIR__."/../Resources/$type";
-        $destination = "$location/var/docker";
+        $source = __DIR__."/../Resources/{$type}";
+        $destination = "{$location}/var/docker";
 
         $filesystem = new Filesystem();
         $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
         if ($domains !== null) {
-            $certificate = "$destination/nginx/certs/custom.pem";
-            $privateKey = "$destination/nginx/certs/custom.key";
+            $certificate = "{$destination}/nginx/certs/custom.pem";
+            $privateKey = "{$destination}/nginx/certs/custom.key";
 
             $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
         }
@@ -92,7 +92,7 @@ class SystemManager
      *
      * @param string $name
      *
-     * @return Environment|null
+     * @return null|Environment
      */
     public function getEnvironmentByName(string $name): ?Environment
     {
@@ -104,7 +104,7 @@ class SystemManager
      *
      * @param string $location
      *
-     * @return Environment|null
+     * @return null|Environment
      */
     public function getEnvironmentByLocation(string $location): ?Environment
     {
@@ -114,7 +114,7 @@ class SystemManager
     /**
      * Retrieves the currently active environment.
      *
-     * @return Environment|null
+     * @return null|Environment
      */
     public function getActiveEnvironment(): ?Environment
     {
@@ -142,6 +142,26 @@ class SystemManager
         $filesystem->remove("{$environment->getLocation()}/var/docker");
 
         $this->removeExistingEnvironment($environment);
+    }
+
+    /**
+     * Checks whether the given binary is available.
+     *
+     * @param string $binary
+     *
+     * @return bool
+     */
+    public function isBinaryInstalled(string $binary): bool
+    {
+        if (strpos($binary, '/') === false) {
+            $process = $this->runBackgroundProcess(['which', $binary]);
+            $result = $process->isSuccessful();
+        } else {
+            $process = $this->runBackgroundProcess(['brew', 'list']);
+            $result = strpos($process->getOutput(), substr($binary, strrpos($binary, '/') + 1)) !== false;
+        }
+
+        return $result;
     }
 
     /**
@@ -193,25 +213,5 @@ class SystemManager
     {
         $this->entityManager->remove($environment);
         $this->entityManager->flush();
-    }
-
-    /**
-     * Checks whether the given binary is available.
-     *
-     * @param string $binary
-     *
-     * @return bool
-     */
-    public function isBinaryInstalled(string $binary): bool
-    {
-        if (strpos($binary, '/') === false) {
-            $process = $this->runBackgroundProcess(['which', $binary]);
-            $result = $process->isSuccessful();
-        } else {
-            $process = $this->runBackgroundProcess(['brew', 'list']);
-            $result = strpos($process->getOutput(), substr($binary, strrpos($binary, '/') + 1)) !== false;
-        }
-
-        return $result;
     }
 }

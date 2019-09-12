@@ -51,7 +51,7 @@ class RootCommand extends AbstractBaseCommand
     {
         $result = '';
         foreach ($this->dockerCompose->getRequiredVariables() as $key => $value) {
-            $result .= "export $key=\"$value\"\n";
+            $result .= "export {$key}=\"{$value}\"\n";
         }
 
         $this->io->writeln($result);

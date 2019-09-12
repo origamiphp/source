@@ -30,7 +30,7 @@ class InstallCommand extends AbstractBaseCommand
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
      * @param array                    $environments
-     * @param string|null              $name
+     * @param null|string              $name
      */
     public function __construct(
         SystemManager $systemManager,

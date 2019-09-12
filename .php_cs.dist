@@ -3,17 +3,9 @@
 return PhpCsFixer\Config::create()
     ->setRules(
         [
-            '@Symfony' => true,
-            '@Symfony:risky' => true,
-            'array_syntax' => ['syntax' => 'short'],
-            'native_function_invocation' => ['include' => ['@compiler_optimized']],
-            'no_useless_else' => true,
-            'no_useless_return' => true,
-            'ordered_imports' => true,
-            'phpdoc_order' => true,
-            'strict_comparison' => true,
-            'strict_param' => true,
-            'ternary_to_null_coalescing' => true,
+            '@PhpCsFixer' => true,
+            '@PhpCsFixer:risky' => true,
+            '@DoctrineAnnotation' => true,
             'yoda_style' => false,
         ]
     )
@@ -21,7 +13,7 @@ return PhpCsFixer\Config::create()
     ->setFinder(
         PhpCsFixer\Finder::create()
             ->in(__DIR__.'/src')
-            ->in(__DIR__.'/tests')
             ->append([__FILE__])
     )
-    ->setCacheFile(__DIR__.'/var/.php_cs.cache');
+    ->setCacheFile(__DIR__.'/var/.php_cs.cache')
+;

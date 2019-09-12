@@ -42,7 +42,7 @@ abstract class AbstractBaseCommand extends Command
      * @param ValidatorInterface       $validator
      * @param DockerCompose            $dockerCompose
      * @param EventDispatcherInterface $eventDispatcher
-     * @param string|null              $name
+     * @param null|string              $name
      */
     public function __construct(
         SystemManager $systemManager,

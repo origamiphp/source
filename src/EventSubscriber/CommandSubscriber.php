@@ -62,7 +62,7 @@ class CommandSubscriber implements EventSubscriberInterface
             $projectDirectory = $this->kernel->getCustomDir();
             $this->createProjectDirectory($projectDirectory);
 
-            if (!is_file("$projectDirectory/{$this->databaseName}")) {
+            if (!is_file("{$projectDirectory}/{$this->databaseName}")) {
                 $this->initializeProjectDatabase();
             }
         }

@@ -43,37 +43,6 @@ class Kernel extends BaseKernel
     /**
      * {@inheritdoc}
      *
-     * @throws Exception
-     */
-    protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
-    {
-        $container->addResource(new FileResource($this->getProjectDir().'/config/bundles.php'));
-        $container->setParameter('container.dumper.inline_class_loader', true);
-        $confDir = $this->getProjectDir().'/config';
-
-        $loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');
-        $loader->load($confDir.'/{packages}/'.$this->getEnvironment().'/**/*'.self::CONFIG_EXTS, 'glob');
-        $loader->load($confDir.'/{services}'.self::CONFIG_EXTS, 'glob');
-        $loader->load($confDir.'/{services}_'.$this->getEnvironment().self::CONFIG_EXTS, 'glob');
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws Exception
-     */
-    protected function configureRoutes(RouteCollectionBuilder $routes): void
-    {
-        $confDir = $this->getProjectDir().'/config';
-
-        $routes->import($confDir.'/{routes}/'.$this->getEnvironment().'/**/*'.self::CONFIG_EXTS, '/', 'glob');
-        $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
-        $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
-    }
-
-    /**
-     * {@inheritdoc}
-     *
      * @throws InvalidConfigurationException
      */
     public function getCacheDir()
@@ -106,6 +75,37 @@ class Kernel extends BaseKernel
             throw new InvalidConfigurationException('Unable to determine the home directory.');
         }
 
-        return "${home}/.origami";
+        return "{$home}/.origami";
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws Exception
+     */
+    protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
+    {
+        $container->addResource(new FileResource($this->getProjectDir().'/config/bundles.php'));
+        $container->setParameter('container.dumper.inline_class_loader', true);
+        $confDir = $this->getProjectDir().'/config';
+
+        $loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');
+        $loader->load($confDir.'/{packages}/'.$this->getEnvironment().'/**/*'.self::CONFIG_EXTS, 'glob');
+        $loader->load($confDir.'/{services}'.self::CONFIG_EXTS, 'glob');
+        $loader->load($confDir.'/{services}_'.$this->getEnvironment().self::CONFIG_EXTS, 'glob');
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws Exception
+     */
+    protected function configureRoutes(RouteCollectionBuilder $routes): void
+    {
+        $confDir = $this->getProjectDir().'/config';
+
+        $routes->import($confDir.'/{routes}/'.$this->getEnvironment().'/**/*'.self::CONFIG_EXTS, '/', 'glob');
+        $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
+        $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
     }
 }
