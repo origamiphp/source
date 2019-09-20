@@ -103,6 +103,6 @@ class Mutagen
         $command = ['mutagen', 'list', "--label-selector=name={$environmentName}"];
         $process = $this->runBackgroundProcess($command, $environmentVariables);
 
-        return $process->getOutput() !== '';
+        return strpos($process->getOutput(), 'No sessions found') === false;
     }
 }
