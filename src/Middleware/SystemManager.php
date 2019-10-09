@@ -6,18 +6,15 @@ namespace App\Middleware;
 
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
+use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Mkcert;
 use App\Repository\EnvironmentRepository;
-use App\Traits\CustomProcessTrait;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SystemManager
 {
-    use CustomProcessTrait;
-
     /** @var Mkcert */
     private $mkcert;
 
@@ -30,6 +27,9 @@ class SystemManager
     /** @var EnvironmentRepository */
     private $environmentRepository;
 
+    /** @var ProcessFactory */
+    private $processFactory;
+
     /**
      * SystemManager constructor.
      *
@@ -37,20 +37,20 @@ class SystemManager
      * @param ValidatorInterface     $validator
      * @param EntityManagerInterface $entityManager
      * @param EnvironmentRepository  $environmentRepository
-     * @param LoggerInterface        $logger
+     * @param ProcessFactory         $processFactory
      */
     public function __construct(
         Mkcert $mkcert,
         ValidatorInterface $validator,
         EntityManagerInterface $entityManager,
         EnvironmentRepository $environmentRepository,
-        LoggerInterface $logger
+        ProcessFactory $processFactory
     ) {
         $this->mkcert = $mkcert;
         $this->validator = $validator;
         $this->entityManager = $entityManager;
         $this->environmentRepository = $environmentRepository;
-        $this->logger = $logger;
+        $this->processFactory = $processFactory;
     }
 
     /**
@@ -153,15 +153,7 @@ class SystemManager
      */
     public function isBinaryInstalled(string $binary): bool
     {
-        if (strpos($binary, '/') === false) {
-            $process = $this->runBackgroundProcess(['which', $binary]);
-            $result = $process->isSuccessful();
-        } else {
-            $process = $this->runBackgroundProcess(['brew', 'list']);
-            $result = strpos($process->getOutput(), substr($binary, strrpos($binary, '/') + 1)) !== false;
-        }
-
-        return $result;
+        return $this->processFactory->runBackgroundProcess(['which', $binary])->isSuccessful();
     }
 
     /**

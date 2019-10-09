@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace App\Middleware\Binary;
 
-use App\Traits\CustomProcessTrait;
-use Psr\Log\LoggerInterface;
+use App\Helper\ProcessFactory;
 
 class Mutagen
 {
-    use CustomProcessTrait;
-
     private const DEFAULT_CONTAINER_UID = 'id:1000';
     private const DEFAULT_CONTAINER_GID = 'id:1000';
+
+    /** @var ProcessFactory */
+    private $processFactory;
 
     /**
      * Mutagen constructor.
      *
-     * @param LoggerInterface $logger
+     * @param ProcessFactory $processFactory
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(ProcessFactory $processFactory)
     {
-        $this->logger = $logger;
+        $this->processFactory = $processFactory;
     }
 
     /**
@@ -55,7 +55,7 @@ class Mutagen
         } else {
             $command = ['mutagen', 'resume', "--label-selector=name={$environmentName}"];
         }
-        $process = $this->runForegroundProcess($command, $environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();
     }
@@ -70,7 +70,7 @@ class Mutagen
     public function stopDockerSynchronization(array $environmentVariables): bool
     {
         $command = ['mutagen', 'pause', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"];
-        $process = $this->runForegroundProcess($command, $environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();
     }
@@ -85,7 +85,7 @@ class Mutagen
     public function removeDockerSynchronization(array $environmentVariables): bool
     {
         $command = ['mutagen', 'terminate', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"];
-        $process = $this->runForegroundProcess($command, $environmentVariables);
+        $process = $this->processFactory->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();
     }
@@ -101,7 +101,7 @@ class Mutagen
     private function canResumeSynchronization(string $environmentName, array $environmentVariables): bool
     {
         $command = ['mutagen', 'list', "--label-selector=name={$environmentName}"];
-        $process = $this->runBackgroundProcess($command, $environmentVariables);
+        $process = $this->processFactory->runBackgroundProcess($command, $environmentVariables);
 
         return strpos($process->getOutput(), 'No sessions found') === false;
     }

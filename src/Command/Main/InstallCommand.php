@@ -14,7 +14,6 @@ use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InstallCommand extends AbstractBaseCommand
@@ -61,38 +60,37 @@ class InstallCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $filesystem = new Filesystem();
+        try {
+            $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'magento2');
 
-        $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'magento2');
-        $location = realpath(
-            $this->io->ask('Where do you want to install the environment?', '.', function ($answer) {
-                return $this->installationPathCallback($answer);
-            })
-        );
+            /** @var string $location */
+            $location = realpath(
+                $this->io->ask(
+                    'Where do you want to install the environment?',
+                    '.',
+                    function ($answer) {
+                        return $this->installationPathCallback($answer);
+                    }
+                )
+            );
 
-        if ($location && $filesystem->exists($location)) {
-            try {
-                if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
-                    $domains = $this->io->ask(
-                        'Which domains does this certificate belong to?',
-                        'magento.localhost www.magento.localhost',
-                        function ($answer) {
-                            return $this->localDomainsCallback($answer);
-                        }
-                    );
-                } else {
-                    $domains = null;
-                }
-
-                $this->systemManager->install($location, $type, $domains);
-                $this->io->success('Environment successfully installed.');
-            } catch (OrigamiExceptionInterface $e) {
-                $this->io->error($e->getMessage());
-                $exitCode = CommandExitCode::EXCEPTION;
+            if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
+                $domains = $this->io->ask(
+                    'Which domains does this certificate belong to?',
+                    "{$type}.localhost www.{$type}.localhost",
+                    function ($answer) {
+                        return $this->localDomainsCallback($answer);
+                    }
+                );
+            } else {
+                $domains = null;
             }
-        } else {
-            $this->io->error('An existing directory must be provided.');
-            $exitCode = CommandExitCode::INVALID;
+
+            $this->systemManager->install($location, $type, $domains);
+            $this->io->success('Environment successfully installed.');
+        } catch (OrigamiExceptionInterface $e) {
+            $this->io->error($e->getMessage());
+            $exitCode = CommandExitCode::EXCEPTION;
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;

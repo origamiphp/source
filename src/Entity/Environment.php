@@ -8,6 +8,8 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
+ * @codeCoverageIgnore
+ *
  * @ORM\Entity(repositoryClass="App\Repository\EnvironmentRepository")
  * @UniqueEntity(fields={"name"}, message="There is already an environment of the same name.")
  */

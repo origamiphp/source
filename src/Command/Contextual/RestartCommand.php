@@ -36,7 +36,7 @@ class RestartCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails();
             }
 
-            if ($this->dockerCompose->restartDockerServices()) {
+            if ($this->dockerCompose->restartServices()) {
                 $this->io->success('Docker services successfully restarted.');
 
                 $event = new EnvironmentRestartedEvent($this->environment, $this->io);

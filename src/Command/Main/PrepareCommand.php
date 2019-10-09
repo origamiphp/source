@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputArgument;
@@ -42,7 +43,11 @@ class PrepareCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->prepareServices();
+            if (!$this->dockerCompose->prepareServices()) {
+                throw new InvalidEnvironmentException('An error occurred while preparing the Docker services.');
+            }
+
+            $this->io->success('Docker services successfully prepared.');
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
