@@ -50,7 +50,7 @@ class StartCommand extends AbstractBaseCommand
                 $event = new EnvironmentStartedEvent($this->environment, $this->io);
                 $this->eventDispatcher->dispatch($event);
             } else {
-                $this->io->error('Unable to start an environment when there is already a running environment.');
+                $this->io->error('Unable to start an environment when there is already a running one.');
                 $exitCode = CommandExitCode::INVALID;
             }
         } catch (OrigamiExceptionInterface $e) {

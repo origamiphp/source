@@ -85,7 +85,7 @@ final class StartCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Unable to start an environment when there is already a running environment.', $display);
+        static::assertStringContainsString('[ERROR] Unable to start an environment when there is already a running one.', $display);
         static::assertSame(CommandExitCode::INVALID, $commandTester->getStatusCode());
     }
 
