@@ -51,14 +51,13 @@ first), and we would like to facilitate the contributions process by using somet
 ## 📦 Install
 
 ```sh
-# Homebrew
-brew tap ajardin/formulas
+# Homebrew (recommended)
+brew tap ajardin/formulae
 brew install origami
 
 # Manual
 curl https://github.com/ajardin/origami/releases/latest/download/origami.phar --output origami
 ```
-__Note:__ The installation process via Homebrew is not yet configured.
 
 ## 🚀 Usage
 
