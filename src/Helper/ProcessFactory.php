@@ -53,10 +53,8 @@ class ProcessFactory
         $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
 
         $process = new Process($command, null, $environmentVariables, null, 3600.00);
-        $process->setTty(Process::isTtySupported());
-
-        $process->run(static function ($type, $buffer) {
-            echo Process::ERR === $type ? 'ERR > '.$buffer : $buffer;
+        $process->run(static function (string $type, string $buffer) {
+            echo $buffer;
         });
 
         return $process;
@@ -72,10 +70,11 @@ class ProcessFactory
      */
     public function runForegroundProcessFromShellCommandLine(string $command, array $environmentVariables = []): Process
     {
-        $process = Process::fromShellCommandline($command, null, $environmentVariables, null, 3600.00);
+        $this->logger->debug('Command "{command}" will be executed.', ['command' => $command]);
 
-        $process->run(static function ($type, $buffer) {
-            echo Process::ERR === $type ? 'ERR > '.$buffer : $buffer;
+        $process = Process::fromShellCommandline($command, null, $environmentVariables, null, 3600.00);
+        $process->run(static function (string $type, string $buffer) {
+            echo $buffer;
         });
 
         return $process;
