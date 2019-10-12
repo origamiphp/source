@@ -105,7 +105,7 @@ class DockerCompose
      *
      * @return bool
      */
-    public function showServicesLogs(int $tail = 0, ?string $service = ''): bool
+    public function showServicesLogs(?int $tail = 0, ?string $service = ''): bool
     {
         $command = ['docker-compose', 'logs', '--follow', "--tail={$tail}"];
         if ($service) {
