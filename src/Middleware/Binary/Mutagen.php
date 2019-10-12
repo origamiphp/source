@@ -44,8 +44,7 @@ class Mutagen
                 '--default-group-beta='.self::DEFAULT_CONTAINER_GID,
                 '--sync-mode=two-way-resolved',
                 '--ignore-vcs',
-                '--ignore=".idea"',
-                '--ignore="pub/static"',
+                '--symlink-mode=posix-raw',
                 "--label=name={$environmentName}",
                 $environmentLocation,
                 $environmentName
