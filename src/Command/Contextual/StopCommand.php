@@ -6,6 +6,7 @@ namespace App\Command\Contextual;
 
 use App\Command\AbstractBaseCommand;
 use App\Event\EnvironmentStoppedEvent;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
@@ -32,14 +33,14 @@ class StopCommand extends AbstractBaseCommand
         try {
             $this->checkPrequisites($input);
 
-            if ($this->dockerCompose->stopServices()) {
-                $this->io->success('Docker services successfully stopped.');
-
-                $event = new EnvironmentStoppedEvent($this->environment, $this->io);
-                $this->eventDispatcher->dispatch($event);
-            } else {
-                $this->io->error('An error occurred while stoppping the Docker services.');
+            if (!$this->dockerCompose->stopServices()) {
+                throw new InvalidEnvironmentException('An error occurred while stopping the Docker services.');
             }
+
+            $this->io->success('Docker services successfully stopped.');
+
+            $event = new EnvironmentStoppedEvent($this->environment, $this->io);
+            $this->eventDispatcher->dispatch($event);
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

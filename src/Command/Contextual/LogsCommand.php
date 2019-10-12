@@ -32,8 +32,7 @@ class LogsCommand extends AbstractBaseCommand
             'tail',
             't',
             InputOption::VALUE_OPTIONAL,
-            'Number of lines to show from the end of the logs for each service',
-            10
+            'Number of lines to show from the end of the logs for each service'
         );
 
         $this->setDescription('Shows the logs of an environment previously started');
@@ -51,10 +50,12 @@ class LogsCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->showServicesLogs(
-                (($tail = $input->getOption('tail')) && \is_string($tail)) ? (int) $tail : 0,
-                (($argument = $input->getArgument('service')) && \is_string($argument)) ? $argument : ''
-            );
+            /** @var null|string $tail */
+            $tail = $input->getOption('tail');
+            /** @var null|string $service */
+            $service = $input->getArgument('service');
+
+            $this->dockerCompose->showServicesLogs((int) $tail, $service);
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

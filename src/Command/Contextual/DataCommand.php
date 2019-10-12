@@ -20,7 +20,7 @@ class DataCommand extends AbstractBaseCommand
         $this->setName('origami:data');
         $this->setAliases(['data']);
 
-        $this->setDescription('Shows the statistics usage of running environment');
+        $this->setDescription('Shows the usage statistics of running environment');
     }
 
     /**
