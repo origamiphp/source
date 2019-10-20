@@ -49,13 +49,15 @@ services:
   php:
     image: ajardin/magento2-php:${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
+    environment:
+      - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
     volumes:
       # Project files
       - code_sync:/var/www/html:nocopy
       # Custom configuration
       - ${PROJECT_LOCATION}/var/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
-      # SSH keys
-      - ${HOME}/.ssh:/home/www-data/.ssh:ro
+      # SSH socket
+      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
     tty: true
 
   redis:
