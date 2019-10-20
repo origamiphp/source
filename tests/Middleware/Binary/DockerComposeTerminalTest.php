@@ -7,13 +7,9 @@ namespace App\Tests\Middleware\Binary;
 use App\Entity\Environment;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
-use App\Validator\Constraints\ConfigurationFiles;
-use App\Validator\Constraints\DotEnvExists;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
-use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -23,6 +19,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class DockerComposeTerminalTest extends TestCase
 {
+    use DockerComposeTrait;
+
     private $validator;
     private $processFactory;
     private $location;
@@ -68,24 +66,12 @@ final class DockerComposeTerminalTest extends TestCase
 
     public function testItOpensTerminalOnGivenServiceWithSpecificUser(): void
     {
-        $this->validator->validate(Argument::any(), new DotEnvExists())
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
-        $this->validator->validate(Argument::any(), new ConfigurationFiles())
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
+        $this->prophesizeSuccessfulValidations();
 
         $process = $this->prophesize(Process::class);
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
 
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -100,24 +86,12 @@ final class DockerComposeTerminalTest extends TestCase
 
     public function testItOpensTerminalOnGivenServiceWithoutSpecificUser(): void
     {
-        $this->validator->validate(Argument::any(), new DotEnvExists())
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
-        $this->validator->validate(Argument::any(), new ConfigurationFiles())
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
+        $this->prophesizeSuccessfulValidations();
 
         $process = $this->prophesize(Process::class);
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
 
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'exec', 'php', 'sh', '-l'], $environmentVariables)
             ->shouldBeCalledOnce()

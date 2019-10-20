@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Contextual;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,7 +36,9 @@ class PsCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->showServicesStatus();
+            if (!$this->dockerCompose->showServicesStatus()) {
+                throw new InvalidEnvironmentException('An error occurred while checking the services status.');
+            }
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

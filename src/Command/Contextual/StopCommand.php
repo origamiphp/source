@@ -33,6 +33,10 @@ class StopCommand extends AbstractBaseCommand
         try {
             $this->checkPrequisites($input);
 
+            if ($output->isVerbose()) {
+                $this->printEnvironmentDetails();
+            }
+
             if (!$this->dockerCompose->stopServices()) {
                 throw new InvalidEnvironmentException('An error occurred while stopping the Docker services.');
             }

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\UninstallCommand;
-use App\Entity\Environment;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Prophecy\Argument;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -23,6 +23,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UninstallCommandTest extends WebTestCase
 {
+    use CustomCommandsTrait;
+
     private $systemManager;
     private $validator;
     private $dockerCompose;
@@ -41,9 +43,7 @@ final class UninstallCommandTest extends WebTestCase
 
     public function testItUninstallsTheCurrentEnvironment(): void
     {
-        $environment = new Environment();
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
+        $environment = $this->getFakeEnvironment();
         $environment->setActive(false);
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
@@ -70,9 +70,7 @@ final class UninstallCommandTest extends WebTestCase
 
     public function testItDoesNotUninstallARunningEnvironment(): void
     {
-        $environment = new Environment();
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
+        $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
@@ -99,9 +97,7 @@ final class UninstallCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = new Environment();
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
+        $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();

@@ -34,6 +34,7 @@
         "phpstan/phpstan-phpunit": "^0.11.2",
         "phpstan/phpstan-symfony": "^0.11.6",
         "roave/security-advisories": "dev-master",
+        "sebastian/phpcpd": "^4.1",
         "sensiolabs/security-checker": "^5.0",
         "symfony/maker-bundle": "^1.11",
         "symfony/phpunit-bridge": "^4.3",

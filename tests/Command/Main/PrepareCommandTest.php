@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\PrepareCommand;
-use App\Entity\Environment;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -23,6 +23,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class PrepareCommandTest extends WebTestCase
 {
+    use CustomCommandsTrait;
+
     private $systemManager;
     private $validator;
     private $dockerCompose;
@@ -41,9 +43,7 @@ final class PrepareCommandTest extends WebTestCase
 
     public function testItPreparesTheActiveEnvironment(): void
     {
-        $environment = new Environment();
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
+        $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -61,19 +61,14 @@ final class PrepareCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
 
-        static::assertStringContainsString('[OK] An environment is currently running.', $display);
-        static::assertStringContainsString('Environment location: ~/Sites/origami', $display);
-        static::assertStringContainsString('Environment type: symfony', $display);
-
+        static::assertDisplayIsVerbose($environment, $display);
         static::assertStringContainsString('[OK] Docker services successfully prepared.', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = new Environment();
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
+        $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();

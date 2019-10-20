@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Tests\Command\Contextual;
 
-use App\Command\Contextual\LogsCommand;
+use App\Command\Contextual\Services\ElasticsearchCommand;
+use App\Command\Contextual\Services\MysqlCommand;
+use App\Command\Contextual\Services\NginxCommand;
+use App\Command\Contextual\Services\PhpCommand;
+use App\Command\Contextual\Services\RedisCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\Command\CustomCommandsTrait;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -19,10 +23,14 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * @internal
  *
- * @covers \App\Command\AbstractBaseCommand
- * @covers \App\Command\Contextual\LogsCommand
+ * @covers \App\Command\Contextual\Services\AbstractServiceCommand
+ * @covers \App\Command\Contextual\Services\ElasticsearchCommand
+ * @covers \App\Command\Contextual\Services\MysqlCommand
+ * @covers \App\Command\Contextual\Services\NginxCommand
+ * @covers \App\Command\Contextual\Services\PhpCommand
+ * @covers \App\Command\Contextual\Services\RedisCommand
  */
-final class LogsCommandTest extends WebTestCase
+final class ServicesCommandTest extends TestCase
 {
     use CustomCommandsTrait;
 
@@ -43,22 +51,23 @@ final class LogsCommandTest extends WebTestCase
     }
 
     /**
-     * @dataProvider provideCommandModifiers
+     * @dataProvider provideServiceDetails
      *
-     * @param null|int    $tail
-     * @param null|string $service
+     * @param string $classname
+     * @param string $service
+     * @param string $user
      *
      * @throws InvalidEnvironmentException
      */
-    public function testItShowsServicesLogs(?int $tail, ?string $service): void
+    public function testItOpensTerminalOnService(string $classname, string $service, string $user): void
     {
         $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce();
+        $this->dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new LogsCommand(
+        $command = new $classname(
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
@@ -66,58 +75,44 @@ final class LogsCommandTest extends WebTestCase
         );
 
         $commandTester = new CommandTester($command);
-        $commandTester->execute(
-            ['--tail' => $tail, 'service' => $service],
-            ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]
-        );
+        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
-        $display = $commandTester->getDisplay();
-
-        static::assertDisplayIsVerbose($environment, $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
-     * @dataProvider provideCommandModifiers
+     * @dataProvider provideServiceDetails
      *
-     * @param null|int    $tail
-     * @param null|string $service
+     * @param string $classname
+     * @param string $service
+     * @param string $user
      *
      * @throws InvalidEnvironmentException
      */
-    public function testItGracefullyExitsWhenAnExceptionOccurred(?int $tail, ?string $service): void
+    public function testItGracefullyExitsWhenAnExceptionOccurred(string $classname, string $service, string $user): void
     {
         $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->showServicesLogs($tail ?? 0, $service)
-            ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
-        ;
+        $this->dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
 
-        $command = new LogsCommand(
+        $command = new $classname(
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal()
         );
 
-        $commandTester = new CommandTester($command);
-        $commandTester->execute(
-            ['--tail' => $tail, 'service' => $service],
-            ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]
-        );
-
-        $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Dummy exception.', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        self::assertExceptionIsHandled($command, 'An error occurred while opening a terminal.');
     }
 
-    public function provideCommandModifiers(): ?\Generator
+    public function provideServiceDetails(): ?\Generator
     {
-        yield [null, null];
-        yield [50, null];
-        yield [50, 'php'];
-        yield [null, 'php'];
+        yield [ElasticsearchCommand::class, 'elasticsearch', ''];
+        yield [MysqlCommand::class, 'mysql', ''];
+        yield [NginxCommand::class, 'nginx', ''];
+        yield [PhpCommand::class, 'php', 'www-data:www-data'];
+        yield [RedisCommand::class, 'redis', ''];
     }
 }
