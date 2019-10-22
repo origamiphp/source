@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Contextual;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,7 +36,9 @@ class DataCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->showResourcesUsage();
+            if (!$this->dockerCompose->showResourcesUsage()) {
+                throw new InvalidEnvironmentException('An error occurred while checking the resources usage.');
+            }
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

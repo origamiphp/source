@@ -189,6 +189,12 @@
     "roave/security-advisories": {
         "version": "dev-master"
     },
+    "sebastian/finder-facade": {
+        "version": "1.2.2"
+    },
+    "sebastian/phpcpd": {
+        "version": "4.1.0"
+    },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
         "recipe": {
@@ -396,6 +402,9 @@
     },
     "symfony/yaml": {
         "version": "v4.3.1"
+    },
+    "theseer/fdomdocument": {
+        "version": "1.6.6"
     },
     "zendframework/zend-code": {
         "version": "3.3.1"

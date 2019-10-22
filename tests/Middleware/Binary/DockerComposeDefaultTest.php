@@ -26,6 +26,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class DockerComposeDefaultTest extends TestCase
 {
+    use DockerComposeTrait;
+
     private $validator;
     private $processFactory;
     private $location;
@@ -140,12 +142,7 @@ final class DockerComposeDefaultTest extends TestCase
         $process = $this->prophesize(Process::class);
         $process->isSuccessful()->shouldBeCalledTimes(2)->willReturn(true);
 
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'pull'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -167,13 +164,7 @@ final class DockerComposeDefaultTest extends TestCase
     {
         $this->initializeSuccessfulValidators();
         $process = $this->initializeSuccessfullProcess();
-
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcessFromShellCommandLine('docker-compose ps -q | xargs docker stats', $environmentVariables)
             ->shouldBeCalledOnce()
@@ -190,13 +181,7 @@ final class DockerComposeDefaultTest extends TestCase
     {
         $this->initializeSuccessfulValidators();
         $process = $this->initializeSuccessfullProcess();
-
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'ps'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -213,13 +198,7 @@ final class DockerComposeDefaultTest extends TestCase
     {
         $this->initializeSuccessfulValidators();
         $process = $this->initializeSuccessfullProcess();
-
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'restart'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -236,13 +215,7 @@ final class DockerComposeDefaultTest extends TestCase
     {
         $this->initializeSuccessfulValidators();
         $process = $this->initializeSuccessfullProcess();
-
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'up', '--build', '--detach', '--remove-orphans'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -259,13 +232,7 @@ final class DockerComposeDefaultTest extends TestCase
     {
         $this->initializeSuccessfulValidators();
         $process = $this->initializeSuccessfullProcess();
-
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'stop'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -282,13 +249,7 @@ final class DockerComposeDefaultTest extends TestCase
     {
         $this->initializeSuccessfulValidators();
         $process = $this->initializeSuccessfullProcess();
-
-        $environmentVariables = [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
-            'PROJECT_LOCATION' => $this->location,
-        ];
+        $environmentVariables = $this->getFakeEnvironmentVariables();
 
         $this->processFactory->runForegroundProcess(['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'], $environmentVariables)
             ->shouldBeCalledOnce()
@@ -303,14 +264,7 @@ final class DockerComposeDefaultTest extends TestCase
 
     private function initializeSuccessfulValidators(): void
     {
-        $this->validator->validate(Argument::any(), new DotEnvExists())
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
-        $this->validator->validate(Argument::any(), new ConfigurationFiles())
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
+        $this->prophesizeSuccessfulValidations();
     }
 
     private function initializeSuccessfullProcess(): ObjectProphecy

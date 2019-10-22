@@ -10,6 +10,7 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -24,6 +25,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class RootCommandTest extends WebTestCase
 {
+    use CustomCommandsTrait;
+
     private $systemManager;
     private $validator;
     private $dockerCompose;
@@ -70,10 +73,7 @@ final class RootCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
 
-        static::assertStringContainsString('[OK] An environment is currently running.', $display);
-        static::assertStringContainsString('Environment location: ~/Sites/origami', $display);
-        static::assertStringContainsString('Environment type: symfony', $display);
-
+        static::assertDisplayIsVerbose($environment, $display);
         static::assertStringContainsString('export COMPOSE_FILE="~/Sites/origami/var/docker/docker-compose.yml"', $display);
         static::assertStringContainsString('export COMPOSE_PROJECT_NAME="symfony_Origami"', $display);
         static::assertStringContainsString('export DOCKER_PHP_IMAGE="default"', $display);
@@ -94,11 +94,6 @@ final class RootCommandTest extends WebTestCase
             $this->eventDispatcher->reveal()
         );
 
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Dummy exception.', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertExceptionIsHandled($command, '[ERROR] Dummy exception.');
     }
 }

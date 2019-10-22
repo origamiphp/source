@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Contextual\Services;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
@@ -37,7 +38,9 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
                 $this->printEnvironmentDetails();
             }
 
-            $this->dockerCompose->openTerminal($this->getServiceName(), $this->getUsername());
+            if (!$this->dockerCompose->openTerminal($this->getServiceName(), $this->getUsername())) {
+                throw new InvalidEnvironmentException('An error occurred while opening a terminal.');
+            }
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

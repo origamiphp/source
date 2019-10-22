@@ -22,6 +22,9 @@ jobs:
     - name: 'Execute PHP-CS-Fixer in dry-run'
       run: ./vendor/bin/php-cs-fixer fix --dry-run --verbose
 
+    - name: 'Execute a copy/paste analysis'
+      run: ./vendor/bin/phpcpd src tests
+
     - name: 'Execute PHPStan analysis on src'
       run: ./vendor/bin/phpstan analyze src --level=max --memory-limit="-1" --verbose
 

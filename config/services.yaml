@@ -7,7 +7,6 @@ parameters:
     app.requirements:
         docker: 'A self-sufficient runtime for containers.'
         docker-compose: 'Define and run multi-container applications with Docker.'
-        brew: 'The missing package manager for macOS.'
         mutagen: 'Fast and efficient way to synchronize code to Docker containers.'
 
     app.environments:
