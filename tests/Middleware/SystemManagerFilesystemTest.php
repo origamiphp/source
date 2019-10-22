@@ -7,6 +7,7 @@ namespace App\Tests\Middleware;
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\ProcessFactory;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\Mkcert;
 use App\Middleware\SystemManager;
 use App\Repository\EnvironmentRepository;
@@ -75,7 +76,10 @@ final class SystemManagerFilesystemTest extends TestCase
             $this->validator->reveal(),
             $this->entityManager->reveal(),
             $this->environmentRepository->reveal(),
-            new ProcessFactory($this->prophesize(LoggerInterface::class)->reveal())
+            new ProcessFactory(
+                $this->prophesize(ProcessProxy::class)->reveal(),
+                $this->prophesize(LoggerInterface::class)->reveal()
+            )
         );
 
         static::assertTrue($systemManager->isBinaryInstalled('php'));
