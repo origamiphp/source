@@ -48,6 +48,8 @@ final class ServicesCommandTest extends TestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+
+        putenv('COLUMNS=120'); // Required by tests running with Github Actions
     }
 
     /**
