@@ -20,6 +20,7 @@ trait CustomCommandsTrait
     public function getFakeEnvironment(): Environment
     {
         $environment = new Environment();
+        $environment->setName('origami');
         $environment->setLocation('~/Sites/origami');
         $environment->setType('symfony');
 
