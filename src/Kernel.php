@@ -50,7 +50,7 @@ class Kernel extends BaseKernel
         if (\is_string($home) && $home !== '') {
             $home = rtrim($home, \DIRECTORY_SEPARATOR);
         } else {
-            throw new InvalidConfigurationException('Unable to determine the home directory.');
+            throw new InvalidConfigurationException('Unable to determine the home directory.'); // @codeCoverageIgnore
         }
 
         return "{$home}/.origami";
