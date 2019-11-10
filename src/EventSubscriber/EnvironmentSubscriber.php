@@ -42,6 +42,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     /**
      * {@inheritdoc}
      *
+     * @codeCoverageIgnore
+     *
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStop
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
@@ -66,7 +68,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      */
     public function onEnvironmentStart(EnvironmentStartedEvent $event): void
     {
-        $this->dockerCompose->setActiveEnvironment($event->getEnvironment());
+        $environment = $event->getEnvironment();
+
+        $this->dockerCompose->setActiveEnvironment($environment);
         $environmentVariables = $this->dockerCompose->getRequiredVariables();
 
         $io = $event->getSymfonyStyle();
@@ -77,7 +81,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('An error occurred while starting the Docker synchronization.');
         }
 
-        $environment = $event->getEnvironment();
         $environment->setActive(true);
         $this->entityManager->flush();
     }
@@ -91,7 +94,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      */
     public function onEnvironmentStop(EnvironmentStoppedEvent $event): void
     {
-        $this->dockerCompose->setActiveEnvironment($event->getEnvironment());
+        $environment = $event->getEnvironment();
+
+        $this->dockerCompose->setActiveEnvironment($environment);
         $environmentVariables = $this->dockerCompose->getRequiredVariables();
 
         $io = $event->getSymfonyStyle();
@@ -102,7 +107,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('An error occurred while stopping the Docker synchronization.');
         }
 
-        $environment = $event->getEnvironment();
         $environment->setActive(false);
         $this->entityManager->flush();
     }
@@ -116,13 +120,15 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      */
     public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
     {
-        $this->dockerCompose->setActiveEnvironment($event->getEnvironment());
+        $environment = $event->getEnvironment();
+
+        $this->dockerCompose->setActiveEnvironment($environment);
         $environmentVariables = $this->dockerCompose->getRequiredVariables();
 
         $io = $event->getSymfonyStyle();
 
-        if ($this->mutagen->startDockerSynchronization($environmentVariables)
-            && $this->mutagen->stopDockerSynchronization($environmentVariables)
+        if ($this->mutagen->stopDockerSynchronization($environmentVariables)
+            && $this->mutagen->startDockerSynchronization($environmentVariables)
         ) {
             $io->success('Docker synchronization successfully restarted.');
         } else {

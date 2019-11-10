@@ -28,12 +28,14 @@ class CommandSubscriber implements EventSubscriberInterface
     /**
      * {@inheritdoc}
      *
+     * @codeCoverageIgnore
+     *
      * @uses \App\EventSubscriber\CommandSubscriber::onConsoleCommand
      */
     public static function getSubscribedEvents(): array
     {
         return [
-            ConsoleCommandEvent::class => 'onConsoleCommand', // @codeCoverageIgnore
+            ConsoleCommandEvent::class => 'onConsoleCommand',
         ];
     }
 
