@@ -16,8 +16,6 @@ class Mutagen
 
     /**
      * Mutagen constructor.
-     *
-     * @param ProcessFactory $processFactory
      */
     public function __construct(ProcessFactory $processFactory)
     {
@@ -26,10 +24,6 @@ class Mutagen
 
     /**
      * Starts the Docker synchronization needed to share the project source code.
-     *
-     * @param array $environmentVariables
-     *
-     * @return bool
      */
     public function startDockerSynchronization(array $environmentVariables): bool
     {
@@ -61,10 +55,6 @@ class Mutagen
 
     /**
      * Stops the Docker synchronization needed to share the project source code.
-     *
-     * @param array $environmentVariables
-     *
-     * @return bool
      */
     public function stopDockerSynchronization(array $environmentVariables): bool
     {
@@ -76,10 +66,6 @@ class Mutagen
 
     /**
      * Removes the Docker synchronization needed to share the project source code.
-     *
-     * @param array $environmentVariables
-     *
-     * @return bool
      */
     public function removeDockerSynchronization(array $environmentVariables): bool
     {
@@ -91,11 +77,6 @@ class Mutagen
 
     /**
      * Checks whether an existing session is associated with the given environment.
-     *
-     * @param string $environmentName
-     * @param array  $environmentVariables
-     *
-     * @return bool
      */
     private function canResumeSynchronization(string $environmentName, array $environmentVariables): bool
     {

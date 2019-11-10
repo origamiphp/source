@@ -20,9 +20,6 @@ abstract class AbstractEnvironmentEvent extends Event
 
     /**
      * AbstractEnvironmentEvent constructor.
-     *
-     * @param Environment  $environment
-     * @param SymfonyStyle $symfonyStyle
      */
     public function __construct(Environment $environment, SymfonyStyle $symfonyStyle)
     {
@@ -32,8 +29,6 @@ abstract class AbstractEnvironmentEvent extends Event
 
     /**
      * Retrieves the environment associated to the current event.
-     *
-     * @return Environment
      */
     public function getEnvironment(): Environment
     {
@@ -42,8 +37,6 @@ abstract class AbstractEnvironmentEvent extends Event
 
     /**
      * Retrieves the SymfonyStyle object previously configured in the Command class.
-     *
-     * @return SymfonyStyle
      */
     public function getSymfonyStyle(): SymfonyStyle
     {

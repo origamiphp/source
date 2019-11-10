@@ -13,8 +13,6 @@ class Mkcert
 
     /**
      * Mkcert constructor.
-     *
-     * @param ProcessFactory $processFactory
      */
     public function __construct(ProcessFactory $processFactory)
     {
@@ -23,12 +21,6 @@ class Mkcert
 
     /**
      * Generates a locally-trusted development certificate with mkcert.
-     *
-     * @param string $certificate
-     * @param string $privateKey
-     * @param array  $domains
-     *
-     * @return bool
      */
     public function generateCertificate(string $certificate, string $privateKey, array $domains): bool
     {

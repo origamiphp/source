@@ -56,8 +56,6 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
 
     /**
      * @dataProvider provideEnvironmentTypes
-     *
-     * @param string $type
      */
     public function testItValidatesMagento2Configuration(string $type): void
     {
@@ -74,8 +72,6 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
 
     /**
      * @dataProvider provideEnvironmentTypes
-     *
-     * @param string $type
      */
     public function testItInvalidatesMissingConfiguration(string $type): void
     {

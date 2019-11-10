@@ -37,12 +37,6 @@ abstract class AbstractBaseCommand extends Command
 
     /**
      * AbstractBaseCommand constructor.
-     *
-     * @param SystemManager            $systemManager
-     * @param ValidatorInterface       $validator
-     * @param DockerCompose            $dockerCompose
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param null|string              $name
      */
     public function __construct(
         SystemManager $systemManager,
@@ -69,8 +63,6 @@ abstract class AbstractBaseCommand extends Command
 
     /**
      * Attempts to load the environment to manage in different ways and throws an exception if this is not possible.
-     *
-     * @param InputInterface $input
      *
      * @throws InvalidEnvironmentException
      */

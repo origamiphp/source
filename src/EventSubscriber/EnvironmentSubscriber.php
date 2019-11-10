@@ -27,10 +27,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
     /**
      * EnvironmentSubscriber constructor.
-     *
-     * @param DockerCompose          $dockerCompose
-     * @param Mutagen                $mutagen
-     * @param EntityManagerInterface $entityManager
      */
     public function __construct(DockerCompose $dockerCompose, Mutagen $mutagen, EntityManagerInterface $entityManager)
     {
@@ -62,8 +58,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     /**
      * Listener which triggers the Docker synchronization start.
      *
-     * @param EnvironmentStartedEvent $event
-     *
      * @throws InvalidEnvironmentException
      */
     public function onEnvironmentStart(EnvironmentStartedEvent $event): void
@@ -87,8 +81,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
     /**
      * Listener which triggers the Docker synchronization stop.
-     *
-     * @param EnvironmentStoppedEvent $event
      *
      * @throws InvalidEnvironmentException
      */
@@ -114,8 +106,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     /**
      * Listener which triggers the Docker synchronization restart.
      *
-     * @param EnvironmentRestartedEvent $event
-     *
      * @throws InvalidEnvironmentException
      */
     public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
@@ -138,8 +128,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
     /**
      * Listener which triggers the Docker synchronization removing.
-     *
-     * @param EnvironmentUninstallEvent $event
      *
      * @throws InvalidEnvironmentException
      */

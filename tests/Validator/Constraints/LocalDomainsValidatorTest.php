@@ -26,8 +26,6 @@ final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase
 
     /**
      * @dataProvider provideAcceptableValues
-     *
-     * @param string $value
      */
     public function testItValidatesAnAcceptableValue(string $value): void
     {
@@ -44,8 +42,6 @@ final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase
 
     /**
      * @dataProvider provideUnacceptableValues
-     *
-     * @param string $value
      */
     public function testItInvalidatesAnUnacceptableValue(string $value): void
     {

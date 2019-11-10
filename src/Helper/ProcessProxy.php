@@ -13,8 +13,6 @@ class ProcessProxy
 {
     /**
      * Checks whether TTY is supported on the current operating system.
-     *
-     * @return bool
      */
     public function isTtySupported(): bool
     {

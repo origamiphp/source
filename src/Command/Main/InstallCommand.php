@@ -23,13 +23,6 @@ class InstallCommand extends AbstractBaseCommand
 
     /**
      * InstallCommand constructor.
-     *
-     * @param SystemManager            $systemManager
-     * @param ValidatorInterface       $validator
-     * @param DockerCompose            $dockerCompose
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param array                    $environments
-     * @param null|string              $name
      */
     public function __construct(
         SystemManager $systemManager,
@@ -99,11 +92,7 @@ class InstallCommand extends AbstractBaseCommand
     /**
      * Validates the response provided by the user to the installation path question.
      *
-     * @param string $answer
-     *
      * @throws InvalidConfigurationException
-     *
-     * @return string
      */
     private function installationPathCallback(string $answer): string
     {
@@ -117,11 +106,7 @@ class InstallCommand extends AbstractBaseCommand
     /**
      * Validates the response provided by the user to the local domains question.
      *
-     * @param string $answer
-     *
      * @throws InvalidConfigurationException
-     *
-     * @return string
      */
     private function localDomainsCallback(string $answer): string
     {

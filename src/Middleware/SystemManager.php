@@ -32,12 +32,6 @@ class SystemManager
 
     /**
      * SystemManager constructor.
-     *
-     * @param Mkcert                 $mkcert
-     * @param ValidatorInterface     $validator
-     * @param EntityManagerInterface $entityManager
-     * @param EnvironmentRepository  $environmentRepository
-     * @param ProcessFactory         $processFactory
      */
     public function __construct(
         Mkcert $mkcert,
@@ -55,10 +49,6 @@ class SystemManager
 
     /**
      * Installs the Docker environment configuration.
-     *
-     * @param string      $location
-     * @param string      $type
-     * @param null|string $domains
      *
      * @throws InvalidEnvironmentException
      */
@@ -89,10 +79,6 @@ class SystemManager
 
     /**
      * Retrieves the environment associated to the given name.
-     *
-     * @param string $name
-     *
-     * @return null|Environment
      */
     public function getEnvironmentByName(string $name): ?Environment
     {
@@ -101,10 +87,6 @@ class SystemManager
 
     /**
      * Retrieves the environment associated to the given location.
-     *
-     * @param string $location
-     *
-     * @return null|Environment
      */
     public function getEnvironmentByLocation(string $location): ?Environment
     {
@@ -113,8 +95,6 @@ class SystemManager
 
     /**
      * Retrieves the currently active environment.
-     *
-     * @return null|Environment
      */
     public function getActiveEnvironment(): ?Environment
     {
@@ -123,8 +103,6 @@ class SystemManager
 
     /**
      * Retrieves all the environments.
-     *
-     * @return array
      */
     public function getAllEnvironments(): array
     {
@@ -133,8 +111,6 @@ class SystemManager
 
     /**
      * Uninstalls the Docker environment configuration.
-     *
-     * @param Environment $environment
      */
     public function uninstall(Environment $environment): void
     {
@@ -146,10 +122,6 @@ class SystemManager
 
     /**
      * Checks whether the given binary is available.
-     *
-     * @param string $binary
-     *
-     * @return bool
      */
     public function isBinaryInstalled(string $binary): bool
     {
@@ -158,10 +130,6 @@ class SystemManager
 
     /**
      * Prepare the project directory with environment files.
-     *
-     * @param Filesystem $filesystem
-     * @param string     $source
-     * @param string     $destination
      */
     private function copyEnvironmentFiles(Filesystem $filesystem, string $source, string $destination): void
     {
@@ -174,8 +142,6 @@ class SystemManager
 
     /**
      * Adds a new environment entry in the database.
-     *
-     * @param array $details
      *
      * @throws InvalidEnvironmentException
      */
@@ -198,8 +164,6 @@ class SystemManager
 
     /**
      * Removes an existing environment entry from the database.
-     *
-     * @param Environment $environment
      */
     private function removeExistingEnvironment(Environment $environment): void
     {

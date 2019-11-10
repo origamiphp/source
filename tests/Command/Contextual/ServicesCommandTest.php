@@ -55,10 +55,6 @@ final class ServicesCommandTest extends TestCase
     /**
      * @dataProvider provideServiceDetails
      *
-     * @param string $classname
-     * @param string $service
-     * @param string $user
-     *
      * @throws InvalidEnvironmentException
      */
     public function testItOpensTerminalOnService(string $classname, string $service, string $user): void
@@ -84,10 +80,6 @@ final class ServicesCommandTest extends TestCase
 
     /**
      * @dataProvider provideServiceDetails
-     *
-     * @param string $classname
-     * @param string $service
-     * @param string $user
      *
      * @throws InvalidEnvironmentException
      */

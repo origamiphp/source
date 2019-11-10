@@ -28,8 +28,6 @@ trait DockerComposeTrait
 
     /**
      * Retrieves fake environment variables to use within tests related to Docker Compose.
-     *
-     * @return array
      */
     public function getFakeEnvironmentVariables(): array
     {

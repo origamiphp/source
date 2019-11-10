@@ -45,9 +45,6 @@ final class LogsCommandTest extends WebTestCase
     /**
      * @dataProvider provideCommandModifiers
      *
-     * @param null|int    $tail
-     * @param null|string $service
-     *
      * @throws InvalidEnvironmentException
      */
     public function testItShowsServicesLogs(?int $tail, ?string $service): void
@@ -79,9 +76,6 @@ final class LogsCommandTest extends WebTestCase
 
     /**
      * @dataProvider provideCommandModifiers
-     *
-     * @param null|int    $tail
-     * @param null|string $service
      *
      * @throws InvalidEnvironmentException
      */

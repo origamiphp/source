@@ -14,8 +14,6 @@ trait CustomCommandsTrait
 {
     /**
      * Retrieves a new fake Environment instance.
-     *
-     * @return Environment
      */
     public function getFakeEnvironment(): Environment
     {
@@ -29,9 +27,6 @@ trait CustomCommandsTrait
 
     /**
      * Asserts that the environment details are displayed in verbose mode.
-     *
-     * @param Environment $environment
-     * @param string      $display
      */
     public static function assertDisplayIsVerbose(Environment $environment, string $display): void
     {
@@ -42,9 +37,6 @@ trait CustomCommandsTrait
 
     /**
      * Executes the given command and asserts the exception is properly handled.
-     *
-     * @param Command $command
-     * @param string  $message
      */
     public static function assertExceptionIsHandled(Command $command, string $message): void
     {

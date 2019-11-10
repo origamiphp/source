@@ -21,13 +21,6 @@ class CheckCommand extends AbstractBaseCommand
 
     /**
      * CheckCommand constructor.
-     *
-     * @param SystemManager            $systemManager
-     * @param ValidatorInterface       $validator
-     * @param DockerCompose            $dockerCompose
-     * @param EventDispatcherInterface $eventDispatcher
-     * @param array                    $requirements
-     * @param null|string              $name
      */
     public function __construct(
         SystemManager $systemManager,
