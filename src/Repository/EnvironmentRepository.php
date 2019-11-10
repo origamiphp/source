@@ -18,8 +18,6 @@ class EnvironmentRepository extends ServiceEntityRepository
 {
     /**
      * EnvironmentRepository constructor.
-     *
-     * @param RegistryInterface $registry
      */
     public function __construct(RegistryInterface $registry)
     {

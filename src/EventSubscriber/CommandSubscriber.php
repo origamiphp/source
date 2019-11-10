@@ -17,8 +17,6 @@ class CommandSubscriber implements EventSubscriberInterface
 
     /**
      * CommandSubscriber constructor.
-     *
-     * @param Setup $setup
      */
     public function __construct(Setup $setup)
     {
@@ -41,8 +39,6 @@ class CommandSubscriber implements EventSubscriberInterface
 
     /**
      * Listener which prepares the application database.
-     *
-     * @param ConsoleCommandEvent $event
      *
      * @throws Exception
      */

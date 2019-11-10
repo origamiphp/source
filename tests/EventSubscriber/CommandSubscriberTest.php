@@ -46,8 +46,6 @@ final class CommandSubscriberTest extends WebTestCase
 
     /**
      * Retrieves a fake command based on AbstractBaseCommand with previously defined prophecies.
-     *
-     * @return Command
      */
     private function getFakeCommand(): Command
     {

@@ -66,10 +66,6 @@ final class InstallCommandTest extends WebTestCase
 
     /**
      * @dataProvider provideEnvironmentConfigurations
-     *
-     * @param string $location
-     * @param string $type
-     * @param string $domains
      */
     public function testItInstallTheRequestedEnvironment(string $location, string $type, string $domains = ''): void
     {

@@ -102,8 +102,6 @@ final class AbstractBaseCommandTest extends WebTestCase
 
     /**
      * Retrieves a fake command based on AbstractBaseCommand with previously defined prophecies.
-     *
-     * @return AbstractBaseCommand
      */
     private function getFakeCommand(): AbstractBaseCommand
     {

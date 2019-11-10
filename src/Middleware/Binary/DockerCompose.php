@@ -28,9 +28,6 @@ class DockerCompose
 
     /**
      * DockerCompose constructor.
-     *
-     * @param ValidatorInterface $validator
-     * @param ProcessFactory     $processFactory
      */
     public function __construct(ValidatorInterface $validator, ProcessFactory $processFactory)
     {
@@ -40,8 +37,6 @@ class DockerCompose
 
     /**
      * Defines the currently active environment.
-     *
-     * @param Environment $environment
      *
      * @throws InvalidEnvironmentException
      */
@@ -55,8 +50,6 @@ class DockerCompose
 
     /**
      * Retrieves environment variables required to run processes.
-     *
-     * @return array
      */
     public function getRequiredVariables(): array
     {
@@ -70,8 +63,6 @@ class DockerCompose
 
     /**
      * Pulls/Builds the Docker images associated to the current environment.
-     *
-     * @return bool
      */
     public function prepareServices(): bool
     {
@@ -86,8 +77,6 @@ class DockerCompose
 
     /**
      * Shows the resources usage of the services associated to the current environment.
-     *
-     * @return bool
      */
     public function showResourcesUsage(): bool
     {
@@ -100,10 +89,7 @@ class DockerCompose
     /**
      * Shows the logs of the services associated to the current environment.
      *
-     * @param int         $tail
-     * @param null|string $service
-     *
-     * @return bool
+     * @param int $tail
      */
     public function showServicesLogs(?int $tail = 0, ?string $service = ''): bool
     {
@@ -118,8 +104,6 @@ class DockerCompose
 
     /**
      * Shows the status of the services associated to the current environment.
-     *
-     * @return bool
      */
     public function showServicesStatus(): bool
     {
@@ -131,8 +115,6 @@ class DockerCompose
 
     /**
      * Restarts the services of the current environment.
-     *
-     * @return bool
      */
     public function restartServices(): bool
     {
@@ -144,8 +126,6 @@ class DockerCompose
 
     /**
      * Starts the services after building the associated images.
-     *
-     * @return bool
      */
     public function startServices(): bool
     {
@@ -157,8 +137,6 @@ class DockerCompose
 
     /**
      * Stops the services of the current environment.
-     *
-     * @return bool
      */
     public function stopServices(): bool
     {
@@ -170,11 +148,6 @@ class DockerCompose
 
     /**
      * Opens a terminal on the service associated to the command.
-     *
-     * @param string $service
-     * @param string $user
-     *
-     * @return bool
      */
     public function openTerminal(string $service, string $user = ''): bool
     {
@@ -193,8 +166,6 @@ class DockerCompose
 
     /**
      * Removes the services of the current environment.
-     *
-     * @return bool
      */
     public function removeServices(): bool
     {

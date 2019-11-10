@@ -25,9 +25,7 @@ class Setup
     /**
      * Setup constructor.
      *
-     * @param Kernel             $kernel
-     * @param ApplicationFactory $applicationFactory
-     * @param string             $databaseName
+     * @param Kernel $kernel
      */
     public function __construct(KernelInterface $kernel, ApplicationFactory $applicationFactory, string $databaseName)
     {

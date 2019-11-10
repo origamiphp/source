@@ -40,8 +40,6 @@ final class CheckCommandTest extends WebTestCase
 
     /**
      * @dataProvider provideSystemRequirements
-     *
-     * @param array $requirements
      */
     public function testItPrintsSuccessWithAllRequirements(array $requirements): void
     {
@@ -70,8 +68,6 @@ final class CheckCommandTest extends WebTestCase
 
     /**
      * @dataProvider provideSystemRequirements
-     *
-     * @param array $requirements
      */
     public function testItPrintsErrorWithoutAllRequirements(array $requirements): void
     {

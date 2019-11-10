@@ -14,10 +14,6 @@ class ApplicationFactory
 {
     /**
      * Creates a new console application based on the given kernel.
-     *
-     * @param KernelInterface $kernel
-     *
-     * @return Application
      */
     public function create(KernelInterface $kernel): Application
     {

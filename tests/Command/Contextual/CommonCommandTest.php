@@ -52,10 +52,6 @@ final class CommonCommandTest extends WebTestCase
     /**
      * @dataProvider provideCommandDetails
      *
-     * @param string $classname
-     * @param string $method
-     * @param array  $messages
-     *
      * @throws InvalidEnvironmentException
      */
     public function testItExecutesProcessSuccessfully(string $classname, string $method, array $messages): void
@@ -87,10 +83,6 @@ final class CommonCommandTest extends WebTestCase
 
     /**
      * @dataProvider provideCommandDetails
-     *
-     * @param string $classname
-     * @param string $method
-     * @param array  $messages
      *
      * @throws InvalidEnvironmentException
      */

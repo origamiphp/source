@@ -17,9 +17,6 @@ class ProcessFactory
 
     /**
      * ProcessFactory constructor.
-     *
-     * @param ProcessProxy    $processProxy
-     * @param LoggerInterface $logger
      */
     public function __construct(ProcessProxy $processProxy, LoggerInterface $logger)
     {
@@ -29,11 +26,6 @@ class ProcessFactory
 
     /**
      * Runs the given command in background and returns the process.
-     *
-     * @param array $command
-     * @param array $environmentVariables
-     *
-     * @return Process
      */
     public function runBackgroundProcess(array $command, array $environmentVariables = []): Process
     {
@@ -47,11 +39,6 @@ class ProcessFactory
 
     /**
      * Runs the given command in foreground and returns the process.
-     *
-     * @param array $command
-     * @param array $environmentVariables
-     *
-     * @return Process
      */
     public function runForegroundProcess(array $command, array $environmentVariables = []): Process
     {
@@ -69,11 +56,6 @@ class ProcessFactory
 
     /**
      * Runs the given command in foreground as a shell command line and returns the process.
-     *
-     * @param string $command
-     * @param array  $environmentVariables
-     *
-     * @return Process
      */
     public function runForegroundProcessFromShellCommandLine(string $command, array $environmentVariables = []): Process
     {
