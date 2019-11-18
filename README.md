@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to Origami 👋</h1>
 <p align="center">
-  <img alt="Status: Alpha" src="https://img.shields.io/badge/status-alpha-orange" target="_blank" />
+  <img alt="Status: Beta" src="https://img.shields.io/badge/status-beta-yellow" target="_blank" />
   
   <a href="https://codecov.io/gh/ajardin/origami">
     <img src="https://codecov.io/gh/ajardin/origami/branch/master/graph/badge.svg?token=eYBykVI0QK" />
