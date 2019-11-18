@@ -1,6 +1,8 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    branches: ['**']
 
 jobs:
   tests:
@@ -8,39 +10,39 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: 'Prepare the build context'
-      uses: actions/checkout@v1
+      - name: 'Prepare the build context'
+        uses: actions/checkout@v1
 
-    - name: 'Install system requirements'
-      run: |
-        sudo mkdir -p /run/php/
-        sudo apt-get update
-        sudo apt-get install -y libicu-dev php-intl
+      - name: 'Install system requirements'
+        run: |
+          sudo mkdir -p /run/php/
+          sudo apt-get update
+          sudo apt-get install -y libicu-dev php-intl
 
-    - name: 'Install Composer dependencies'
-      run: composer install --optimize-autoloader --classmap-authoritative
+      - name: 'Install Composer dependencies'
+        run: composer install --optimize-autoloader --classmap-authoritative
 
-    - name: 'Execute PHP-CS-Fixer in dry-run'
-      run: ./vendor/bin/php-cs-fixer fix --dry-run --verbose
+      - name: 'Execute PHP-CS-Fixer in dry-run'
+        run: ./vendor/bin/php-cs-fixer fix --dry-run --verbose
 
-    - name: 'Execute a copy/paste analysis'
-      run: ./vendor/bin/phpcpd src tests
+      - name: 'Execute a copy/paste analysis'
+        run: ./vendor/bin/phpcpd src tests
 
-    - name: 'Execute PHPStan analysis on src'
-      run: ./vendor/bin/phpstan analyze src --level=max --memory-limit="-1" --verbose
+      - name: 'Execute PHPStan analysis on src'
+        run: ./vendor/bin/phpstan analyze src --level=max --memory-limit="-1" --verbose
 
-    - name: 'Execute PHPStan analysis on tests'
-      run: ./vendor/bin/phpstan analyze tests --level=max --memory-limit="-1" --verbose
+      - name: 'Execute PHPStan analysis on tests'
+        run: ./vendor/bin/phpstan analyze tests --level=max --memory-limit="-1" --verbose
 
-    - name: 'Execute security analysis'
-      run: ./bin/console security:check
+      - name: 'Execute security analysis'
+        run: ./bin/console security:check
 
-    - name: 'Execute PHPUnit tests and send report to Codecov'
-      run: |
-        ./bin/console doctrine:database:create --env=test
-        ./bin/console doctrine:schema:create --env=test
-        ./bin/console doctrine:fixtures:load --env=test
-        ./bin/phpunit
-        bash <(curl -s https://codecov.io/bash)
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      - name: 'Execute PHPUnit tests and send report to Codecov'
+        run: |
+          ./bin/console doctrine:database:create --env=test
+          ./bin/console doctrine:schema:create --env=test
+          ./bin/console doctrine:fixtures:load --env=test
+          ./bin/phpunit
+          bash <(curl -s https://codecov.io/bash)
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
