@@ -1,9 +1,13 @@
 #!/usr/bin/env php
 <?php
 
+use App\Command\DefaultCommand;
+use App\Helper\ReleaseHandler;
 use App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
+use Symfony\Component\Console\Output\ConsoleOutput;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Debug\Debug;
 
 if (false === in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
@@ -37,7 +41,13 @@ if ($_SERVER['APP_DEBUG']) {
     }
 }
 
+/** @var Kernel $kernel */
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
+
+// Executes a custom check to avoid potential errors following an application upgrade.
+$tracker = new ReleaseHandler($kernel, new SymfonyStyle($input, new ConsoleOutput()));
+$tracker->verify();
+
 $application = new Application($kernel);
-$application->setDefaultCommand(\App\Command\DefaultCommand::getDefaultName());
+$application->setDefaultCommand(DefaultCommand::getDefaultName());
 $application->run($input);

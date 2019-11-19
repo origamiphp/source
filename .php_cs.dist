@@ -13,7 +13,7 @@ return PhpCsFixer\Config::create()
     ->setFinder(
         PhpCsFixer\Finder::create()
             ->in([__DIR__.'/src', __DIR__.'/tests'])
-            ->append([__FILE__])
+            ->append([__FILE__, 'bin/console'])
     )
     ->setCacheFile(__DIR__.'/var/.php_cs.cache')
 ;

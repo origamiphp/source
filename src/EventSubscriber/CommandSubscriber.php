@@ -4,23 +4,32 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Helper\Setup;
+use App\Helper\ApplicationFactory;
+use App\Kernel;
 use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    /** @var Setup */
-    private $setup;
+    private $kernel;
+    private $applicationFactory;
+    private $databaseName;
 
     /**
      * CommandSubscriber constructor.
+     *
+     * @param Kernel $kernel
      */
-    public function __construct(Setup $setup)
+    public function __construct(KernelInterface $kernel, ApplicationFactory $applicationFactory, string $databaseName)
     {
-        $this->setup = $setup;
+        $this->kernel = $kernel;
+        $this->applicationFactory = $applicationFactory;
+        $this->databaseName = $databaseName;
     }
 
     /**
@@ -49,9 +58,16 @@ class CommandSubscriber implements EventSubscriberInterface
         if ($command instanceof Command) {
             $commandName = $command->getName();
 
-            if (\is_string($commandName) && strpos($commandName, 'origami') !== false) {
-                $this->setup->createProjectDirectory();
-                $this->setup->initializeProjectDatabase();
+            if (\is_string($commandName) && strpos($commandName, 'origami') !== false
+                && !is_file($this->kernel->getCustomDir().\DIRECTORY_SEPARATOR.$this->databaseName)
+            ) {
+                $application = $this->applicationFactory->create($this->kernel);
+                $application->setAutoExit(false);
+
+                $input = new ArrayInput(['command' => 'doctrine:schema:create', '--force']);
+                $output = new NullOutput();
+
+                $application->run($input, $output);
             }
         }
     }

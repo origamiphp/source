@@ -3,6 +3,7 @@ includes:
   - vendor/phpstan/phpstan-phpunit/extension.neon
 
 parameters:
+  inferPrivatePropertyTypeFromConstructor: true
   symfony:
     console_application_loader: tests/console-application.php
     container_xml_path: '%rootDir%/../../../var/cache/dev/srcApp_KernelDevDebugContainer.xml'
