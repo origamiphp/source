@@ -6,10 +6,10 @@ namespace App\Tests\Helper;
 
 use App\Helper\ReleaseHandler;
 use App\Kernel;
+use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -18,14 +18,15 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class ReleaseHandlerTest extends WebTestCase
 {
-    private $location;
+    use TestLocationTrait;
 
     /**
      * {@inheritDoc).
      */
     protected function setUp(): void
     {
-        $this->location = sys_get_temp_dir().'/origami/ReleaseHandlerTest';
+        parent::setUp();
+        $this->createLocation();
     }
 
     /**
@@ -34,13 +35,7 @@ final class ReleaseHandlerTest extends WebTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItClearsTheCacheWhenTrackerIsAbsent(): void

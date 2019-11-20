@@ -36,6 +36,8 @@ final class AbstractBaseCommandTest extends WebTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->systemManager = $this->prophesize(SystemManager::class);
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);

@@ -7,6 +7,7 @@ namespace App\Tests\Middleware\Binary;
 use App\Entity\Environment;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestLocationTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
@@ -20,10 +21,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class DockerComposeLogsTest extends TestCase
 {
     use DockerComposeTrait;
+    use TestLocationTrait;
 
     private $validator;
     private $processFactory;
-    private $location;
     private $environment;
 
     /**
@@ -36,7 +37,7 @@ final class DockerComposeLogsTest extends TestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->processFactory = $this->prophesize(ProcessFactory::class);
 
-        $this->location = sys_get_temp_dir().'/origami/DockerComposeLogsTest';
+        $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
 
         $this->environment = new Environment();
@@ -55,13 +56,7 @@ final class DockerComposeLogsTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItShowServicesLogsWithDefaultArguments(): void

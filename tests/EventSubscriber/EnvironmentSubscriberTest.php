@@ -37,6 +37,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->mutagen = $this->prophesize(Mutagen::class);
         $this->entityManager = $this->prophesize(EntityManagerInterface::class);

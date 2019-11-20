@@ -9,13 +9,13 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -28,25 +28,26 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class InstallCommandTest extends WebTestCase
 {
+    use TestLocationTrait;
+
     private $systemManager;
     private $validator;
     private $dockerCompose;
     private $eventDispatcher;
-
-    private $location;
 
     /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->systemManager = $this->prophesize(SystemManager::class);
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
-        $this->location = sys_get_temp_dir().'/origami/InstallCommandTest';
-        mkdir($this->location, 0777, true);
+        $this->createLocation();
     }
 
     /**
@@ -55,13 +56,7 @@ final class InstallCommandTest extends WebTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     /**

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Validator\Constraints;
 
 use App\Entity\Environment;
+use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\ConfigurationFilesValidator;
 use Generator;
@@ -20,7 +21,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
  */
 final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
 {
-    protected $location;
+    use TestLocationTrait;
 
     /**
      * {@inheritdoc}
@@ -29,7 +30,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
     {
         parent::setUp();
 
-        $this->location = sys_get_temp_dir().'/origami/ConfigurationFilesValidatorTest';
+        $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
     }
 
@@ -39,13 +40,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItThrowsAnExceptionWithAnInvalidConstraint(): void

@@ -7,6 +7,7 @@ namespace App\Tests\EventSubscriber;
 use App\EventSubscriber\CommandSubscriber;
 use App\Helper\ApplicationFactory;
 use App\Kernel;
+use App\Tests\TestLocationTrait;
 use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Symfony\Bundle\FrameworkBundle\Command\ConfigDebugCommand;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -14,7 +15,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\NullOutput;
-use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @internal
@@ -23,15 +23,15 @@ use Symfony\Component\Filesystem\Filesystem;
  */
 final class CommandSubscriberTest extends WebTestCase
 {
-    private $location;
+    use TestLocationTrait;
 
     /**
      * {@inheritdoc}
      */
     protected function setUp(): void
     {
-        $this->location = sys_get_temp_dir().'/origami/CommandSubscriberTest';
-        mkdir($this->location, 0777, true);
+        parent::setUp();
+        $this->createLocation();
     }
 
     /**
@@ -40,13 +40,7 @@ final class CommandSubscriberTest extends WebTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItInitializesTheDatabase(): void

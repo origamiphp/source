@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Validator\Constraints;
 
 use App\Entity\Environment;
+use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\DotEnvExists;
 use App\Validator\Constraints\DotEnvExistsValidator;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraints\Blank;
 use Symfony\Component\Validator\ConstraintValidatorInterface;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -19,7 +19,8 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
  */
 final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
 {
-    protected $location;
+    use TestLocationTrait;
+
     protected $filePath;
 
     /**
@@ -29,7 +30,7 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
     {
         parent::setUp();
 
-        $this->location = sys_get_temp_dir().'/origami/DotEnvExistsValidatorTest';
+        $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
 
         $this->filePath = $this->location.'/var/docker/.env';
@@ -47,12 +48,7 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
             unlink($this->filePath);
         }
 
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItThrowsAnExceptionWithAnInvalidConstraint(): void
