@@ -11,12 +11,12 @@ use App\Helper\ProcessProxy;
 use App\Middleware\Binary\Mkcert;
 use App\Middleware\SystemManager;
 use App\Repository\EnvironmentRepository;
+use App\Tests\TestLocationTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -29,13 +29,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class SystemManagerFilesystemTest extends TestCase
 {
+    use TestLocationTrait;
+
     private $mkcert;
     private $validator;
     private $entityManager;
     private $environmentRepository;
     private $processFactory;
-
-    private $location;
 
     /**
      * {@inheritdoc}
@@ -50,8 +50,7 @@ final class SystemManagerFilesystemTest extends TestCase
         $this->environmentRepository = $this->prophesize(EnvironmentRepository::class);
         $this->processFactory = $this->prophesize(ProcessFactory::class);
 
-        $this->location = sys_get_temp_dir().'/origami/SystemManagerTest';
-        mkdir($this->location, 0777, true);
+        $this->createLocation();
     }
 
     /**
@@ -60,13 +59,7 @@ final class SystemManagerFilesystemTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItChecksInstalledBinary(): void
@@ -89,9 +82,9 @@ final class SystemManagerFilesystemTest extends TestCase
     /**
      * @dataProvider provideMultipleInstallContexts
      */
-    public function testItInstallsConfigurationFiles(string $location, string $type, ?string $domains = null): void
+    public function testItInstallsConfigurationFiles(string $type, ?string $domains = null): void
     {
-        $destination = "{$location}/var/docker";
+        $destination = "{$this->location}/var/docker";
 
         if ($domains !== null) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -109,8 +102,8 @@ final class SystemManagerFilesystemTest extends TestCase
         ;
 
         $environment = new Environment();
-        $environment->setName(basename($location));
-        $environment->setLocation($location);
+        $environment->setName(basename($this->location));
+        $environment->setLocation($this->location);
         $environment->setType($type);
         if ($domains !== null) {
             $environment->setDomains($domains);
@@ -127,7 +120,7 @@ final class SystemManagerFilesystemTest extends TestCase
             $this->processFactory->reveal()
         );
 
-        $systemManager->install($location, $type, $domains);
+        $systemManager->install($this->location, $type, $domains);
 
         $finder = new Finder();
         $finder->files()->in(__DIR__."/../../src/Resources/{$type}");
@@ -143,9 +136,9 @@ final class SystemManagerFilesystemTest extends TestCase
     /**
      * @dataProvider provideMultipleInstallContexts
      */
-    public function testItThrowsAnExceptionWithInvalidEnvironment(string $location, string $type, ?string $domains = null): void
+    public function testItThrowsAnExceptionWithInvalidEnvironment(string $type, ?string $domains = null): void
     {
-        $destination = "{$location}/var/docker";
+        $destination = "{$this->location}/var/docker";
 
         if ($domains !== null) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -169,8 +162,8 @@ final class SystemManagerFilesystemTest extends TestCase
         ;
 
         $environment = new Environment();
-        $environment->setName(basename($location));
-        $environment->setLocation($location);
+        $environment->setName(basename($this->location));
+        $environment->setLocation($this->location);
         $environment->setType($type);
         if ($domains !== null) {
             $environment->setDomains($domains);
@@ -188,20 +181,17 @@ final class SystemManagerFilesystemTest extends TestCase
         );
 
         $this->expectException(InvalidEnvironmentException::class);
-        $systemManager->install($location, $type, $domains);
+        $systemManager->install($this->location, $type, $domains);
     }
 
     /**
      * @dataProvider provideMultipleInstallContexts
      */
-    public function testItUninstallsEnvironment(string $location, string $type, ?string $domains = null): void
+    public function testItUninstallsEnvironment(string $type, ?string $domains = null): void
     {
-        $destination = "{$location}/var/docker";
-        mkdir($destination, 0777, true);
-
         $environment = new Environment();
-        $environment->setName(basename($location));
-        $environment->setLocation($location);
+        $environment->setName(basename($this->location));
+        $environment->setLocation($this->location);
         $environment->setType($type);
         if ($domains !== null) {
             $environment->setDomains($domains);
@@ -218,16 +208,17 @@ final class SystemManagerFilesystemTest extends TestCase
             $this->processFactory->reveal()
         );
 
+        $destination = "{$this->location}/var/docker";
+        mkdir($destination, 0777, true);
         static::assertDirectoryExists($destination);
+
         $systemManager->uninstall($environment);
         static::assertDirectoryNotExists($destination);
     }
 
     public function provideMultipleInstallContexts(): ?Generator
     {
-        $location = sys_get_temp_dir().'/origami/SystemManagerTest';
-
-        yield [$location, 'magento2', 'www.magento.localhost magento.localhost'];
-        yield [$location, 'magento2', ''];
+        yield ['magento2', 'www.magento.localhost magento.localhost'];
+        yield ['magento2', ''];
     }
 }

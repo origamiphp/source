@@ -8,6 +8,7 @@ use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use PHPUnit\Framework\TestCase;
@@ -27,10 +28,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class DockerComposeDefaultTest extends TestCase
 {
     use DockerComposeTrait;
+    use TestLocationTrait;
 
     private $validator;
     private $processFactory;
-    private $location;
     private $environment;
 
     /**
@@ -43,7 +44,7 @@ final class DockerComposeDefaultTest extends TestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->processFactory = $this->prophesize(ProcessFactory::class);
 
-        $this->location = sys_get_temp_dir().'/origami/DockerComposeDefaultTest';
+        $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
 
         $this->environment = new Environment();
@@ -62,13 +63,7 @@ final class DockerComposeDefaultTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
-        if (is_dir($this->location)) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($this->location);
-        }
-
-        $this->location = null;
+        $this->removeLocation();
     }
 
     public function testItDefinesTheActiveEnvironment(): void
