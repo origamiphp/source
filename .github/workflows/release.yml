@@ -24,7 +24,7 @@ jobs:
 
       - name: 'Package the application'
         run: |
-          composer dump-env prod
+          perl -pi -e "s/APP_ENV=dev/APP_ENV=prod/g" .env
           docker run --interactive --volume=$(pwd):/app ajardin/humbug-box compile
           docker run --interactive --volume=$(pwd):/app ajardin/humbug-box info ./build/origami.phar
 
