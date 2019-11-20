@@ -6,8 +6,8 @@
         "vendor"
     ],
     "files": [
-        "src/Resources/magento2/.env",
-        ".env.local.php"
+        ".env",
+        "src/Resources/magento2/.env"
     ],
     "blacklist": [
         "var"

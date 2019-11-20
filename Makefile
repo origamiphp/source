@@ -6,9 +6,9 @@
 
 box: ## Compiles the project into a PHAR archive
 	rm -rf ${HOME}/.origami/cache/* ${HOME}/.origami/logs/* var/*
-	composer dump-env prod
+	perl -pi -e "s/APP_ENV=dev/APP_ENV=prod/g" .env
 	box compile
-	rm .env.local.php
+	perl -pi -e "s/APP_ENV=prod/APP_ENV=dev/g" .env
 .PHONY: box
 
 php-cs-fixer: ## Fixes code style in all PHP files
