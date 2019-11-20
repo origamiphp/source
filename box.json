@@ -9,7 +9,11 @@
         "src/Resources/magento2/.env",
         ".env.local.php"
     ],
+    "blacklist": [
+        "var"
+    ],
     "force-autodiscovery": true,
     "output": "build/origami.phar",
-    "compression": "GZ"
+    "compression": "GZ",
+    "git-version": "git_version"
 }
