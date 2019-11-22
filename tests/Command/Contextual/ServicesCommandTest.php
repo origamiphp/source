@@ -23,6 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 /**
  * @internal
  *
+ * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Contextual\Services\AbstractServiceCommand
  * @covers \App\Command\Contextual\Services\ElasticsearchCommand
  * @covers \App\Command\Contextual\Services\MysqlCommand

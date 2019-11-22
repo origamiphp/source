@@ -25,7 +25,6 @@
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
-        "codedungeon/phpunit-result-printer": "^0.26.2",
         "doctrine/doctrine-fixtures-bundle": "^3.2",
         "friendsofphp/php-cs-fixer": "3.0.x-dev",
         "jangregor/phpstan-prophecy": "^0.4.2",
@@ -78,7 +77,7 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "4.3.*"
+            "require": "4.4.*"
         }
     }
 }

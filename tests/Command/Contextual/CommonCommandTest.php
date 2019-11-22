@@ -28,6 +28,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * @covers \App\Command\Contextual\PsCommand
  * @covers \App\Command\Contextual\RestartCommand
  * @covers \App\Command\Contextual\StopCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class CommonCommandTest extends WebTestCase
 {

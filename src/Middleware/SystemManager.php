@@ -155,7 +155,10 @@ class SystemManager
 
         $errors = $this->validator->validate($environment);
         if ($errors->count() > 0) {
-            throw new InvalidEnvironmentException($errors->get(0)->getMessage());
+            /** @var string $message */
+            $message = $errors->get(0)->getMessage();
+
+            throw new InvalidEnvironmentException($message);
         }
 
         $this->entityManager->persist($environment);

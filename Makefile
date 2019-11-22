@@ -29,7 +29,7 @@ security: ## Executes a security audit on all PHP dependencies
 .PHONY: security
 
 tests: ## Executes the unit tests and functional tests
-	bin/phpunit
+	bin/phpunit --testdox
 .PHONY: tests
 
 help:
