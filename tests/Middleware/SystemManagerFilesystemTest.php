@@ -62,6 +62,9 @@ final class SystemManagerFilesystemTest extends TestCase
         $this->removeLocation();
     }
 
+    /**
+     * @uses \App\Helper\ProcessFactory
+     */
     public function testItChecksInstalledBinary(): void
     {
         $systemManager = new SystemManager(

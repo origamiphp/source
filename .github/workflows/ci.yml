@@ -42,7 +42,7 @@ jobs:
           ./bin/console doctrine:database:create --env=test
           ./bin/console doctrine:schema:create --env=test
           ./bin/console doctrine:fixtures:load --env=test
-          ./bin/phpunit
+          ./bin/phpunit --testdox
           bash <(curl -s https://codecov.io/bash)
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

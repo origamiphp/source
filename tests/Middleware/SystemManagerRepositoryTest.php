@@ -20,6 +20,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @covers \App\Middleware\SystemManager
  * @covers \App\Repository\EnvironmentRepository
+ *
+ * @uses \App\Kernel
  */
 final class SystemManagerRepositoryTest extends KernelTestCase
 {

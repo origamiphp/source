@@ -20,6 +20,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Main\UninstallCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class UninstallCommandTest extends WebTestCase
 {
