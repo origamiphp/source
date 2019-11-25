@@ -21,7 +21,7 @@
         "symfony/orm-pack": "^1.0",
         "symfony/process": "^4.3",
         "symfony/validator": "^4.3",
-        "symfony/yaml": "^4.3"
+        "symfony/yaml": "^5.0"
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
