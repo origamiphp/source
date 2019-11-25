@@ -19,7 +19,7 @@
         "symfony/flex": "^1.1",
         "symfony/framework-bundle": "^4.3",
         "symfony/orm-pack": "^1.0",
-        "symfony/process": "^4.3",
+        "symfony/process": "^5.0",
         "symfony/validator": "^4.3",
         "symfony/yaml": "^4.3"
     },
