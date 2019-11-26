@@ -23,25 +23,22 @@ jobs:
         run: composer install --optimize-autoloader --classmap-authoritative
 
       - name: 'Execute PHP-CS-Fixer in dry-run'
-        run: ./vendor/bin/php-cs-fixer fix --dry-run --verbose
+        run: make phpcsfixer-audit
 
       - name: 'Execute a copy/paste analysis'
-        run: ./vendor/bin/phpcpd src tests
+        run: make phpcpd
 
-      - name: 'Execute PHPStan analysis on src'
-        run: ./vendor/bin/phpstan analyze src --level=max --memory-limit="-1" --verbose
-
-      - name: 'Execute PHPStan analysis on tests'
-        run: ./vendor/bin/phpstan analyze tests --level=max --memory-limit="-1" --verbose
+      - name: 'Execute PHPStan analysis'
+        run: make phpstan
 
       - name: 'Execute security analysis'
-        run: ./bin/console security:check
+        run: make security
 
       - name: 'Execute PHPUnit tests and send report to Codecov'
         run: |
           ./bin/console doctrine:database:create --env=test
           ./bin/console doctrine:schema:create --env=test
-          ./bin/console doctrine:fixtures:load --env=test
+          ./bin/console doctrine:fixtures:load --no-interaction --env=test
           ./bin/phpunit --testdox
           bash <(curl -s https://codecov.io/bash)
         env:

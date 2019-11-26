@@ -1,12 +1,19 @@
 includes:
-  - vendor/jangregor/phpstan-prophecy/src/extension.neon
-  - vendor/phpstan/phpstan-phpunit/extension.neon
+  - /root/.composer/vendor/phpstan/phpstan-phpunit/extension.neon
+  - /root/.composer/vendor/phpstan/phpstan-symfony/extension.neon
+  - /root/.composer/vendor/jangregor/phpstan-prophecy/src/extension.neon
 
 parameters:
-  inferPrivatePropertyTypeFromConstructor: true
+  level: max
+  paths:
+    - %currentWorkingDirectory%/src
+    - %currentWorkingDirectory%/tests
   symfony:
-    console_application_loader: tests/console-application.php
-    container_xml_path: '%rootDir%/../../../var/cache/dev/srcApp_KernelDevDebugContainer.xml'
+    console_application_loader: '%currentWorkingDirectory%/tests/console-application-loader.php'
+    container_xml_path: '%currentWorkingDirectory%/var/cache/dev/App_KernelDevDebugContainer.xml'
+  excludes_analyse:
+    - src/EventSubscriber/CommandSubscriber.php         # False-positives following the upgrade to Symfony 5.0
+    - tests/EventSubscriber/CommandSubscriberTest.php   # False-positives following the upgrade to Symfony 5.0
   ignoreErrors:
     -
       # False-positive because of the "hasArgument()" method.
@@ -21,3 +28,4 @@ parameters:
       message: '#Property .* \(Doctrine\\ORM\\EntityManagerInterface\) does not accept null.#'
       path: %currentWorkingDirectory%/tests/Middleware/SystemManagerRepositoryTest.php
   reportUnmatchedIgnoredErrors: false
+  inferPrivatePropertyTypeFromConstructor: true

@@ -13,7 +13,7 @@ use App\EventSubscriber\EnvironmentSubscriber;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use Doctrine\ORM\EntityManagerInterface;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
