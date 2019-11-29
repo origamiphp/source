@@ -14,7 +14,9 @@ use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\Command\CustomCommandsTrait;
 use Generator;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use Prophecy\Argument;
+use stdClass;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -65,6 +67,7 @@ final class CommonCommandTest extends WebTestCase
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->{$method}()->shouldBeCalledOnce()->willReturn(true);
+        $this->eventDispatcher->dispatch(Argument::any())->willReturn(new stdClass());
 
         $command = new $classname(
             $this->systemManager->reveal(),

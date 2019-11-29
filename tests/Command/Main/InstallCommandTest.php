@@ -12,7 +12,7 @@ use App\Middleware\SystemManager;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;

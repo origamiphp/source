@@ -8,13 +8,15 @@ use App\EventSubscriber\CommandSubscriber;
 use App\Helper\ApplicationFactory;
 use App\Kernel;
 use App\Tests\TestLocationTrait;
-use Liip\FunctionalTestBundle\Test\WebTestCase;
 use Symfony\Bundle\FrameworkBundle\Command\ConfigDebugCommand;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
@@ -62,11 +64,14 @@ final class CommandSubscriberTest extends WebTestCase
         $applicationFactory = $this->prophesize(ApplicationFactory::class);
         $applicationFactory->create($kernel->reveal())->shouldBeCalledOnce()->willReturn($application->reveal());
 
-        $event = $this->prophesize(ConsoleCommandEvent::class);
-        $event->getCommand()->shouldBeCalledOnce()->willReturn($this->getFakeCommand());
-
         $subscriber = new CommandSubscriber($kernel->reveal(), $applicationFactory->reveal(), $databaseName);
-        $subscriber->onConsoleCommand($event->reveal());
+        $subscriber->onConsoleCommand(
+            new ConsoleCommandEvent(
+                $this->getFakeCommand(),
+                $this->prophesize(InputInterface::class)->reveal(),
+                $this->prophesize(OutputInterface::class)->reveal()
+            )
+        );
     }
 
     public function testItDoesNotInitializeTwiceTheDatabase(): void
@@ -81,11 +86,14 @@ final class CommandSubscriberTest extends WebTestCase
         $applicationFactory = $this->prophesize(ApplicationFactory::class);
         $applicationFactory->create()->shouldNotBeCalled();
 
-        $event = $this->prophesize(ConsoleCommandEvent::class);
-        $event->getCommand()->shouldBeCalledOnce()->willReturn($this->getFakeCommand());
-
         $subscriber = new CommandSubscriber($kernel->reveal(), $applicationFactory->reveal(), $databaseName);
-        $subscriber->onConsoleCommand($event->reveal());
+        $subscriber->onConsoleCommand(
+            new ConsoleCommandEvent(
+                $this->getFakeCommand(),
+                $this->prophesize(InputInterface::class)->reveal(),
+                $this->prophesize(OutputInterface::class)->reveal()
+            )
+        );
     }
 
     public function testItDoesNotInitializeTheDatabaseWithExternalCommands(): void
@@ -100,11 +108,14 @@ final class CommandSubscriberTest extends WebTestCase
         $applicationFactory = $this->prophesize(ApplicationFactory::class);
         $applicationFactory->create()->shouldNotBeCalled();
 
-        $event = $this->prophesize(ConsoleCommandEvent::class);
-        $event->getCommand()->shouldBeCalledOnce()->willReturn(new ConfigDebugCommand());
-
         $subscriber = new CommandSubscriber($kernel->reveal(), $applicationFactory->reveal(), $databaseName);
-        $subscriber->onConsoleCommand($event->reveal());
+        $subscriber->onConsoleCommand(
+            new ConsoleCommandEvent(
+                new ConfigDebugCommand(),
+                $this->prophesize(InputInterface::class)->reveal(),
+                $this->prophesize(OutputInterface::class)->reveal()
+            )
+        );
     }
 
     /**
