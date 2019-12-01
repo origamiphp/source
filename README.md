@@ -78,11 +78,7 @@ origami list
 ## ✅ Run tests
 
 ```sh
-./bin/console doctrine:database:create --env=test
-./bin/console doctrine:schema:create --env=test
-./bin/console doctrine:fixtures:load --env=test
-
-./bin/phpunit
+make tests
 ```
 
 ## 🤝 Contributing
