@@ -124,4 +124,19 @@ class Kernel extends BaseKernel
         $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
     }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
+     *
+     * @throws InvalidConfigurationException
+     */
+    protected function getKernelParameters(): array
+    {
+        $parameters = parent::getKernelParameters();
+        $parameters['kernel.custom_dir'] = $this->getCustomDir();
+
+        return $parameters;
+    }
 }
