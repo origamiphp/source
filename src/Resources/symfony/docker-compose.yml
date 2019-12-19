@@ -7,12 +7,6 @@ services:
     depends_on:
       - php
 
-  elasticsearch:
-    image: ajardin/magento2-elasticsearch:latest
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    volumes:
-      - elasticsearch:/usr/share/elasticsearch/data
-
   maildev:
     image: djfarrelly/maildev:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
@@ -21,17 +15,8 @@ services:
     ports:
       - 1080:80
 
-  mysql:
-    image: ajardin/magento2-mysql:latest
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    ports:
-      - 3306:3306
-    volumes:
-      - mysql:/var/lib/mysql
-    tty: true
-
   nginx:
-    image: ajardin/magento2-nginx:latest
+    image: ajardin/symfony-nginx:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - 443:443
@@ -47,7 +32,7 @@ services:
     tty: true
 
   php:
-    image: ajardin/magento2-php:${DOCKER_PHP_IMAGE}
+    image: ajardin/symfony-php:${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
@@ -60,11 +45,13 @@ services:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
     tty: true
 
-  redis:
-    image: redis:3.2-alpine
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
+  postgres:
+    image: postgres:10-alpine
+    env_file: .env
+    ports:
+      - 5432:5432
     volumes:
-      - redis:/data
+      - postgres:/var/lib/postgresql/data
     tty: true
 
   synchro:
@@ -75,6 +62,4 @@ services:
 
 volumes:
   code_sync: {}
-  elasticsearch: {}
-  mysql: {}
-  redis: {}
+  postgres: {}
