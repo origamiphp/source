@@ -23,10 +23,6 @@ final class DockerComposeTerminalTest extends TestCase
     use DockerComposeTrait;
     use TestLocationTrait;
 
-    private $validator;
-    private $processFactory;
-    private $environment;
-
     /**
      * {@inheritdoc}
      */

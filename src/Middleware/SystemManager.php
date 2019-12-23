@@ -15,20 +15,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SystemManager
 {
-    /** @var Mkcert */
-    private $mkcert;
-
-    /** @var ValidatorInterface */
-    private $validator;
-
-    /** @var EntityManagerInterface */
-    private $entityManager;
-
-    /** @var EnvironmentRepository */
-    private $environmentRepository;
-
-    /** @var ProcessFactory */
-    private $processFactory;
+    private Mkcert $mkcert;
+    private ValidatorInterface $validator;
+    private EntityManagerInterface $entityManager;
+    private EnvironmentRepository $environmentRepository;
+    private ProcessFactory $processFactory;
 
     /**
      * SystemManager constructor.

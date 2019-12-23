@@ -8,8 +8,7 @@ use App\Helper\ProcessFactory;
 
 class Mkcert
 {
-    /** @var ProcessFactory */
-    private $processFactory;
+    private ProcessFactory $processFactory;
 
     /**
      * Mkcert constructor.

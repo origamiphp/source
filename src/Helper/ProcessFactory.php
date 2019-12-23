@@ -9,11 +9,8 @@ use Symfony\Component\Process\Process;
 
 class ProcessFactory
 {
-    /** @var ProcessProxy */
-    private $processProxy;
-
-    /** @var LoggerInterface */
-    private $logger;
+    private ProcessProxy $processProxy;
+    private LoggerInterface $logger;
 
     /**
      * ProcessFactory constructor.

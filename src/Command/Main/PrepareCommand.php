@@ -37,7 +37,7 @@ class PrepareCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->checkPrequisites($input);
+            $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails();

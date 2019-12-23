@@ -17,23 +17,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class AbstractBaseCommand extends Command
 {
-    /** @var SystemManager */
-    protected $systemManager;
-
-    /** @var ValidatorInterface */
-    protected $validator;
-
-    /** @var DockerCompose */
-    protected $dockerCompose;
-
-    /** @var EventDispatcherInterface */
-    protected $eventDispatcher;
-
-    /** @var Environment */
-    protected $environment;
-
-    /** @var SymfonyStyle */
-    protected $io;
+    protected SystemManager $systemManager;
+    protected ValidatorInterface $validator;
+    protected DockerCompose $dockerCompose;
+    protected EventDispatcherInterface $eventDispatcher;
+    protected ?Environment $environment = null;
+    protected SymfonyStyle $io;
 
     /**
      * AbstractBaseCommand constructor.
@@ -66,7 +55,7 @@ abstract class AbstractBaseCommand extends Command
      *
      * @throws InvalidEnvironmentException
      */
-    protected function checkPrequisites(InputInterface $input): void
+    protected function getEnvironment(InputInterface $input): Environment
     {
         // 1. Try to load the currently running environment.
         $environment = $this->systemManager->getActiveEnvironment();
@@ -104,6 +93,8 @@ abstract class AbstractBaseCommand extends Command
                 'An environment must be given, please consider using the install command instead.'
             );
         }
+
+        return $this->environment;
     }
 
     /**
@@ -111,12 +102,14 @@ abstract class AbstractBaseCommand extends Command
      */
     protected function printEnvironmentDetails(): void
     {
-        $this->io->success('An environment is currently running.');
-        $this->io->listing(
-            [
-                "Environment location: {$this->environment->getLocation()}",
-                "Environment type: {$this->environment->getType()}",
-            ]
-        );
+        if ($this->environment instanceof Environment) {
+            $this->io->success('An environment is currently running.');
+            $this->io->listing(
+                [
+                    "Environment location: {$this->environment->getLocation()}",
+                    "Environment type: {$this->environment->getType()}",
+                ]
+            );
+        }
     }
 }

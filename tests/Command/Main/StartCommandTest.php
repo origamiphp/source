@@ -9,6 +9,7 @@ use App\Entity\Environment;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -25,10 +26,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class StartCommandTest extends WebTestCase
 {
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
+    use CustomCommandsTrait;
 
     /**
      * {@inheritdoc}

@@ -10,6 +10,7 @@ use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\Command\CustomCommandsTrait;
+use Generator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -25,11 +26,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class LogsCommandTest extends WebTestCase
 {
     use CustomCommandsTrait;
-
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
 
     /**
      * {@inheritdoc}
@@ -109,7 +105,7 @@ final class LogsCommandTest extends WebTestCase
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
     }
 
-    public function provideCommandModifiers(): ?\Generator
+    public function provideCommandModifiers(): Generator
     {
         yield [null, null];
         yield [50, null];

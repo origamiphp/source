@@ -31,7 +31,7 @@ class RestartCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->checkPrequisites($input);
+            $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails();
@@ -43,7 +43,7 @@ class RestartCommand extends AbstractBaseCommand
 
             $this->io->success('Docker services successfully restarted.');
 
-            $event = new EnvironmentRestartedEvent($this->environment, $this->io);
+            $event = new EnvironmentRestartedEvent($environment, $this->io);
             $this->eventDispatcher->dispatch($event);
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());

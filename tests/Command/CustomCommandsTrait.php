@@ -6,12 +6,29 @@ namespace App\Tests\Command;
 
 use App\Entity\Environment;
 use App\Helper\CommandExitCode;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\SystemManager;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 trait CustomCommandsTrait
 {
+    /** @var ObjectProphecy|SystemManager */
+    private ObjectProphecy $systemManager;
+
+    /** @var ObjectProphecy|ValidatorInterface */
+    private ObjectProphecy $validator;
+
+    /** @var DockerCompose|ObjectProphecy */
+    private ObjectProphecy $dockerCompose;
+
+    /** @var EventDispatcherInterface|ObjectProphecy */
+    private ObjectProphecy $eventDispatcher;
+
     /**
      * Retrieves a new fake Environment instance.
      */

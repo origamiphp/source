@@ -8,5 +8,5 @@ use Symfony\Component\Validator\Constraint;
 
 class LocalDomains extends Constraint
 {
-    public $message = 'The value must be a valid domain or a list of valid domains.';
+    public string $message = 'The value must be a valid domain or a list of valid domains.';
 }

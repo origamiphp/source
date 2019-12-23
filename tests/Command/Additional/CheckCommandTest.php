@@ -8,6 +8,7 @@ use App\Command\Additional\CheckCommand;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use Generator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -22,10 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class CheckCommandTest extends WebTestCase
 {
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
+    use CustomCommandsTrait;
 
     /**
      * {@inheritdoc}
@@ -96,7 +94,7 @@ final class CheckCommandTest extends WebTestCase
         static::assertGreaterThan(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    public function provideSystemRequirements(): ?Generator
+    public function provideSystemRequirements(): Generator
     {
         yield [
             [

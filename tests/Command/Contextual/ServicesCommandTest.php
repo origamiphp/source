@@ -14,6 +14,7 @@ use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\Command\CustomCommandsTrait;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -34,11 +35,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class ServicesCommandTest extends TestCase
 {
     use CustomCommandsTrait;
-
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
 
     /**
      * {@inheritdoc}
@@ -104,7 +100,7 @@ final class ServicesCommandTest extends TestCase
         self::assertExceptionIsHandled($command, 'An error occurred while opening a terminal.');
     }
 
-    public function provideServiceDetails(): ?\Generator
+    public function provideServiceDetails(): Generator
     {
         yield [ElasticsearchCommand::class, 'elasticsearch', ''];
         yield [MysqlCommand::class, 'mysql', ''];

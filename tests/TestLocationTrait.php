@@ -8,7 +8,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 trait TestLocationTrait
 {
-    private $location;
+    private string $location;
 
     /**
      * Creates the temporary directory that will be used by the current test.
@@ -32,6 +32,6 @@ trait TestLocationTrait
             $filesystem->remove($this->location);
         }
 
-        $this->location = null;
+        $this->location = '';
     }
 }

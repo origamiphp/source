@@ -26,11 +26,6 @@ final class AbstractBaseCommandTest extends WebTestCase
 {
     use CustomCommandsTrait;
 
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
-
     /**
      * {@inheritdoc}
      */
@@ -131,7 +126,7 @@ final class AbstractBaseCommandTest extends WebTestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 try {
-                    $this->checkPrequisites($input);
+                    $this->getEnvironment($input);
                 } catch (OrigamiExceptionInterface $e) {
                     $this->io->error($e->getMessage());
                     $exitCode = CommandExitCode::EXCEPTION;

@@ -27,11 +27,6 @@ final class UninstallCommandTest extends WebTestCase
 {
     use CustomCommandsTrait;
 
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
-
     /**
      * {@inheritdoc}
      */

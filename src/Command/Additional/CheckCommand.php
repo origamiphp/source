@@ -17,7 +17,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class CheckCommand extends AbstractBaseCommand
 {
     /** @var array */
-    private $requirements;
+    private array $requirements;
 
     /**
      * CheckCommand constructor.

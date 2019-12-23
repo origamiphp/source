@@ -6,7 +6,7 @@ namespace App\DataFixtures;
 
 use App\Entity\Environment;
 use Doctrine\Bundle\FixturesBundle\Fixture;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 
 /**
  * @codeCoverageIgnore
@@ -22,7 +22,7 @@ class EnvironmentFixtures extends Fixture
         $environment->setName('foo');
         $environment->setLocation('path/to/foo');
         $environment->setActive(true);
-        $environment->setType('magento2');
+        $environment->setType('symfony');
         $manager->persist($environment);
 
         $environment = new Environment();

@@ -8,6 +8,7 @@ use App\Command\Additional\RegistryCommand;
 use App\Entity\Environment;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use Generator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -22,10 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class RegistryCommandTest extends WebTestCase
 {
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
+    use CustomCommandsTrait;
 
     /**
      * {@inheritdoc}
@@ -92,7 +90,7 @@ final class RegistryCommandTest extends WebTestCase
         static::assertStringContainsString($environment->getDomains() ?? 'N/A', $display);
     }
 
-    public function provideEnvironmentList(): ?Generator
+    public function provideEnvironmentList(): Generator
     {
         $envinonmentWithoutDomains = new Environment();
         $envinonmentWithoutDomains->setName('POC');

@@ -19,7 +19,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class InstallCommand extends AbstractBaseCommand
 {
     /** @var array */
-    private $environments;
+    private array $environments;
 
     /**
      * InstallCommand constructor.

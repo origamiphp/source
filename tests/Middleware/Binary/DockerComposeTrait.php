@@ -4,13 +4,24 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Entity\Environment;
+use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 trait DockerComposeTrait
 {
+    /** @var ObjectProphecy|ValidatorInterface */
+    private ObjectProphecy $validator;
+    /** @var ObjectProphecy|ProcessFactory */
+    private ObjectProphecy $processFactory;
+
+    private Environment $environment;
+
     /**
      * Defines successful validations to use within tests related to Docker Compose.
      */

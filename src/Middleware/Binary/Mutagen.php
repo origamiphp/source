@@ -11,8 +11,7 @@ class Mutagen
     private const DEFAULT_CONTAINER_UID = 'id:1000';
     private const DEFAULT_CONTAINER_GID = 'id:1000';
 
-    /** @var ProcessFactory */
-    private $processFactory;
+    private ProcessFactory $processFactory;
 
     /**
      * Mutagen constructor.

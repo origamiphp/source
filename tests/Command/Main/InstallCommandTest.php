@@ -9,6 +9,7 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
+use App\Tests\Command\CustomCommandsTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
@@ -28,12 +29,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class InstallCommandTest extends WebTestCase
 {
+    use CustomCommandsTrait;
     use TestLocationTrait;
-
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
 
     /**
      * {@inheritdoc}
@@ -96,7 +93,7 @@ final class InstallCommandTest extends WebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    public function provideEnvironmentConfigurations(): ?Generator
+    public function provideEnvironmentConfigurations(): Generator
     {
         $location = sys_get_temp_dir().'/origami/InstallCommandTest';
 

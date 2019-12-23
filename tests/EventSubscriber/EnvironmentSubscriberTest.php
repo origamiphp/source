@@ -13,6 +13,7 @@ use App\EventSubscriber\EnvironmentSubscriber;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use Doctrine\ORM\EntityManagerInterface;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -28,9 +29,14 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 final class EnvironmentSubscriberTest extends WebTestCase
 {
-    private $dockerCompose;
-    private $mutagen;
-    private $entityManager;
+    /** @var DockerCompose|ObjectProphecy */
+    private ObjectProphecy $dockerCompose;
+
+    /** @var Mutagen|ObjectProphecy */
+    private ObjectProphecy $mutagen;
+
+    /** @var EntityManagerInterface|ObjectProphecy */
+    private ObjectProphecy $entityManager;
 
     /**
      * {@inheritdoc}

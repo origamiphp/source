@@ -30,10 +30,6 @@ final class DockerComposeDefaultTest extends TestCase
     use DockerComposeTrait;
     use TestLocationTrait;
 
-    private $validator;
-    private $processFactory;
-    private $environment;
-
     /**
      * {@inheritdoc}
      */
