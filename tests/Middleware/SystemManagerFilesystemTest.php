@@ -223,5 +223,8 @@ final class SystemManagerFilesystemTest extends TestCase
     {
         yield ['magento2', 'www.magento.localhost magento.localhost'];
         yield ['magento2', ''];
+
+        yield ['symfony', 'www.symfony.localhost symfony.localhost'];
+        yield ['symfony', ''];
     }
 }
