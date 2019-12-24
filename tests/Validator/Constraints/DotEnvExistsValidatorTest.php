@@ -21,7 +21,7 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
 {
     use TestLocationTrait;
 
-    protected $filePath;
+    protected string $filePath;
 
     /**
      * {@inheritdoc}

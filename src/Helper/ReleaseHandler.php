@@ -14,8 +14,8 @@ class ReleaseHandler
 {
     private const TRACKER_FILENAME = '.release';
 
-    private $kernel;
-    private $io;
+    private Kernel $kernel;
+    private SymfonyStyle $io;
 
     /**
      * ReleaseTracker constructor.

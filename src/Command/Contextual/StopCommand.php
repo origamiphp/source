@@ -31,7 +31,7 @@ class StopCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->checkPrequisites($input);
+            $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails();
@@ -43,7 +43,7 @@ class StopCommand extends AbstractBaseCommand
 
             $this->io->success('Docker services successfully stopped.');
 
-            $event = new EnvironmentStoppedEvent($this->environment, $this->io);
+            $event = new EnvironmentStoppedEvent($environment, $this->io);
             $this->eventDispatcher->dispatch($event);
         } catch (OrigamiExceptionInterface $e) {
             $this->io->error($e->getMessage());

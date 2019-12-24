@@ -14,17 +14,10 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DockerCompose
 {
-    /** @var ValidatorInterface */
-    private $validator;
-
-    /** @var Environment */
-    private $environment;
-
-    /** @var ProcessFactory */
-    private $processFactory;
-
-    /** @var array */
-    private $environmentVariables = [];
+    private ValidatorInterface $validator;
+    private Environment $environment;
+    private ProcessFactory $processFactory;
+    private array $environmentVariables = [];
 
     /**
      * DockerCompose constructor.

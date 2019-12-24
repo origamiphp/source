@@ -37,11 +37,6 @@ final class CommonCommandTest extends WebTestCase
 {
     use CustomCommandsTrait;
 
-    private $systemManager;
-    private $validator;
-    private $dockerCompose;
-    private $eventDispatcher;
-
     /**
      * {@inheritdoc}
      */
@@ -111,7 +106,7 @@ final class CommonCommandTest extends WebTestCase
         static::assertExceptionIsHandled($command, $messages['error']);
     }
 
-    public function provideCommandDetails(): ?Generator
+    public function provideCommandDetails(): Generator
     {
         yield [
             DataCommand::class,

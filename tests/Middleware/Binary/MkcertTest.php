@@ -6,6 +6,7 @@ namespace App\Tests\Middleware\Binary;
 
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Mkcert;
+use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\Process;
 
@@ -34,7 +35,7 @@ final class MkcertTest extends TestCase
         static::assertTrue($mkcert->generateCertificate('./custom.pem', './custom.key', $domains));
     }
 
-    public function provideCertificateDomains(): ?\Generator
+    public function provideCertificateDomains(): Generator
     {
         yield [['magento2.localhost']];
         yield [['www.magento2.localhost']];

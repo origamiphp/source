@@ -12,11 +12,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractEnvironmentEvent extends Event
 {
-    /** @var Environment */
-    protected $environment;
-
-    /** @var SymfonyStyle */
-    protected $symfonyStyle;
+    protected Environment $environment;
+    protected SymfonyStyle $symfonyStyle;
 
     /**
      * AbstractEnvironmentEvent constructor.

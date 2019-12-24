@@ -20,31 +20,31 @@ class Environment
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private ?int $id = null;
 
     /** @ORM\Column(type="string", length=32, unique=true)
      */
-    private $name;
+    private ?string $name = null;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $location;
+    private ?string $location = null;
 
     /**
      * @ORM\Column(type="string", length=32)
      */
-    private $type;
+    private ?string $type = null;
 
     /**
-     * @ORM\Column(length=255, nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $domains;
+    private ?string $domains = null;
 
     /**
      * @ORM\Column(type="boolean", options={"default": false})
      */
-    private $active = false;
+    private bool $active = false;
 
     public function getId(): ?int
     {

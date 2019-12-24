@@ -38,7 +38,7 @@ class StartCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->checkPrequisites($input);
+            $environment = $this->getEnvironment($input);
 
             if (!$this->environment->isActive()) {
                 if (!$this->dockerCompose->startServices()) {
@@ -47,7 +47,7 @@ class StartCommand extends AbstractBaseCommand
 
                 $this->io->success('Docker services successfully started.');
 
-                $event = new EnvironmentStartedEvent($this->environment, $this->io);
+                $event = new EnvironmentStartedEvent($environment, $this->io);
                 $this->eventDispatcher->dispatch($event);
             } else {
                 $this->io->error('Unable to start an environment when there is already a running one.');

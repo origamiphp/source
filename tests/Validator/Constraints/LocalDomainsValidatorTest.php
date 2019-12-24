@@ -33,7 +33,7 @@ final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase
         $this->assertNoViolation();
     }
 
-    public function provideAcceptableValues(): ?Generator
+    public function provideAcceptableValues(): Generator
     {
         yield ['www.origami.localhost origami.localhost'];
         yield ['www.origami.localhost'];
@@ -53,7 +53,7 @@ final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase
         ;
     }
 
-    public function provideUnacceptableValues(): ?Generator
+    public function provideUnacceptableValues(): Generator
     {
         yield ['azerty'];
         yield ['azerty.'];

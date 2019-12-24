@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -31,11 +32,16 @@ final class SystemManagerFilesystemTest extends TestCase
 {
     use TestLocationTrait;
 
-    private $mkcert;
-    private $validator;
-    private $entityManager;
-    private $environmentRepository;
-    private $processFactory;
+    /** @var Mkcert|ObjectProphecy */
+    private ObjectProphecy $mkcert;
+    /** @var ObjectProphecy|ValidatorInterface */
+    private ObjectProphecy $validator;
+    /** @var EntityManagerInterface|ObjectProphecy */
+    private ObjectProphecy $entityManager;
+    /** @var EnvironmentRepository|ObjectProphecy */
+    private ObjectProphecy $environmentRepository;
+    /** @var ObjectProphecy|ProcessFactory */
+    private ObjectProphecy $processFactory;
 
     /**
      * {@inheritdoc}
@@ -219,7 +225,7 @@ final class SystemManagerFilesystemTest extends TestCase
         static::assertDirectoryNotExists($destination);
     }
 
-    public function provideMultipleInstallContexts(): ?Generator
+    public function provideMultipleInstallContexts(): Generator
     {
         yield ['magento2', 'www.magento.localhost magento.localhost'];
         yield ['magento2', ''];

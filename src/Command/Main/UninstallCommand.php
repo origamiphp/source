@@ -38,7 +38,7 @@ class UninstallCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $this->checkPrequisites($input);
+            $environment = $this->getEnvironment($input);
 
             $question = sprintf(
                 'Are you sure you want to uninstall the "%s" environment?',
@@ -54,10 +54,10 @@ class UninstallCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
                 }
 
-                $event = new EnvironmentUninstallEvent($this->environment, $this->io);
+                $event = new EnvironmentUninstallEvent($environment, $this->io);
                 $this->eventDispatcher->dispatch($event);
 
-                $this->systemManager->uninstall($this->environment);
+                $this->systemManager->uninstall($environment);
 
                 $this->io->success('Environment successfully uninstalled.');
             }

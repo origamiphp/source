@@ -29,7 +29,7 @@ final class SystemManagerRepositoryTest extends KernelTestCase
     private $entityManager;
 
     /** @var SystemManager */
-    private $systemManager;
+    private SystemManager $systemManager;
 
     /**
      * {@inheritdoc}
@@ -81,7 +81,7 @@ final class SystemManagerRepositoryTest extends KernelTestCase
         static::assertSame('foo', $environment->getName());
         static::assertSame('path/to/foo', $environment->getLocation());
         static::assertTrue($environment->isActive());
-        static::assertSame('magento2', $environment->getType());
+        static::assertSame('symfony', $environment->getType());
 
         static::assertNull($this->systemManager->getEnvironmentByName('azerty'));
     }
@@ -96,7 +96,7 @@ final class SystemManagerRepositoryTest extends KernelTestCase
         static::assertSame('foo', $environment->getName());
         static::assertSame('path/to/foo', $environment->getLocation());
         static::assertTrue($environment->isActive());
-        static::assertSame('magento2', $environment->getType());
+        static::assertSame('symfony', $environment->getType());
 
         static::assertNull($this->systemManager->getEnvironmentByLocation('azerty'));
     }
