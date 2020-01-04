@@ -15,16 +15,18 @@ jobs:
 
       - name: 'Install system requirements'
         run: |
-          sudo mkdir -p /run/php/
-          sudo apt-get update
-          sudo apt-get install -y libicu-dev php-intl
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository ppa:ondrej/php
+          sudo apt update
+          sudo apt install -y libicu-dev
+          sudo apt install -y php7.4 php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
 
       - name: 'Install Composer dependencies'
         run: composer install --ignore-platform-reqs --no-progress --optimize-autoloader --classmap-authoritative
 
       - name: 'Package the application'
         run: |
-          perl -pi -e "s/APP_ENV=dev/APP_ENV=prod/g" .env
+          composer dump-env prod
           docker run --interactive --volume=$(pwd):/app ajardin/humbug-box compile
           docker run --interactive --volume=$(pwd):/app ajardin/humbug-box info ./build/origami.phar
 
