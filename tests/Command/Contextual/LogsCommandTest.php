@@ -9,7 +9,8 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -22,10 +23,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Contextual\LogsCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class LogsCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}

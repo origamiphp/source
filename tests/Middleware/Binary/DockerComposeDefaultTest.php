@@ -4,21 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
-use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestDockerComposeTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
@@ -27,31 +24,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class DockerComposeDefaultTest extends TestCase
 {
-    use DockerComposeTrait;
+    use TestDockerComposeTrait;
     use TestLocationTrait;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->processFactory = $this->prophesize(ProcessFactory::class);
-
-        $this->createLocation();
-        mkdir($this->location.'/var/docker', 0777, true);
-
-        $this->environment = new Environment();
-        $this->environment->setName('foo');
-        $this->environment->setLocation(sys_get_temp_dir().'/origami/DockerComposeDefaultTest');
-        $this->environment->setType('magento2');
-        $this->environment->setActive(true);
-
-        $filesystem = new Filesystem();
-        $filesystem->mirror(__DIR__.'/../../../src/Resources/magento2/', $this->location.'/var/docker');
-    }
 
     /**
      * {@inheritdoc}
@@ -74,7 +48,7 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertSame($this->location.'/var/docker/docker-compose.yml', $variables['COMPOSE_FILE']);
 
         static::assertArrayHasKey('COMPOSE_PROJECT_NAME', $variables);
-        static::assertSame('magento2_foo', $variables['COMPOSE_PROJECT_NAME']);
+        static::assertSame('symfony_foo', $variables['COMPOSE_PROJECT_NAME']);
 
         static::assertArrayHasKey('DOCKER_PHP_IMAGE', $variables);
         static::assertSame('default', $variables['DOCKER_PHP_IMAGE']);

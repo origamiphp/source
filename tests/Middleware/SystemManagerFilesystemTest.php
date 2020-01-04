@@ -110,14 +110,7 @@ final class SystemManagerFilesystemTest extends TestCase
             ->willReturn(new ConstraintViolationList())
         ;
 
-        $environment = new Environment();
-        $environment->setName(basename($this->location));
-        $environment->setLocation($this->location);
-        $environment->setType($type);
-        if ($domains !== null) {
-            $environment->setDomains($domains);
-        }
-
+        $environment = new Environment(basename($this->location), $this->location, $type, $domains);
         $this->entityManager->persist($environment)->shouldBeCalledOnce();
         $this->entityManager->flush()->shouldBeCalledOnce();
 
@@ -170,14 +163,7 @@ final class SystemManagerFilesystemTest extends TestCase
             ->willReturn($errors)
         ;
 
-        $environment = new Environment();
-        $environment->setName(basename($this->location));
-        $environment->setLocation($this->location);
-        $environment->setType($type);
-        if ($domains !== null) {
-            $environment->setDomains($domains);
-        }
-
+        $environment = new Environment(basename($this->location), $this->location, $type, $domains);
         $this->entityManager->persist($environment)->shouldNotBeCalled();
         $this->entityManager->flush()->shouldNotBeCalled();
 
@@ -198,14 +184,7 @@ final class SystemManagerFilesystemTest extends TestCase
      */
     public function testItUninstallsEnvironment(string $type, ?string $domains = null): void
     {
-        $environment = new Environment();
-        $environment->setName(basename($this->location));
-        $environment->setLocation($this->location);
-        $environment->setType($type);
-        if ($domains !== null) {
-            $environment->setDomains($domains);
-        }
-
+        $environment = new Environment(basename($this->location), $this->location, $type, $domains);
         $this->entityManager->remove($environment)->shouldBeCalledOnce();
         $this->entityManager->flush()->shouldBeCalledOnce();
 

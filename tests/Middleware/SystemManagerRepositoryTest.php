@@ -77,7 +77,6 @@ final class SystemManagerRepositoryTest extends KernelTestCase
         $environment = $this->systemManager->getEnvironmentByName('foo');
 
         static::assertInstanceOf(Environment::class, $environment);
-        static::assertGreaterThanOrEqual(1, $environment->getId());
         static::assertSame('foo', $environment->getName());
         static::assertSame('path/to/foo', $environment->getLocation());
         static::assertTrue($environment->isActive());
@@ -92,7 +91,6 @@ final class SystemManagerRepositoryTest extends KernelTestCase
         $environment = $this->systemManager->getEnvironmentByLocation('path/to/foo');
 
         static::assertInstanceOf(Environment::class, $environment);
-        static::assertGreaterThanOrEqual(1, $environment->getId());
         static::assertSame('foo', $environment->getName());
         static::assertSame('path/to/foo', $environment->getLocation());
         static::assertTrue($environment->isActive());

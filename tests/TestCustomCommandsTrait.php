@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Command;
+namespace App\Tests;
 
 use App\Entity\Environment;
 use App\Helper\CommandExitCode;
@@ -15,7 +15,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-trait CustomCommandsTrait
+trait TestCustomCommandsTrait
 {
     /** @var ObjectProphecy|SystemManager */
     private ObjectProphecy $systemManager;
@@ -28,19 +28,6 @@ trait CustomCommandsTrait
 
     /** @var EventDispatcherInterface|ObjectProphecy */
     private ObjectProphecy $eventDispatcher;
-
-    /**
-     * Retrieves a new fake Environment instance.
-     */
-    public function getFakeEnvironment(): Environment
-    {
-        $environment = new Environment();
-        $environment->setName('origami');
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
-
-        return $environment;
-    }
 
     /**
      * Asserts that the environment details are displayed in verbose mode.

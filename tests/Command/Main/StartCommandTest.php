@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\StartCommand;
-use App\Entity\Environment;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -26,7 +26,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class StartCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}
@@ -43,7 +44,7 @@ final class StartCommandTest extends WebTestCase
 
     public function testItStartsTheEnvironment(): void
     {
-        $environment = new Environment();
+        $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -67,7 +68,7 @@ final class StartCommandTest extends WebTestCase
 
     public function testItDoesNotStartMultipleEnvironments(): void
     {
-        $environment = new Environment();
+        $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
@@ -93,7 +94,7 @@ final class StartCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = new Environment();
+        $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();

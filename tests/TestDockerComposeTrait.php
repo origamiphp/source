@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Middleware\Binary;
+namespace App\Tests;
 
 use App\Entity\Environment;
 use App\Helper\ProcessFactory;
@@ -10,10 +10,11 @@ use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-trait DockerComposeTrait
+trait TestDockerComposeTrait
 {
     /** @var ObjectProphecy|ValidatorInterface */
     private ObjectProphecy $validator;
@@ -21,6 +22,21 @@ trait DockerComposeTrait
     private ObjectProphecy $processFactory;
 
     private Environment $environment;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->validator = $this->prophesize(ValidatorInterface::class);
+        $this->processFactory = $this->prophesize(ProcessFactory::class);
+
+        $this->createLocation();
+        mkdir($this->location.'/var/docker', 0777, true);
+        $this->environment = new Environment('foo', $this->location, 'symfony', null, true);
+
+        $filesystem = new Filesystem();
+        $filesystem->mirror(__DIR__.'/../src/Resources/symfony/', $this->location.'/var/docker');
+    }
 
     /**
      * Defines successful validations to use within tests related to Docker Compose.

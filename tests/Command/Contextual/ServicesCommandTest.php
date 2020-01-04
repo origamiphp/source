@@ -13,7 +13,8 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -31,10 +32,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * @covers \App\Command\Contextual\Services\NginxCommand
  * @covers \App\Command\Contextual\Services\PhpCommand
  * @covers \App\Command\Contextual\Services\RedisCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class ServicesCommandTest extends TestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}

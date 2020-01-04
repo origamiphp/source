@@ -8,7 +8,7 @@ use App\Command\Additional\RegistryCommand;
 use App\Entity\Environment;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
 use Generator;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class RegistryCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
 
     /**
      * {@inheritdoc}
@@ -87,24 +87,25 @@ final class RegistryCommandTest extends WebTestCase
         $type = $environment->getType();
         static::assertStringContainsString($type, $display);
 
-        static::assertStringContainsString($environment->getDomains() ?? 'N/A', $display);
+        static::assertStringContainsString($environment->getDomains() ?? '', $display);
     }
 
     public function provideEnvironmentList(): Generator
     {
-        $envinonmentWithoutDomains = new Environment();
-        $envinonmentWithoutDomains->setName('POC');
-        $envinonmentWithoutDomains->setLocation('~/Sites/poc-symfony');
-        $envinonmentWithoutDomains->setType('symfony');
-        $envinonmentWithoutDomains->setActive(false);
+        $envinonmentWithoutDomains = new Environment(
+            'POC',
+            '~/Sites/poc-symfony',
+            'symfony'
+        );
         yield [$envinonmentWithoutDomains];
 
-        $envinonmentWithDomains = new Environment();
-        $envinonmentWithDomains->setName('Origami');
-        $envinonmentWithDomains->setLocation('~/Sites/origami');
-        $envinonmentWithDomains->setType('symfony');
-        $envinonmentWithDomains->setDomains('origami.localhost');
-        $envinonmentWithDomains->setActive(true);
+        $envinonmentWithDomains = new Environment(
+            'Origami',
+            '~/Sites/origami',
+            'symfony',
+            'origami.localhost',
+            true
+        );
         yield [$envinonmentWithDomains];
     }
 }

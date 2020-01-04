@@ -12,7 +12,8 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
 use Prophecy\Argument;
 use stdClass;
@@ -35,7 +36,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class CommonCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}

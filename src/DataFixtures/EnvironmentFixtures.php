@@ -18,18 +18,10 @@ class EnvironmentFixtures extends Fixture
      */
     public function load(ObjectManager $manager): void
     {
-        $environment = new Environment();
-        $environment->setName('foo');
-        $environment->setLocation('path/to/foo');
-        $environment->setActive(true);
-        $environment->setType('symfony');
+        $environment = new Environment('foo', 'path/to/foo', 'symfony', null, true);
         $manager->persist($environment);
 
-        $environment = new Environment();
-        $environment->setName('bar');
-        $environment->setLocation('path/to/bar');
-        $environment->setActive(false);
-        $environment->setType('magento2');
+        $environment = new Environment('bar', 'path/to/bar', 'magento2', null, false);
         $manager->persist($environment);
 
         $manager->flush();
