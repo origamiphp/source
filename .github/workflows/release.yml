@@ -15,9 +15,11 @@ jobs:
 
       - name: 'Install system requirements'
         run: |
-          sudo mkdir -p /run/php/
-          sudo apt-get update
-          sudo apt-get install -y libicu-dev php-intl
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository ppa:ondrej/php
+          sudo apt update
+          sudo apt install -y libicu-dev
+          sudo apt install -y php7.4 php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
 
       - name: 'Install Composer dependencies'
         run: composer install --ignore-platform-reqs --no-progress --optimize-autoloader --classmap-authoritative
