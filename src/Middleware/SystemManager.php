@@ -138,11 +138,12 @@ class SystemManager
      */
     private function addNewEnvironment(array $details): void
     {
-        $environment = new Environment();
-        $environment->setName($details['name'] ?? '');
-        $environment->setLocation($details['location'] ?? '');
-        $environment->setType($details['type'] ?? '');
-        $environment->setDomains($details['domains'] ?? '');
+        $environment = new Environment(
+            $details['name'] ?? '',
+            $details['location'] ?? '',
+            $details['type'] ?? '',
+            $details['domains'] ?? ''
+        );
 
         $errors = $this->validator->validate($environment);
         if ($errors->count() > 0) {

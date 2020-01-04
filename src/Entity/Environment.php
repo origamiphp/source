@@ -17,86 +17,62 @@ class Environment
 {
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="string", length=32, unique=true)
      */
-    private ?int $id = null;
-
-    /** @ORM\Column(type="string", length=32, unique=true)
-     */
-    private ?string $name = null;
+    private string $name;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private ?string $location = null;
+    private string $location;
 
     /**
      * @ORM\Column(type="string", length=32)
      */
-    private ?string $type = null;
+    private string $type;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private ?string $domains = null;
+    private ?string $domains;
 
     /**
      * @ORM\Column(type="boolean", options={"default": false})
      */
-    private bool $active = false;
+    private bool $active;
 
-    public function getId(): ?int
-    {
-        return $this->id;
+    public function __construct(
+        string $name,
+        string $location,
+        string $type,
+        ?string $domains = null,
+        bool $active = false
+    ) {
+        $this->name = $name;
+        $this->location = $location;
+        $this->type = $type;
+        $this->domains = $domains;
+        $this->active = $active;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setName(string $name): self
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getLocation(): ?string
+    public function getLocation(): string
     {
         return $this->location;
     }
 
-    public function setLocation(string $location): self
-    {
-        $this->location = $location;
-
-        return $this;
-    }
-
-    public function getType(): ?string
+    public function getType(): string
     {
         return $this->type;
-    }
-
-    public function setType(string $type): self
-    {
-        $this->type = $type;
-
-        return $this;
     }
 
     public function getDomains(): ?string
     {
         return $this->domains;
-    }
-
-    public function setDomains(string $domains): self
-    {
-        $this->domains = $domains;
-
-        return $this;
     }
 
     public function isActive(): bool

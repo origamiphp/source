@@ -14,6 +14,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @internal
+ *
  * @covers \App\Validator\Constraints\LocalDomainsValidator
  */
 final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase

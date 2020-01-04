@@ -8,7 +8,8 @@ use App\Command\Main\UninstallCommand;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -25,7 +26,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class UninstallCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}

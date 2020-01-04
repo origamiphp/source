@@ -8,7 +8,8 @@ use App\Command\Main\PrepareCommand;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -20,10 +21,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Main\PrepareCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class PrepareCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}

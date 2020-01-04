@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Validator\Constraints;
 
 use App\Entity\Environment;
+use App\Tests\TestFakeEnvironmentTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\ConfigurationFilesValidator;
@@ -17,10 +18,12 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @internal
+ *
  * @covers \App\Validator\Constraints\ConfigurationFilesValidator
  */
 final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
 {
+    use TestFakeEnvironmentTrait;
     use TestLocationTrait;
 
     /**
@@ -46,7 +49,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
     public function testItThrowsAnExceptionWithAnInvalidConstraint(): void
     {
         $this->expectException(UnexpectedTypeException::class);
-        $this->validator->validate(new Environment(), new Blank());
+        $this->validator->validate($this->getFakeEnvironment(), new Blank());
     }
 
     /**
@@ -54,14 +57,10 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
      */
     public function testItValidatesConfiguration(string $type): void
     {
-        $environment = new Environment();
-        $environment->setType($type);
-        $environment->setLocation($this->location);
-
         $filesystem = new Filesystem();
         $filesystem->mirror(__DIR__.'/../../../src/Resources/'.$type, $this->location.'/var/docker');
 
-        $this->validator->validate($environment, new ConfigurationFiles());
+        $this->validator->validate(new Environment($type, $this->location, $type), new ConfigurationFiles());
         $this->assertNoViolation();
     }
 
@@ -70,11 +69,8 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
      */
     public function testItInvalidatesMissingConfiguration(string $type): void
     {
-        $environment = new Environment();
-        $environment->setType($type);
-
         $constraint = new ConfigurationFiles();
-        $this->validator->validate($environment, $constraint);
+        $this->validator->validate(new Environment($type, $this->location, $type), $constraint);
 
         $this->buildViolation($constraint->message)
             ->assertRaised()

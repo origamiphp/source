@@ -54,7 +54,7 @@ class InstallCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $type = $this->io->choice('Which type of environment you want to install?', $this->environments, 'magento2');
+            $type = $this->io->choice('Which type of environment you want to install?', $this->environments);
 
             /** @var string $location */
             $location = realpath(

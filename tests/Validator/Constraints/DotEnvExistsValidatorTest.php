@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Validator\Constraints;
 
 use App\Entity\Environment;
+use App\Tests\TestFakeEnvironmentTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\DotEnvExists;
 use App\Validator\Constraints\DotEnvExistsValidator;
@@ -15,11 +16,13 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
 
 /**
  * @internal
+ *
  * @covers \App\Validator\Constraints\DotEnvExistsValidator
  */
 final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
 {
     use TestLocationTrait;
+    use TestFakeEnvironmentTrait;
 
     protected string $filePath;
 
@@ -54,22 +57,19 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
     public function testItThrowsAnExceptionWithAnInvalidConstraint(): void
     {
         $this->expectException(UnexpectedTypeException::class);
-        $this->validator->validate(new Environment(), new Blank());
+        $this->validator->validate($this->getFakeEnvironment(), new Blank());
     }
 
     public function testItValidatesAnAcceptableValue(): void
     {
-        $environment = new Environment();
-        $environment->setLocation($this->location);
-
-        $this->validator->validate($environment, new DotEnvExists());
+        $this->validator->validate(new Environment('', $this->location, ''), new DotEnvExists());
         $this->assertNoViolation();
     }
 
     public function testItInvalidatesAnUnacceptableValue(): void
     {
         $constraint = new DotEnvExists();
-        $this->validator->validate(new Environment(), $constraint);
+        $this->validator->validate($this->getFakeEnvironment(), $constraint);
 
         $this->buildViolation($constraint->message)
             ->assertRaised()

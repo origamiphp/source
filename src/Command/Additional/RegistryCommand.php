@@ -32,16 +32,15 @@ class RegistryCommand extends AbstractBaseCommand
         $environments = $this->systemManager->getAllEnvironments();
         if (\count($environments) > 0) {
             $table = new Table($output);
-            $table->setHeaders(['ID', 'Name', 'Location', 'Type', 'Domains']);
+            $table->setHeaders(['Name', 'Location', 'Type', 'Domains']);
 
             /** @var Environment $environment */
             foreach ($environments as $environment) {
                 $table->addRow([
-                    $environment->getId(),
                     $environment->getName(),
                     $environment->getLocation(),
                     $environment->getType(),
-                    $environment->getDomains() ?: 'N/A',
+                    $environment->getDomains() ?? '',
                 ]);
             }
 

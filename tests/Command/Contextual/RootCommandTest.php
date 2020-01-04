@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\RootCommand;
-use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -22,10 +22,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Contextual\RootCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class RootCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
+    use TestFakeEnvironmentTrait;
 
     /**
      * {@inheritdoc}
@@ -42,10 +45,7 @@ final class RootCommandTest extends WebTestCase
 
     public function testItShowsRootInstructions(): void
     {
-        $environment = new Environment();
-        $environment->setName('Origami');
-        $environment->setLocation('~/Sites/origami');
-        $environment->setType('symfony');
+        $environment = $this->getFakeEnvironment();
 
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -72,7 +72,7 @@ final class RootCommandTest extends WebTestCase
 
         static::assertDisplayIsVerbose($environment, $display);
         static::assertStringContainsString('export COMPOSE_FILE="~/Sites/origami/var/docker/docker-compose.yml"', $display);
-        static::assertStringContainsString('export COMPOSE_PROJECT_NAME="symfony_Origami"', $display);
+        static::assertStringContainsString('export COMPOSE_PROJECT_NAME="symfony_origami"', $display);
         static::assertStringContainsString('export DOCKER_PHP_IMAGE="default"', $display);
         static::assertStringContainsString('export PROJECT_LOCATION="~/Sites/origami"', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());

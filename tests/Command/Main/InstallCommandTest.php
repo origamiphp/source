@@ -9,7 +9,7 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
-use App\Tests\Command\CustomCommandsTrait;
+use App\Tests\TestCustomCommandsTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
@@ -26,10 +26,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Main\InstallCommand
+ *
+ * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class InstallCommandTest extends WebTestCase
 {
-    use CustomCommandsTrait;
+    use TestCustomCommandsTrait;
     use TestLocationTrait;
 
     /**
