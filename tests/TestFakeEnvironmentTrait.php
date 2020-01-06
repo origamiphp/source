@@ -16,7 +16,7 @@ trait TestFakeEnvironmentTrait
         return new Environment(
             'origami',
             '~/Sites/origami',
-            'symfony',
+            Environment::TYPE_SYMFONY,
             'origami.localhost www.origami.localhost',
             false
         );

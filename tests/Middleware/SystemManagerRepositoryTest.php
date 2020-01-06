@@ -80,7 +80,7 @@ final class SystemManagerRepositoryTest extends KernelTestCase
         static::assertSame('foo', $environment->getName());
         static::assertSame('path/to/foo', $environment->getLocation());
         static::assertTrue($environment->isActive());
-        static::assertSame('symfony', $environment->getType());
+        static::assertSame(Environment::TYPE_SYMFONY, $environment->getType());
 
         static::assertNull($this->systemManager->getEnvironmentByName('azerty'));
     }
@@ -94,7 +94,7 @@ final class SystemManagerRepositoryTest extends KernelTestCase
         static::assertSame('foo', $environment->getName());
         static::assertSame('path/to/foo', $environment->getLocation());
         static::assertTrue($environment->isActive());
-        static::assertSame('symfony', $environment->getType());
+        static::assertSame(Environment::TYPE_SYMFONY, $environment->getType());
 
         static::assertNull($this->systemManager->getEnvironmentByLocation('azerty'));
     }

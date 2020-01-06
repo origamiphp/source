@@ -206,10 +206,10 @@ final class SystemManagerFilesystemTest extends TestCase
 
     public function provideMultipleInstallContexts(): Generator
     {
-        yield ['magento2', 'www.magento.localhost magento.localhost'];
-        yield ['magento2', ''];
+        yield [Environment::TYPE_MAGENTO2, 'www.magento.localhost magento.localhost'];
+        yield [Environment::TYPE_MAGENTO2, ''];
 
-        yield ['symfony', 'www.symfony.localhost symfony.localhost'];
-        yield ['symfony', ''];
+        yield [Environment::TYPE_SYMFONY, 'www.symfony.localhost symfony.localhost'];
+        yield [Environment::TYPE_SYMFONY, ''];
     }
 }

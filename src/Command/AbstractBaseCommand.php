@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use Symfony\Component\Console\Command\Command;
@@ -21,6 +22,7 @@ abstract class AbstractBaseCommand extends Command
     protected ValidatorInterface $validator;
     protected DockerCompose $dockerCompose;
     protected EventDispatcherInterface $eventDispatcher;
+    protected ProcessProxy $processProxy;
     protected ?Environment $environment = null;
     protected SymfonyStyle $io;
 
@@ -32,6 +34,7 @@ abstract class AbstractBaseCommand extends Command
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
+        ProcessProxy $processProxy,
         ?string $name = null
     ) {
         parent::__construct($name);
@@ -40,6 +43,7 @@ abstract class AbstractBaseCommand extends Command
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
         $this->eventDispatcher = $eventDispatcher;
+        $this->processProxy = $processProxy;
     }
 
     /**
@@ -77,7 +81,8 @@ abstract class AbstractBaseCommand extends Command
         }
 
         // 3. Try to load the environment from the current location.
-        if (!$this->environment instanceof Environment && ($location = getcwd())) {
+        if (!$this->environment instanceof Environment) {
+            $location = $this->processProxy->getWorkingDirectory();
             $environment = $this->systemManager->getEnvironmentByLocation($location);
 
             if ($environment instanceof Environment) {

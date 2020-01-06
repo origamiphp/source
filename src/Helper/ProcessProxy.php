@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use App\Exception\InvalidEnvironmentException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -11,6 +12,22 @@ use Symfony\Component\Process\Process;
  */
 class ProcessProxy
 {
+    /**
+     * Retrieves the current working directory, or throws \App\Exception\InvalidEnvironmentException on failure.
+     *
+     * @throws InvalidEnvironmentException
+     */
+    public function getWorkingDirectory(): string
+    {
+        $cwd = getcwd();
+
+        if ($cwd === false) {
+            throw new InvalidEnvironmentException('Unable to determine the current working directory.');
+        }
+
+        return $cwd;
+    }
+
     /**
      * Checks whether TTY is supported on the current operating system.
      */

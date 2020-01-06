@@ -6,6 +6,7 @@ namespace App\Tests\Command\Main;
 
 use App\Command\Main\StartCommand;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -40,6 +41,7 @@ final class StartCommandTest extends WebTestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
     }
 
     public function testItStartsTheEnvironment(): void
@@ -55,7 +57,8 @@ final class StartCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -72,6 +75,8 @@ final class StartCommandTest extends WebTestCase
         $environment->setActive(true);
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
+        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
+
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->startServices()->shouldNotBeCalled();
 
@@ -81,7 +86,8 @@ final class StartCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -106,7 +112,8 @@ final class StartCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);

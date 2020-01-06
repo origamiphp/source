@@ -5,37 +5,17 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
+use App\Entity\Environment;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Middleware\Binary\DockerCompose;
-use App\Middleware\SystemManager;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
-    /** @var array */
-    private array $environments;
-
-    /**
-     * InstallCommand constructor.
-     */
-    public function __construct(
-        SystemManager $systemManager,
-        ValidatorInterface $validator,
-        DockerCompose $dockerCompose,
-        EventDispatcherInterface $eventDispatcher,
-        array $environments,
-        ?string $name = null
-    ) {
-        parent::__construct($systemManager, $validator, $dockerCompose, $eventDispatcher, $name);
-
-        $this->environments = $environments;
-    }
+    private array $availableTypes = [Environment::TYPE_MAGENTO2, Environment::TYPE_SYMFONY];
 
     /**
      * {@inheritdoc}
@@ -54,7 +34,7 @@ class InstallCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         try {
-            $type = $this->io->choice('Which type of environment you want to install?', $this->environments);
+            $type = $this->io->choice('Which type of environment you want to install?', $this->availableTypes);
 
             /** @var string $location */
             $location = realpath(

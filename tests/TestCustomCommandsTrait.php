@@ -6,6 +6,7 @@ namespace App\Tests;
 
 use App\Entity\Environment;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -28,6 +29,9 @@ trait TestCustomCommandsTrait
 
     /** @var EventDispatcherInterface|ObjectProphecy */
     private ObjectProphecy $eventDispatcher;
+
+    /** @var ObjectProphecy|ProcessProxy */
+    private ObjectProphecy $processProxy;
 
     /**
      * Asserts that the environment details are displayed in verbose mode.

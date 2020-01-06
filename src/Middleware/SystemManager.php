@@ -45,17 +45,19 @@ class SystemManager
      */
     public function install(string $location, string $type, ?string $domains = null): void
     {
-        $source = __DIR__."/../Resources/{$type}";
-        $destination = "{$location}/var/docker";
+        if ($type !== Environment::TYPE_CUSTOM) {
+            $source = __DIR__."/../Resources/{$type}";
+            $destination = "{$location}/var/docker";
 
-        $filesystem = new Filesystem();
-        $this->copyEnvironmentFiles($filesystem, $source, $destination);
+            $filesystem = new Filesystem();
+            $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
-        if ($domains !== null) {
-            $certificate = "{$destination}/nginx/certs/custom.pem";
-            $privateKey = "{$destination}/nginx/certs/custom.key";
+            if ($domains !== null) {
+                $certificate = "{$destination}/nginx/certs/custom.pem";
+                $privateKey = "{$destination}/nginx/certs/custom.key";
 
-            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+                $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+            }
         }
 
         $this->addNewEnvironment(
@@ -105,8 +107,10 @@ class SystemManager
      */
     public function uninstall(Environment $environment): void
     {
-        $filesystem = new Filesystem();
-        $filesystem->remove("{$environment->getLocation()}/var/docker");
+        if ($environment->getType() !== Environment::TYPE_CUSTOM) {
+            $filesystem = new Filesystem();
+            $filesystem->remove("{$environment->getLocation()}/var/docker");
+        }
 
         $this->removeExistingEnvironment($environment);
     }

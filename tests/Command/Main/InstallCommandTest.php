@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\InstallCommand;
+use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -45,6 +47,7 @@ final class InstallCommandTest extends WebTestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
 
         $this->createLocation();
     }
@@ -79,7 +82,7 @@ final class InstallCommandTest extends WebTestCase
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal(),
-            ['magento2', 'symfony']
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -99,11 +102,11 @@ final class InstallCommandTest extends WebTestCase
     {
         $location = sys_get_temp_dir().'/origami/InstallCommandTest';
 
-        yield [$location, 'magento2', 'www.magento.localhost magento.localhost'];
-        yield [$location, 'magento2', ''];
+        yield [$location, Environment::TYPE_MAGENTO2, 'www.magento.localhost magento.localhost'];
+        yield [$location, Environment::TYPE_MAGENTO2, ''];
 
-        yield [$location, 'symfony', 'www.symfony.localhost symfony.localhost'];
-        yield [$location, 'symfony', ''];
+        yield [$location, Environment::TYPE_SYMFONY, 'www.symfony.localhost symfony.localhost'];
+        yield [$location, Environment::TYPE_SYMFONY, ''];
     }
 
     public function testItAbortsTheInstallationWithInvalidLocation(): void
@@ -113,13 +116,13 @@ final class InstallCommandTest extends WebTestCase
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal(),
-            ['magento2', 'symfony']
+            $this->processProxy->reveal(),
         );
 
         $this->expectException(RuntimeException::class);
 
         $commandTester = new CommandTester($command);
-        $commandTester->setInputs(['symfony', 'azerty', 'no']);
+        $commandTester->setInputs([Environment::TYPE_SYMFONY, 'azerty', 'no']);
         $commandTester->execute([]);
     }
 
@@ -141,19 +144,19 @@ final class InstallCommandTest extends WebTestCase
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal(),
-            ['magento2', 'symfony']
+            $this->processProxy->reveal(),
         );
 
         $this->expectException(RuntimeException::class);
 
         $commandTester = new CommandTester($command);
-        $commandTester->setInputs(['symfony', '.', 'yes', 'azerty']);
+        $commandTester->setInputs([Environment::TYPE_SYMFONY, '.', 'yes', 'azerty']);
         $commandTester->execute([]);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->systemManager->install(realpath('.'), 'symfony', null)
+        $this->systemManager->install(realpath('.'), Environment::TYPE_SYMFONY, null)
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
@@ -163,11 +166,11 @@ final class InstallCommandTest extends WebTestCase
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal(),
-            ['magento2', 'symfony']
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
-        $commandTester->setInputs(['symfony', '.', 'no']);
+        $commandTester->setInputs([Environment::TYPE_SYMFONY, '.', 'no']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();

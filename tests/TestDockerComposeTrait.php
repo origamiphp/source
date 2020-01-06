@@ -32,7 +32,7 @@ trait TestDockerComposeTrait
 
         $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
-        $this->environment = new Environment('foo', $this->location, 'symfony', null, true);
+        $this->environment = new Environment('foo', $this->location, Environment::TYPE_SYMFONY, null, true);
 
         $filesystem = new Filesystem();
         $filesystem->mirror(__DIR__.'/../src/Resources/symfony/', $this->location.'/var/docker');
