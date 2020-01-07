@@ -11,6 +11,7 @@ use App\Command\Contextual\Services\PhpCommand;
 use App\Command\Contextual\Services\RedisCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -51,6 +52,7 @@ final class ServicesCommandTest extends TestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
 
         putenv('COLUMNS=120'); // Required by tests running with Github Actions
     }
@@ -72,7 +74,8 @@ final class ServicesCommandTest extends TestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -98,7 +101,8 @@ final class ServicesCommandTest extends TestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         self::assertExceptionIsHandled($command, 'An error occurred while opening a terminal.');

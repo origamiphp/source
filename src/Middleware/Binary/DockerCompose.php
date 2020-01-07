@@ -46,12 +46,22 @@ class DockerCompose
      */
     public function getRequiredVariables(): array
     {
-        return [
-            'COMPOSE_FILE' => "{$this->environment->getLocation()}/var/docker/docker-compose.yml",
-            'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
-            'PROJECT_LOCATION' => $this->environment->getLocation(),
-        ];
+        if ($this->environment->getType() !== Environment::TYPE_CUSTOM) {
+            $result = [
+                'COMPOSE_FILE' => "{$this->environment->getLocation()}/var/docker/docker-compose.yml",
+                'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
+                'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
+                'PROJECT_LOCATION' => $this->environment->getLocation(),
+            ];
+        } else {
+            $result = [
+                'COMPOSE_FILE' => "{$this->environment->getLocation()}/docker-compose.yml",
+                'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
+                'PROJECT_LOCATION' => $this->environment->getLocation(),
+            ];
+        }
+
+        return $result;
     }
 
     /**

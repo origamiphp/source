@@ -54,6 +54,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $environment = $this->prophesize(Environment::class);
         $environment->setActive(true)->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
         $this->entityManager->flush()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
@@ -78,6 +79,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $environment = $this->prophesize(Environment::class);
         $environment->setActive(true)->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
         $this->entityManager->flush()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
@@ -102,6 +104,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $environment = $this->prophesize(Environment::class);
         $environment->setActive(false)->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
         $this->entityManager->flush()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
@@ -126,6 +129,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $environment = $this->prophesize(Environment::class);
         $environment->setActive(false)->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
         $this->entityManager->flush()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
@@ -149,6 +153,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     public function testItRestartsTheDockerSynchronizationWithSuccess(): void
     {
         $environment = $this->prophesize(Environment::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -172,6 +177,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     public function testItRestartsTheDockerSynchronizationWithoutSuccess(): void
     {
         $environment = $this->prophesize(Environment::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -195,6 +201,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     public function testItUninstallsTheDockerSynchronizationWithSuccess(): void
     {
         $environment = $this->prophesize(Environment::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -217,6 +224,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     public function testItUninstallsTheDockerSynchronizationWithoutSuccess(): void
     {
         $environment = $this->prophesize(Environment::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);

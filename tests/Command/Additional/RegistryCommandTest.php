@@ -6,6 +6,7 @@ namespace App\Tests\Command\Additional;
 
 use App\Command\Additional\RegistryCommand;
 use App\Entity\Environment;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -36,6 +37,7 @@ final class RegistryCommandTest extends WebTestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
     }
 
     public function testItPrintsNoteMessageWithoutEnvironments(): void
@@ -46,7 +48,8 @@ final class RegistryCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -67,7 +70,8 @@ final class RegistryCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -95,14 +99,14 @@ final class RegistryCommandTest extends WebTestCase
         $envinonmentWithoutDomains = new Environment(
             'POC',
             '~/Sites/poc-symfony',
-            'symfony'
+            Environment::TYPE_SYMFONY
         );
         yield [$envinonmentWithoutDomains];
 
         $envinonmentWithDomains = new Environment(
             'Origami',
             '~/Sites/origami',
-            'symfony',
+            Environment::TYPE_SYMFONY,
             'origami.localhost',
             true
         );

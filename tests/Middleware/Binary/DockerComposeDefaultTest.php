@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\TestDockerComposeTrait;
@@ -36,7 +37,7 @@ final class DockerComposeDefaultTest extends TestCase
         $this->removeLocation();
     }
 
-    public function testItDefinesTheActiveEnvironment(): void
+    public function testItDefinesTheActiveEnvironmentWithInternals(): void
     {
         $this->initializeSuccessfulValidators();
 
@@ -52,6 +53,28 @@ final class DockerComposeDefaultTest extends TestCase
 
         static::assertArrayHasKey('DOCKER_PHP_IMAGE', $variables);
         static::assertSame('default', $variables['DOCKER_PHP_IMAGE']);
+
+        static::assertArrayHasKey('PROJECT_LOCATION', $variables);
+        static::assertSame($this->location, $variables['PROJECT_LOCATION']);
+    }
+
+    public function testItDefinesTheActiveEnvironmentWithExternals(): void
+    {
+        $this->initializeSuccessfulValidators();
+
+        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $dockerCompose->setActiveEnvironment(
+            new Environment('bar', $this->location, Environment::TYPE_CUSTOM, null, true)
+        );
+        $variables = $dockerCompose->getRequiredVariables();
+
+        static::assertArrayHasKey('COMPOSE_FILE', $variables);
+        static::assertSame($this->location.'/docker-compose.yml', $variables['COMPOSE_FILE']);
+
+        static::assertArrayHasKey('COMPOSE_PROJECT_NAME', $variables);
+        static::assertSame('custom_bar', $variables['COMPOSE_PROJECT_NAME']);
+
+        static::assertArrayNotHasKey('DOCKER_PHP_IMAGE', $variables);
 
         static::assertArrayHasKey('PROJECT_LOCATION', $variables);
         static::assertSame($this->location, $variables['PROJECT_LOCATION']);

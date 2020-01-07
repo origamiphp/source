@@ -7,6 +7,7 @@ namespace App\Tests\Command\Contextual;
 use App\Command\Contextual\RootCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -41,6 +42,7 @@ final class RootCommandTest extends WebTestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
     }
 
     public function testItShowsRootInstructions(): void
@@ -62,7 +64,8 @@ final class RootCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         $commandTester = new CommandTester($command);
@@ -88,7 +91,8 @@ final class RootCommandTest extends WebTestCase
             $this->systemManager->reveal(),
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
         );
 
         static::assertExceptionIsHandled($command, '[ERROR] Dummy exception.');

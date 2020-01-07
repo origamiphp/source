@@ -7,6 +7,7 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -40,6 +41,7 @@ final class AbstractBaseCommandTest extends WebTestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
 
         putenv('COLUMNS=120'); // Required by tests running with Github Actions
     }
@@ -79,9 +81,10 @@ final class AbstractBaseCommandTest extends WebTestCase
     public function testItSuccessfullyRunsFromLocation(): void
     {
         $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
+        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
 
         $environment = $this->getFakeEnvironment();
-        $this->systemManager->getEnvironmentByLocation(getcwd())
+        $this->systemManager->getEnvironmentByLocation('')
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -94,6 +97,8 @@ final class AbstractBaseCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
+        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
+
         self::assertExceptionIsHandled(
             $this->getFakeCommand(),
             'An environment must be given, please consider using the install command instead.'
@@ -105,7 +110,7 @@ final class AbstractBaseCommandTest extends WebTestCase
      */
     private function getFakeCommand(): AbstractBaseCommand
     {
-        return new class($this->systemManager->reveal(), $this->validator->reveal(), $this->dockerCompose->reveal(), $this->eventDispatcher->reveal()) extends AbstractBaseCommand {
+        return new class($this->systemManager->reveal(), $this->validator->reveal(), $this->dockerCompose->reveal(), $this->eventDispatcher->reveal(), $this->processProxy->reveal()) extends AbstractBaseCommand {
             /**
              * {@inheritdoc}
              */

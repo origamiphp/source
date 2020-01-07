@@ -6,6 +6,7 @@ namespace App\Tests\Command\Additional;
 
 use App\Command\Additional\CheckCommand;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use App\Tests\TestCustomCommandsTrait;
@@ -36,6 +37,7 @@ final class CheckCommandTest extends WebTestCase
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
     }
 
     /**
@@ -55,6 +57,7 @@ final class CheckCommandTest extends WebTestCase
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
             $requirements
         );
 
@@ -83,6 +86,7 @@ final class CheckCommandTest extends WebTestCase
             $this->validator->reveal(),
             $this->dockerCompose->reveal(),
             $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
             $requirements
         );
 

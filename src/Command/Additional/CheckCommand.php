@@ -6,6 +6,7 @@ namespace App\Command\Additional;
 
 use App\Command\AbstractBaseCommand;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use Symfony\Component\Console\Helper\Table;
@@ -27,10 +28,11 @@ class CheckCommand extends AbstractBaseCommand
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
         EventDispatcherInterface $eventDispatcher,
+        ProcessProxy $processProxy,
         array $requirements,
         ?string $name = null
     ) {
-        parent::__construct($systemManager, $validator, $dockerCompose, $eventDispatcher, $name);
+        parent::__construct($systemManager, $validator, $dockerCompose, $eventDispatcher, $processProxy, $name);
 
         $this->requirements = $requirements;
     }

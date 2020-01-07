@@ -40,7 +40,9 @@ class StartCommand extends AbstractBaseCommand
         try {
             $environment = $this->getEnvironment($input);
 
-            if (!$this->environment->isActive() || $this->environment->getLocation() === getcwd()) {
+            if (!$this->environment->isActive()
+                || $this->environment->getLocation() === $this->processProxy->getWorkingDirectory()
+            ) {
                 if (!$this->dockerCompose->startServices()) {
                     throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
                 }

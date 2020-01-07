@@ -15,6 +15,10 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  */
 class Environment
 {
+    public const TYPE_CUSTOM = 'custom';
+    public const TYPE_MAGENTO2 = 'magento2';
+    public const TYPE_SYMFONY = 'symfony';
+
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=32, unique=true)
