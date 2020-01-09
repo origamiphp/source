@@ -14,14 +14,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RestartCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:restart';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:restart');
         $this->setAliases(['restart']);
-
         $this->setDescription('Restarts an environment previously started');
     }
 
@@ -45,8 +45,8 @@ class RestartCommand extends AbstractBaseCommand
 
             $event = new EnvironmentRestartedEvent($environment, $this->io);
             $this->eventDispatcher->dispatch($event);
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

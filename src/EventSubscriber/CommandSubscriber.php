@@ -21,8 +21,6 @@ class CommandSubscriber implements EventSubscriberInterface
     private string $databaseName;
 
     /**
-     * CommandSubscriber constructor.
-     *
      * @param Kernel $kernel
      */
     public function __construct(KernelInterface $kernel, ApplicationFactory $applicationFactory, string $databaseName)

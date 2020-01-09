@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestDockerComposeTrait;
-use App\Tests\TestLocationTrait;
-use PHPUnit\Framework\TestCase;
+use App\Tests\AbstractDockerComposeTestCase;
 use Symfony\Component\Process\Process;
 
 /**
@@ -15,20 +14,11 @@ use Symfony\Component\Process\Process;
  *
  * @covers \App\Middleware\Binary\DockerCompose
  */
-final class DockerComposeLogsTest extends TestCase
+final class DockerComposeLogsTest extends AbstractDockerComposeTestCase
 {
-    use TestDockerComposeTrait;
-    use TestLocationTrait;
-
     /**
-     * {@inheritdoc}
+     * @throws InvalidEnvironmentException
      */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeLocation();
-    }
-
     public function testItShowServicesLogsWithDefaultArguments(): void
     {
         $this->prophesizeSuccessfulValidations();
@@ -49,6 +39,9 @@ final class DockerComposeLogsTest extends TestCase
         static::assertTrue($dockerCompose->showServicesLogs());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItShowServicesLogsWithSpecificService(): void
     {
         $this->prophesizeSuccessfulValidations();
@@ -69,6 +62,9 @@ final class DockerComposeLogsTest extends TestCase
         static::assertTrue($dockerCompose->showServicesLogs(0, 'php'));
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItShowServicesLogsWithSpecificTail(): void
     {
         $this->prophesizeSuccessfulValidations();
@@ -89,6 +85,9 @@ final class DockerComposeLogsTest extends TestCase
         static::assertTrue($dockerCompose->showServicesLogs(42));
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItShowServicesLogsWithSpecificServiceAndTail(): void
     {
         $this->prophesizeSuccessfulValidations();

@@ -13,14 +13,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RegisterCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:register';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:register');
         $this->setAliases(['register']);
-
         $this->setDescription('Register an external environment which was not created by Origami.');
     }
 
@@ -36,8 +36,8 @@ class RegisterCommand extends AbstractBaseCommand
                 $this->systemManager->install($location, Environment::TYPE_CUSTOM, null);
                 $this->io->success('Environment successfully registered.');
             }
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

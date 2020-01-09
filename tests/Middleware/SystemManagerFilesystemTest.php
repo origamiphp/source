@@ -34,12 +34,16 @@ final class SystemManagerFilesystemTest extends TestCase
 
     /** @var Mkcert|ObjectProphecy */
     private ObjectProphecy $mkcert;
+
     /** @var ObjectProphecy|ValidatorInterface */
     private ObjectProphecy $validator;
+
     /** @var EntityManagerInterface|ObjectProphecy */
     private ObjectProphecy $entityManager;
+
     /** @var EnvironmentRepository|ObjectProphecy */
     private ObjectProphecy $environmentRepository;
+
     /** @var ObjectProphecy|ProcessFactory */
     private ObjectProphecy $processFactory;
 
@@ -93,11 +97,11 @@ final class SystemManagerFilesystemTest extends TestCase
      */
     public function testItInstallsConfigurationFiles(string $type, ?string $domains = null): void
     {
-        $destination = "{$this->location}/var/docker";
+        $destination = sprintf('%s/var/docker', $this->location);
 
         if ($domains !== null) {
-            $certificate = "{$destination}/nginx/certs/custom.pem";
-            $privateKey = "{$destination}/nginx/certs/custom.key";
+            $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
+            $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
             $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))
                 ->shouldBeCalledOnce()->willReturn(true);
@@ -125,7 +129,7 @@ final class SystemManagerFilesystemTest extends TestCase
         $systemManager->install($this->location, $type, $domains);
 
         $finder = new Finder();
-        $finder->files()->in(__DIR__."/../../src/Resources/{$type}");
+        $finder->files()->in(__DIR__.sprintf('/../../src/Resources/%s', $type));
 
         foreach ($finder as $file) {
             $pathname = $file->getPathname();
@@ -140,11 +144,11 @@ final class SystemManagerFilesystemTest extends TestCase
      */
     public function testItThrowsAnExceptionWithInvalidEnvironment(string $type, ?string $domains = null): void
     {
-        $destination = "{$this->location}/var/docker";
+        $destination = sprintf('%s/var/docker', $this->location);
 
         if ($domains !== null) {
-            $certificate = "{$destination}/nginx/certs/custom.pem";
-            $privateKey = "{$destination}/nginx/certs/custom.key";
+            $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
+            $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
             $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))
                 ->shouldBeCalledOnce()->willReturn(true);
@@ -196,7 +200,7 @@ final class SystemManagerFilesystemTest extends TestCase
             $this->processFactory->reveal()
         );
 
-        $destination = "{$this->location}/var/docker";
+        $destination = sprintf('%s/var/docker', $this->location);
         mkdir($destination, 0777, true);
         static::assertDirectoryExists($destination);
 

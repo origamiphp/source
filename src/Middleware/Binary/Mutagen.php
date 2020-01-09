@@ -8,14 +8,14 @@ use App\Helper\ProcessFactory;
 
 class Mutagen
 {
+    /** @var string */
     private const DEFAULT_CONTAINER_UID = 'id:1000';
+
+    /** @var string */
     private const DEFAULT_CONTAINER_GID = 'id:1000';
 
     private ProcessFactory $processFactory;
 
-    /**
-     * Mutagen constructor.
-     */
     public function __construct(ProcessFactory $processFactory)
     {
         $this->processFactory = $processFactory;
@@ -29,7 +29,7 @@ class Mutagen
         $environmentName = $environmentVariables['COMPOSE_PROJECT_NAME'] ?? '';
         $environmentLocation = $environmentVariables['PROJECT_LOCATION'] ?? '';
 
-        if ($this->canResumeSynchronization($environmentName, $environmentVariables) === false) {
+        if (!$this->canResumeSynchronization($environmentName, $environmentVariables)) {
             $command = [
                 'mutagen',
                 'create',
@@ -38,14 +38,14 @@ class Mutagen
                 '--sync-mode=two-way-resolved',
                 '--ignore-vcs',
                 '--symlink-mode=posix-raw',
-                "--label=name={$environmentName}",
+                sprintf('--label=name=%s', $environmentName),
                 $environmentLocation,
                 $environmentName
-                    ? "docker://${environmentVariables['COMPOSE_PROJECT_NAME']}_synchro/var/www/html/"
+                    ? sprintf('docker://%s_synchro/var/www/html/', $environmentVariables['COMPOSE_PROJECT_NAME'])
                     : '',
             ];
         } else {
-            $command = ['mutagen', 'resume', "--label-selector=name={$environmentName}"];
+            $command = ['mutagen', 'resume', sprintf('--label-selector=name=%s', $environmentName)];
         }
         $process = $this->processFactory->runForegroundProcess($command, $environmentVariables);
 
@@ -57,7 +57,7 @@ class Mutagen
      */
     public function stopDockerSynchronization(array $environmentVariables): bool
     {
-        $command = ['mutagen', 'pause', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"];
+        $command = ['mutagen', 'pause', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
         $process = $this->processFactory->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();
@@ -68,7 +68,7 @@ class Mutagen
      */
     public function removeDockerSynchronization(array $environmentVariables): bool
     {
-        $command = ['mutagen', 'terminate', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"];
+        $command = ['mutagen', 'terminate', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
         $process = $this->processFactory->runForegroundProcess($command, $environmentVariables);
 
         return $process->isSuccessful();
@@ -79,7 +79,7 @@ class Mutagen
      */
     private function canResumeSynchronization(string $environmentName, array $environmentVariables): bool
     {
-        $command = ['mutagen', 'list', "--label-selector=name={$environmentName}"];
+        $command = ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentName)];
         $process = $this->processFactory->runBackgroundProcess($command, $environmentVariables);
 
         return strpos($process->getOutput(), 'No sessions found') === false;

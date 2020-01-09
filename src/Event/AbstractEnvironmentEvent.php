@@ -13,9 +13,6 @@ abstract class AbstractEnvironmentEvent extends Event
     protected Environment $environment;
     protected SymfonyStyle $symfonyStyle;
 
-    /**
-     * AbstractEnvironmentEvent constructor.
-     */
     public function __construct(Environment $environment, SymfonyStyle $symfonyStyle)
     {
         $this->environment = $environment;

@@ -21,9 +21,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     private Mutagen $mutagen;
     private EntityManagerInterface $entityManager;
 
-    /**
-     * EnvironmentSubscriber constructor.
-     */
     public function __construct(DockerCompose $dockerCompose, Mutagen $mutagen, EntityManagerInterface $entityManager)
     {
         $this->dockerCompose = $dockerCompose;

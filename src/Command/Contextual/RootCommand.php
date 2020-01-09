@@ -12,14 +12,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RootCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:root';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:root');
         $this->setAliases(['root']);
-
         $this->setDescription('Display instructions to set up the environment variables');
     }
 
@@ -36,8 +36,8 @@ class RootCommand extends AbstractBaseCommand
             }
 
             $this->writeInstructions();
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 
@@ -51,7 +51,8 @@ class RootCommand extends AbstractBaseCommand
     {
         $result = '';
         foreach ($this->dockerCompose->getRequiredVariables() as $key => $value) {
-            $result .= "export {$key}=\"{$value}\"\n";
+            $result .= sprintf('export %s="%s"
+', $key, $value);
         }
 
         $this->io->writeln($result);

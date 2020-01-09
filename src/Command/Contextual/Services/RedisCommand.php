@@ -6,6 +6,7 @@ namespace App\Command\Contextual\Services;
 
 class RedisCommand extends AbstractServiceCommand
 {
+    /** @var string */
     private const COMMAND_SERVICE_NAME = 'redis';
 
     /**

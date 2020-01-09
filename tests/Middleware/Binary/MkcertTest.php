@@ -26,7 +26,7 @@ final class MkcertTest extends TestCase
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
 
         $processFactory = $this->prophesize(ProcessFactory::class);
-        $processFactory->runBackgroundProcess(array_merge(['mkcert', '-cert-file', './custom.pem', '-key-file', './custom.key'], $domains))
+        $processFactory->runBackgroundProcess([...['mkcert', '-cert-file', './custom.pem', '-key-file', './custom.key'], ...$domains])
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;

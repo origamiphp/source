@@ -21,7 +21,7 @@ class ProcessProxy
     {
         $cwd = getcwd();
 
-        if ($cwd === false) {
+        if (!$cwd) {
             throw new InvalidEnvironmentException('Unable to determine the current working directory.');
         }
 

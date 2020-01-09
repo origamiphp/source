@@ -16,14 +16,15 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class SystemManager
 {
     private Mkcert $mkcert;
+
     private ValidatorInterface $validator;
+
     private EntityManagerInterface $entityManager;
+
     private EnvironmentRepository $environmentRepository;
+
     private ProcessFactory $processFactory;
 
-    /**
-     * SystemManager constructor.
-     */
     public function __construct(
         Mkcert $mkcert,
         ValidatorInterface $validator,
@@ -46,15 +47,15 @@ class SystemManager
     public function install(string $location, string $type, ?string $domains = null): void
     {
         if ($type !== Environment::TYPE_CUSTOM) {
-            $source = __DIR__."/../Resources/{$type}";
-            $destination = "{$location}/var/docker";
+            $source = __DIR__.sprintf('/../Resources/%s', $type);
+            $destination = sprintf('%s/var/docker', $location);
 
             $filesystem = new Filesystem();
             $this->copyEnvironmentFiles($filesystem, $source, $destination);
 
             if ($domains !== null) {
-                $certificate = "{$destination}/nginx/certs/custom.pem";
-                $privateKey = "{$destination}/nginx/certs/custom.key";
+                $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
+                $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
                 $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
             }
@@ -109,7 +110,7 @@ class SystemManager
     {
         if ($environment->getType() !== Environment::TYPE_CUSTOM) {
             $filesystem = new Filesystem();
-            $filesystem->remove("{$environment->getLocation()}/var/docker");
+            $filesystem->remove(sprintf('%s/var/docker', $environment->getLocation()));
         }
 
         $this->removeExistingEnvironment($environment);

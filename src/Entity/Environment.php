@@ -15,8 +15,13 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  */
 class Environment
 {
+    /** @var string */
     public const TYPE_CUSTOM = 'custom';
+
+    /** @var string */
     public const TYPE_MAGENTO2 = 'magento2';
+
+    /** @var string */
     public const TYPE_SYMFONY = 'symfony';
 
     /**

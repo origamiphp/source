@@ -8,20 +8,14 @@ use App\Command\Main\InstallCommand;
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
-use App\Middleware\SystemManager;
-use App\Tests\TestCustomCommandsTrait;
+use App\Tests\AbstractCommandWebTestCase;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
@@ -31,9 +25,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class InstallCommandTest extends WebTestCase
+final class InstallCommandTest extends AbstractCommandWebTestCase
 {
-    use TestCustomCommandsTrait;
     use TestLocationTrait;
 
     /**
@@ -42,13 +35,6 @@ final class InstallCommandTest extends WebTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->systemManager = $this->prophesize(SystemManager::class);
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->dockerCompose = $this->prophesize(DockerCompose::class);
-        $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $this->processProxy = $this->prophesize(ProcessProxy::class);
-
         $this->createLocation();
     }
 

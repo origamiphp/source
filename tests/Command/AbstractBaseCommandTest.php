@@ -7,44 +7,21 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
-use App\Middleware\SystemManager;
-use App\Tests\TestCustomCommandsTrait;
+use App\Tests\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
  *
  * @covers \App\Command\AbstractBaseCommand
  */
-final class AbstractBaseCommandTest extends WebTestCase
+final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 {
-    use TestCustomCommandsTrait;
     use TestFakeEnvironmentTrait;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->systemManager = $this->prophesize(SystemManager::class);
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->dockerCompose = $this->prophesize(DockerCompose::class);
-        $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $this->processProxy = $this->prophesize(ProcessProxy::class);
-
-        putenv('COLUMNS=120'); // Required by tests running with Github Actions
-    }
 
     public function testItSuccessfullyRunsWithActiveEnvironment(): void
     {
@@ -111,21 +88,21 @@ final class AbstractBaseCommandTest extends WebTestCase
     private function getFakeCommand(): AbstractBaseCommand
     {
         return new class($this->systemManager->reveal(), $this->validator->reveal(), $this->dockerCompose->reveal(), $this->eventDispatcher->reveal(), $this->processProxy->reveal()) extends AbstractBaseCommand {
+            protected static $defaultName = 'origami:test';
+
             /**
              * {@inheritdoc}
              */
             protected function configure(): void
             {
-                $this->setName('origami:test');
                 $this->setAliases(['test']);
+                $this->setDescription('Dummy description for a temporary test command');
 
                 $this->addArgument(
                     'environment',
                     InputArgument::OPTIONAL,
                     'Name of the environment to prepare'
                 );
-
-                $this->setDescription('Dummy description for a temporary test command');
             }
 
             /**
@@ -135,8 +112,8 @@ final class AbstractBaseCommandTest extends WebTestCase
             {
                 try {
                     $this->getEnvironment($input);
-                } catch (OrigamiExceptionInterface $e) {
-                    $this->io->error($e->getMessage());
+                } catch (OrigamiExceptionInterface $exception) {
+                    $this->io->error($exception->getMessage());
                     $exitCode = CommandExitCode::EXCEPTION;
                 }
 

@@ -14,13 +14,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class LogsCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:logs';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:logs');
         $this->setAliases(['logs']);
+        $this->setDescription('Shows the logs of an environment previously started');
 
         $this->addArgument(
             'service',
@@ -34,8 +36,6 @@ class LogsCommand extends AbstractBaseCommand
             InputOption::VALUE_OPTIONAL,
             'Number of lines to show from the end of the logs for each service'
         );
-
-        $this->setDescription('Shows the logs of an environment previously started');
     }
 
     /**
@@ -56,8 +56,8 @@ class LogsCommand extends AbstractBaseCommand
             $service = $input->getArgument('service');
 
             $this->dockerCompose->showServicesLogs((int) $tail, $service);
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

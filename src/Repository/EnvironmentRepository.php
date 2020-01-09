@@ -16,9 +16,6 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class EnvironmentRepository extends ServiceEntityRepository
 {
-    /**
-     * EnvironmentRepository constructor.
-     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Environment::class);

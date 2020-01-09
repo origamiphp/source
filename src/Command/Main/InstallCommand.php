@@ -15,6 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:install';
+
     private array $availableTypes = [Environment::TYPE_MAGENTO2, Environment::TYPE_SYMFONY];
 
     /**
@@ -22,9 +24,7 @@ class InstallCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setName('origami:install');
         $this->setAliases(['install']);
-
         $this->setDescription('Installs a Docker environment in the desired directory');
     }
 
@@ -41,19 +41,15 @@ class InstallCommand extends AbstractBaseCommand
                 $this->io->ask(
                     'Where do you want to install the environment?',
                     '.',
-                    function ($answer) {
-                        return $this->installationPathCallback($answer);
-                    }
+                    fn ($answer) => $this->installationPathCallback($answer)
                 )
             );
 
             if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
                 $domains = $this->io->ask(
                     'Which domains does this certificate belong to?',
-                    "{$type}.localhost www.{$type}.localhost",
-                    function ($answer) {
-                        return $this->localDomainsCallback($answer);
-                    }
+                    sprintf('%s.localhost www.%s.localhost', $type, $type),
+                    fn ($answer) => $this->localDomainsCallback($answer)
                 );
             } else {
                 $domains = null;
@@ -61,8 +57,8 @@ class InstallCommand extends AbstractBaseCommand
 
             $this->systemManager->install($location, $type, $domains);
             $this->io->success('Environment successfully installed.');
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

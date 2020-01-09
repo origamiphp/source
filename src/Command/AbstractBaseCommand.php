@@ -19,16 +19,19 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 abstract class AbstractBaseCommand extends Command
 {
     protected SystemManager $systemManager;
+
     protected ValidatorInterface $validator;
+
     protected DockerCompose $dockerCompose;
+
     protected EventDispatcherInterface $eventDispatcher;
+
     protected ProcessProxy $processProxy;
-    protected ?Environment $environment = null;
+
+    protected ?Environment $environment;
+
     protected SymfonyStyle $io;
 
-    /**
-     * AbstractBaseCommand constructor.
-     */
     public function __construct(
         SystemManager $systemManager,
         ValidatorInterface $validator,
@@ -44,6 +47,8 @@ abstract class AbstractBaseCommand extends Command
         $this->dockerCompose = $dockerCompose;
         $this->eventDispatcher = $eventDispatcher;
         $this->processProxy = $processProxy;
+
+        $this->environment = null;
     }
 
     /**
@@ -111,8 +116,8 @@ abstract class AbstractBaseCommand extends Command
             $this->io->success('An environment is currently running.');
             $this->io->listing(
                 [
-                    "Environment location: {$this->environment->getLocation()}",
-                    "Environment type: {$this->environment->getType()}",
+                    sprintf('Environment location: %s', $this->environment->getLocation()),
+                    sprintf('Environment type: %s', $this->environment->getType()),
                 ]
             );
         }

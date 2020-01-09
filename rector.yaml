@@ -1,0 +1,37 @@
+parameters:
+    auto_import_names: true
+    symfony_container_xml_path: '/project/var/cache/dev/App_KernelDevDebugContainer.xml'
+
+    autoload_paths:
+      - '/project/vendor/autoload.php'
+      - '/project/bin/.phpunit/phpunit-8.4-0/vendor/autoload.php'
+
+    paths:
+        - '/project/src'
+        - '/project/tests'
+
+    sets:
+        - 'celebrity'
+        - 'code-quality'
+        - 'coding-style'
+        - 'constructor-injectin-to-action-injection'
+        - 'dead-code'
+        - 'doctrine'
+        - 'doctrine25'
+        - 'doctrine-code-quality'
+        - 'doctrine-dbal-210'
+        - 'doctrine-services'
+        - 'framework-extra-bundle-50'
+        - 'php71'
+        - 'php72'
+        - 'php73'
+        - 'php74'
+        - 'php-code-sniffer30'
+        - 'php-di-decouple'
+        - 'phpstan'
+        - 'solid'
+        - 'symfony50'
+        - 'symfony50-types'
+        - 'symfony-code-quality'
+        - 'symfony-constructor-injection'
+        - 'unwrap-compat'

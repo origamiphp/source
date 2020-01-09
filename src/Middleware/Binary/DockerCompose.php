@@ -15,13 +15,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class DockerCompose
 {
     private ValidatorInterface $validator;
+
     private Environment $environment;
+
     private ProcessFactory $processFactory;
+
     private array $environmentVariables = [];
 
-    /**
-     * DockerCompose constructor.
-     */
     public function __construct(ValidatorInterface $validator, ProcessFactory $processFactory)
     {
         $this->validator = $validator;
@@ -48,14 +48,14 @@ class DockerCompose
     {
         if ($this->environment->getType() !== Environment::TYPE_CUSTOM) {
             $result = [
-                'COMPOSE_FILE' => "{$this->environment->getLocation()}/var/docker/docker-compose.yml",
+                'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $this->environment->getLocation()),
                 'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
                 'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
                 'PROJECT_LOCATION' => $this->environment->getLocation(),
             ];
         } else {
             $result = [
-                'COMPOSE_FILE' => "{$this->environment->getLocation()}/docker-compose.yml",
+                'COMPOSE_FILE' => sprintf('%s/docker-compose.yml', $this->environment->getLocation()),
                 'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
                 'PROJECT_LOCATION' => $this->environment->getLocation(),
             ];
@@ -96,7 +96,7 @@ class DockerCompose
      */
     public function showServicesLogs(?int $tail = 0, ?string $service = ''): bool
     {
-        $command = ['docker-compose', 'logs', '--follow', "--tail={$tail}"];
+        $command = ['docker-compose', 'logs', '--follow', sprintf('--tail=%s', $tail)];
         if ($service) {
             $command[] = $service;
         }
@@ -157,9 +157,9 @@ class DockerCompose
         $command = ['docker-compose', 'exec'];
 
         if ($user !== '') {
-            $command = array_merge($command, ['-u', $user, $service, 'sh', '-l']);
+            $command = [...$command, ...['-u', $user, $service, 'sh', '-l']];
         } else {
-            $command = array_merge($command, [$service, 'sh', '-l']);
+            $command = [...$command, ...[$service, 'sh', '-l']];
         }
 
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
@@ -183,20 +183,20 @@ class DockerCompose
      *
      * @throws InvalidEnvironmentException
      */
-    protected function checkEnvironmentConfiguration(): void
+    private function checkEnvironmentConfiguration(): void
     {
         $dotEnvConstraint = new DotEnvExists();
         $errors = $this->validator->validate($this->environment, $dotEnvConstraint);
-        if ($errors->has(0) !== true) {
+        if (!$errors->has(0)) {
             $dotenv = new Dotenv(true);
-            $dotenv->overload("{$this->environment->getLocation()}/var/docker/.env");
+            $dotenv->overload(sprintf('%s/var/docker/.env', $this->environment->getLocation()));
         } else {
             throw new InvalidEnvironmentException($errors[0]->getMessage());
         }
 
         $filesConstraint = new ConfigurationFiles();
         $errors = $this->validator->validate($this->environment, $filesConstraint);
-        if ($errors->has(0) === true) {
+        if ($errors->has(0)) {
             throw new InvalidEnvironmentException($errors[0]->getMessage());
         }
     }
