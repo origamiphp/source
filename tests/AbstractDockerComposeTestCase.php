@@ -8,21 +8,33 @@ use App\Entity\Environment;
 use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-trait TestDockerComposeTrait
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+abstract class AbstractDockerComposeTestCase extends TestCase
 {
+    use TestLocationTrait;
+
     /** @var ObjectProphecy|ValidatorInterface */
-    private ObjectProphecy $validator;
+    protected ObjectProphecy $validator;
+
     /** @var ObjectProphecy|ProcessFactory */
-    private ObjectProphecy $processFactory;
+    protected ObjectProphecy $processFactory;
 
-    private Environment $environment;
+    protected Environment $environment;
 
+    /**
+     * {@inheritdoc}
+     */
     protected function setUp(): void
     {
         parent::setUp();
@@ -36,6 +48,15 @@ trait TestDockerComposeTrait
 
         $filesystem = new Filesystem();
         $filesystem->mirror(__DIR__.'/../src/Resources/symfony/', $this->location.'/var/docker');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+        $this->removeLocation();
     }
 
     /**

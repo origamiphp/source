@@ -10,6 +10,7 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class LocalDomainsValidator extends ConstraintValidator
 {
+    /** @var string */
     private const PATTERN = '/^([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]+)+(\s([a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]+))*$/';
 
     /**

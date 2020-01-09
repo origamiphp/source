@@ -12,9 +12,6 @@ class ProcessFactory
     private ProcessProxy $processProxy;
     private LoggerInterface $logger;
 
-    /**
-     * ProcessFactory constructor.
-     */
     public function __construct(ProcessProxy $processProxy, LoggerInterface $logger)
     {
         $this->processProxy = $processProxy;
@@ -28,7 +25,7 @@ class ProcessFactory
     {
         $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
 
-        $process = new Process($command, null, $environmentVariables, null, 3600.00);
+        $process = new Process($command, null, $environmentVariables, null, 3_600);
         $process->run();
 
         return $process;
@@ -41,7 +38,7 @@ class ProcessFactory
     {
         $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
 
-        $process = new Process($command, null, $environmentVariables, null, 3600.00);
+        $process = new Process($command, null, $environmentVariables, null, 3_600);
         $process->setTty($this->processProxy->isTtySupported());
 
         $process->run(static function (string $type, string $buffer) {
@@ -58,7 +55,7 @@ class ProcessFactory
     {
         $this->logger->debug('Command "{command}" will be executed.', ['command' => $command]);
 
-        $process = Process::fromShellCommandline($command, null, $environmentVariables, null, 3600.00);
+        $process = Process::fromShellCommandline($command, null, $environmentVariables, null, 3_600);
         $process->setTty($this->processProxy->isTtySupported());
 
         $process->run(static function (string $type, string $buffer) {

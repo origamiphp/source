@@ -13,14 +13,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PsCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:ps';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:ps');
         $this->setAliases(['ps']);
-
         $this->setDescription('Shows the status of an environment previously started');
     }
 
@@ -39,8 +39,8 @@ class PsCommand extends AbstractBaseCommand
             if (!$this->dockerCompose->showServicesStatus()) {
                 throw new InvalidEnvironmentException('An error occurred while checking the services status.');
             }
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

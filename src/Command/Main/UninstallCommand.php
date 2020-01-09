@@ -15,21 +15,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UninstallCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:uninstall';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:uninstall');
         $this->setAliases(['uninstall']);
+        $this->setDescription('Uninstalls a specific environment');
 
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,
             'Name of the environment to uninstall'
         );
-
-        $this->setDescription('Uninstalls a specific environment');
     }
 
     /**
@@ -61,8 +61,8 @@ class UninstallCommand extends AbstractBaseCommand
 
                 $this->io->success('Environment successfully uninstalled.');
             }
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

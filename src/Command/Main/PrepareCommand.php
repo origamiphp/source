@@ -14,21 +14,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PrepareCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:prepare';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:prepare');
         $this->setAliases(['prepare']);
+        $this->setDescription('Prepares an environment previously installed (i.e. pulls/builds Docker images)');
 
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,
             'Name of the environment to prepare'
         );
-
-        $this->setDescription('Prepares an environment previously installed (i.e. pulls/builds Docker images)');
     }
 
     /**
@@ -48,8 +48,8 @@ class PrepareCommand extends AbstractBaseCommand
             }
 
             $this->io->success('Docker services successfully prepared.');
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

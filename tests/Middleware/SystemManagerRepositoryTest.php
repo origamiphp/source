@@ -25,10 +25,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class SystemManagerRepositoryTest extends KernelTestCase
 {
-    /** @var EntityManagerInterface */
-    private $entityManager;
+    private ?EntityManagerInterface $entityManager;
 
-    /** @var SystemManager */
     private SystemManager $systemManager;
 
     /**
@@ -42,8 +40,10 @@ final class SystemManagerRepositoryTest extends KernelTestCase
 
         /** @var ContainerInterface $container */
         $container = $kernel->getContainer();
+
         /** @var ManagerRegistry $doctrine */
         $doctrine = $container->get('doctrine');
+
         /** @var EntityManagerInterface entityManager */
         $entityManager = $doctrine->getManager();
         $this->entityManager = $entityManager;
@@ -67,8 +67,10 @@ final class SystemManagerRepositoryTest extends KernelTestCase
     {
         parent::tearDown();
 
-        $this->entityManager->close();
-        $this->entityManager = null;
+        if ($this->entityManager instanceof EntityManagerInterface) {
+            $this->entityManager->close();
+            $this->entityManager = null;
+        }
     }
 
     public function testItRetrievesEnvironmentByName(): void

@@ -9,7 +9,6 @@ parameters:
     - %currentWorkingDirectory%/src
     - %currentWorkingDirectory%/tests
   symfony:
-    console_application_loader: '%currentWorkingDirectory%/tests/console-application-loader.php'
     container_xml_path: '%currentWorkingDirectory%/var/cache/dev/App_KernelDevDebugContainer.xml'
   excludes_analyse:
     - src/EventSubscriber/CommandSubscriber.php         # False-positives following the upgrade to Symfony 5.0

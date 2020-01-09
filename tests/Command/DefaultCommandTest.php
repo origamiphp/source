@@ -75,14 +75,14 @@ final class DefaultCommandTest extends WebTestCase
     private function getFakeCommand(): Command
     {
         return new class() extends Command {
+            protected static $defaultName = 'origami:test';
+
             /**
              * {@inheritdoc}
              */
             protected function configure(): void
             {
-                $this->setName('origami:test');
                 $this->setAliases(['test']);
-
                 $this->setDescription('Dummy description for a temporary test command');
             }
         };

@@ -26,7 +26,7 @@ final class MutagenTest extends TestCase
 
         $processFactory = $this->prophesize(ProcessFactory::class);
         $processFactory->runBackgroundProcess(
-            ['mutagen', 'list', "--label-selector=name={$environmentVariables['COMPOSE_PROJECT_NAME']}"],
+            ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
             $environmentVariables
         )
             ->shouldBeCalledOnce()
@@ -65,14 +65,14 @@ final class MutagenTest extends TestCase
 
         $processFactory = $this->prophesize(ProcessFactory::class);
         $processFactory->runBackgroundProcess(
-            ['mutagen', 'list', "--label-selector=name={$environmentVariables['COMPOSE_PROJECT_NAME']}"],
+            ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
             $environmentVariables
         )
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
         $processFactory->runForegroundProcess(
-            ['mutagen', 'resume', "--label-selector=name={$environmentVariables['COMPOSE_PROJECT_NAME']}"],
+            ['mutagen', 'resume', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
             $environmentVariables
         )
             ->shouldBeCalledOnce()
@@ -92,7 +92,7 @@ final class MutagenTest extends TestCase
 
         $processFactory = $this->prophesize(ProcessFactory::class);
         $processFactory->runForegroundProcess(
-            ['mutagen', 'pause', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"],
+            ['mutagen', 'pause', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
             $environmentVariables
         )
             ->shouldBeCalledOnce()
@@ -112,7 +112,7 @@ final class MutagenTest extends TestCase
 
         $processFactory = $this->prophesize(ProcessFactory::class);
         $processFactory->runForegroundProcess(
-            ['mutagen', 'terminate', "--label-selector=name=${environmentVariables['COMPOSE_PROJECT_NAME']}"],
+            ['mutagen', 'terminate', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
             $environmentVariables
         )
             ->shouldBeCalledOnce()

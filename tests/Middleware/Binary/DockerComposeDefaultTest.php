@@ -7,11 +7,9 @@ namespace App\Tests\Middleware\Binary;
 use App\Entity\Environment;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestDockerComposeTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\AbstractDockerComposeTestCase;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
-use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Process\Process;
@@ -23,26 +21,18 @@ use Symfony\Component\Validator\ConstraintViolationList;
  *
  * @covers \App\Middleware\Binary\DockerCompose
  */
-final class DockerComposeDefaultTest extends TestCase
+final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
 {
-    use TestDockerComposeTrait;
-    use TestLocationTrait;
-
     /**
-     * {@inheritdoc}
+     * @throws InvalidEnvironmentException
      */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeLocation();
-    }
-
     public function testItDefinesTheActiveEnvironmentWithInternals(): void
     {
         $this->initializeSuccessfulValidators();
 
         $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);
+
         $variables = $dockerCompose->getRequiredVariables();
 
         static::assertArrayHasKey('COMPOSE_FILE', $variables);
@@ -58,6 +48,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertSame($this->location, $variables['PROJECT_LOCATION']);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItDefinesTheActiveEnvironmentWithExternals(): void
     {
         $this->initializeSuccessfulValidators();
@@ -80,6 +73,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertSame($this->location, $variables['PROJECT_LOCATION']);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItThrowsAnExceptionWithMissingDotEnvFile(): void
     {
         $violation = $this->prophesize(ConstraintViolation::class);
@@ -100,6 +96,9 @@ final class DockerComposeDefaultTest extends TestCase
         $dockerCompose->setActiveEnvironment($this->environment);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItThrowsAnExceptionWithMissingConfigurationFiles(): void
     {
         $violation = $this->prophesize(ConstraintViolation::class);
@@ -123,6 +122,9 @@ final class DockerComposeDefaultTest extends TestCase
         $dockerCompose->setActiveEnvironment($this->environment);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItPreparesTheEnvironmentServices(): void
     {
         $this->initializeSuccessfulValidators();
@@ -148,6 +150,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertTrue($dockerCompose->prepareServices());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItShowsResourcesUsage(): void
     {
         $this->initializeSuccessfulValidators();
@@ -165,6 +170,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertTrue($dockerCompose->showResourcesUsage());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItShowsServicesStatus(): void
     {
         $this->initializeSuccessfulValidators();
@@ -182,6 +190,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertTrue($dockerCompose->showServicesStatus());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRestartsServicesStatus(): void
     {
         $this->initializeSuccessfulValidators();
@@ -199,6 +210,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertTrue($dockerCompose->restartServices());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItStartsServicesStatus(): void
     {
         $this->initializeSuccessfulValidators();
@@ -216,6 +230,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertTrue($dockerCompose->startServices());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItStopsServicesStatus(): void
     {
         $this->initializeSuccessfulValidators();
@@ -233,6 +250,9 @@ final class DockerComposeDefaultTest extends TestCase
         static::assertTrue($dockerCompose->stopServices());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRemovesServicesStatus(): void
     {
         $this->initializeSuccessfulValidators();

@@ -10,19 +10,13 @@ use App\Command\Contextual\RestartCommand;
 use App\Command\Contextual\StopCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
-use App\Middleware\SystemManager;
-use App\Tests\TestCustomCommandsTrait;
+use App\Tests\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
 use Prophecy\Argument;
 use stdClass;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
@@ -35,24 +29,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class CommonCommandTest extends WebTestCase
+final class CommonCommandTest extends AbstractCommandWebTestCase
 {
-    use TestCustomCommandsTrait;
     use TestFakeEnvironmentTrait;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->systemManager = $this->prophesize(SystemManager::class);
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->dockerCompose = $this->prophesize(DockerCompose::class);
-        $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $this->processProxy = $this->prophesize(ProcessProxy::class);
-    }
 
     /**
      * @dataProvider provideCommandDetails

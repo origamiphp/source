@@ -6,15 +6,9 @@ namespace App\Tests\Command\Additional;
 
 use App\Command\Additional\CheckCommand;
 use App\Helper\CommandExitCode;
-use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
-use App\Middleware\SystemManager;
-use App\Tests\TestCustomCommandsTrait;
+use App\Tests\AbstractCommandWebTestCase;
 use Generator;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
@@ -22,24 +16,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Additional\CheckCommand
  */
-final class CheckCommandTest extends WebTestCase
+final class CheckCommandTest extends AbstractCommandWebTestCase
 {
-    use TestCustomCommandsTrait;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->systemManager = $this->prophesize(SystemManager::class);
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->dockerCompose = $this->prophesize(DockerCompose::class);
-        $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $this->processProxy = $this->prophesize(ProcessProxy::class);
-    }
-
     /**
      * @dataProvider provideSystemRequirements
      */

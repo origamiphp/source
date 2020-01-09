@@ -22,8 +22,7 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
 
         $this->setName("origami:services:{$serviceName}");
         $this->setAliases([$serviceName]);
-
-        $this->setDescription("Opens a terminal on the \"{$serviceName}\" service");
+        $this->setDescription(sprintf('Opens a terminal on the "%s" service', $serviceName));
     }
 
     /**
@@ -41,8 +40,8 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
             if (!$this->dockerCompose->openTerminal($this->getServiceName(), $this->getUsername())) {
                 throw new InvalidEnvironmentException('An error occurred while opening a terminal.');
             }
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

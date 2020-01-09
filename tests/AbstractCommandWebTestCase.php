@@ -10,28 +10,50 @@ use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\SystemManager;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-trait TestCustomCommandsTrait
+/**
+ * @internal
+ *
+ * @coversNothing
+ */
+abstract class AbstractCommandWebTestCase extends WebTestCase
 {
     /** @var ObjectProphecy|SystemManager */
-    private ObjectProphecy $systemManager;
+    protected ObjectProphecy $systemManager;
 
     /** @var ObjectProphecy|ValidatorInterface */
-    private ObjectProphecy $validator;
+    protected ObjectProphecy $validator;
 
     /** @var DockerCompose|ObjectProphecy */
-    private ObjectProphecy $dockerCompose;
+    protected ObjectProphecy $dockerCompose;
 
     /** @var EventDispatcherInterface|ObjectProphecy */
-    private ObjectProphecy $eventDispatcher;
+    protected ObjectProphecy $eventDispatcher;
 
     /** @var ObjectProphecy|ProcessProxy */
-    private ObjectProphecy $processProxy;
+    protected ObjectProphecy $processProxy;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->systemManager = $this->prophesize(SystemManager::class);
+        $this->validator = $this->prophesize(ValidatorInterface::class);
+        $this->dockerCompose = $this->prophesize(DockerCompose::class);
+        $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophesize(ProcessProxy::class);
+
+        putenv('COLUMNS=120'); // Required by tests running with Github Actions
+    }
 
     /**
      * Asserts that the environment details are displayed in verbose mode.
@@ -39,8 +61,8 @@ trait TestCustomCommandsTrait
     public static function assertDisplayIsVerbose(Environment $environment, string $display): void
     {
         static::assertStringContainsString('[OK] An environment is currently running.', $display);
-        static::assertStringContainsString("Environment location: {$environment->getLocation()}", $display);
-        static::assertStringContainsString("Environment type: {$environment->getType()}", $display);
+        static::assertStringContainsString(sprintf('Environment location: %s', $environment->getLocation()), $display);
+        static::assertStringContainsString(sprintf('Environment type: %s', $environment->getType()), $display);
     }
 
     /**

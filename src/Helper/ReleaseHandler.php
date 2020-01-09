@@ -6,20 +6,22 @@ namespace App\Helper;
 
 use App\Exception\InvalidConfigurationException;
 use App\Kernel;
+use RuntimeException;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 class ReleaseHandler
 {
+    /**
+     * @var string
+     */
     private const TRACKER_FILENAME = '.release';
 
     private Kernel $kernel;
     private SymfonyStyle $io;
 
     /**
-     * ReleaseTracker constructor.
-     *
      * @param Kernel $kernel
      */
     public function __construct(KernelInterface $kernel, SymfonyStyle $io)
@@ -35,7 +37,7 @@ class ReleaseHandler
     {
         $this->createProjectDirectory();
 
-        if ($this->isTrackerUpToDate() !== true) {
+        if (!$this->isTrackerUpToDate()) {
             $filesystem = new Filesystem();
             $filesystem->remove($this->kernel->getCacheDir());
 
@@ -56,7 +58,7 @@ class ReleaseHandler
         if (!is_dir($directory)
             && !mkdir($concurrentDirectory = $directory, 0777, true) && !is_dir($concurrentDirectory)
         ) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory)); // @codeCoverageIgnore
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory)); // @codeCoverageIgnore
         }
     }
 

@@ -15,21 +15,21 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StartCommand extends AbstractBaseCommand
 {
+    protected static $defaultName = 'origami:start';
+
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setName('origami:start');
         $this->setAliases(['start']);
+        $this->setDescription('Starts an environment previously installed in the current directory');
 
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,
             'Name of the environment to start'
         );
-
-        $this->setDescription('Starts an environment previously installed in the current directory');
     }
 
     /**
@@ -55,8 +55,8 @@ class StartCommand extends AbstractBaseCommand
                 $this->io->error('Unable to start an environment when there is already a running one.');
                 $exitCode = CommandExitCode::INVALID;
             }
-        } catch (OrigamiExceptionInterface $e) {
-            $this->io->error($e->getMessage());
+        } catch (OrigamiExceptionInterface $exception) {
+            $this->io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

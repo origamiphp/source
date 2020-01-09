@@ -17,6 +17,7 @@ class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
 
+    /** @var string */
     private const CONFIG_EXTS = '.{php,xml,yaml,yml}';
 
     /**
@@ -51,7 +52,7 @@ class Kernel extends BaseKernel
             throw new InvalidConfigurationException('Unable to determine the home directory.'); // @codeCoverageIgnore
         }
 
-        return "{$home}/.origami";
+        return sprintf('%s/.origami', $home);
     }
 
     /**
@@ -101,6 +102,7 @@ class Kernel extends BaseKernel
     {
         $container->addResource(new FileResource($this->getProjectDir().'/config/bundles.php'));
         $container->setParameter('container.dumper.inline_class_loader', true);
+
         $confDir = $this->getProjectDir().'/config';
 
         $loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');

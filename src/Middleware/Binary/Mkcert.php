@@ -10,9 +10,6 @@ class Mkcert
 {
     private ProcessFactory $processFactory;
 
-    /**
-     * Mkcert constructor.
-     */
     public function __construct(ProcessFactory $processFactory)
     {
         $this->processFactory = $processFactory;
@@ -23,7 +20,7 @@ class Mkcert
      */
     public function generateCertificate(string $certificate, string $privateKey, array $domains): bool
     {
-        $command = array_merge(['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], $domains);
+        $command = [...['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], ...$domains];
         $process = $this->processFactory->runBackgroundProcess($command);
 
         return $process->isSuccessful();
