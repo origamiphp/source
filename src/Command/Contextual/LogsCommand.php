@@ -14,14 +14,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class LogsCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:logs';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['logs']);
         $this->setDescription('Shows the logs of an environment previously started');
 
         $this->addArgument(

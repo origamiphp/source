@@ -14,14 +14,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PrepareCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:prepare';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['prepare']);
         $this->setDescription('Prepares an environment previously installed (i.e. pulls/builds Docker images)');
 
         $this->addArgument(

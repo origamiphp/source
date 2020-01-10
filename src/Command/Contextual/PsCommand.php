@@ -13,14 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PsCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:ps';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['ps']);
         $this->setDescription('Shows the status of an environment previously started');
     }
 

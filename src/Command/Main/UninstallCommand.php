@@ -15,14 +15,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UninstallCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:uninstall';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['uninstall']);
         $this->setDescription('Uninstalls a specific environment');
 
         $this->addArgument(
