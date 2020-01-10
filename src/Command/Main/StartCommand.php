@@ -15,14 +15,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StartCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:start';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['start']);
         $this->setDescription('Starts an environment previously installed in the current directory');
 
         $this->addArgument(

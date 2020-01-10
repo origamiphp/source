@@ -19,9 +19,6 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
     protected function configure(): void
     {
         $serviceName = $this->getServiceName();
-
-        $this->setName("origami:services:{$serviceName}");
-        $this->setAliases([$serviceName]);
         $this->setDescription(sprintf('Opens a terminal on the "%s" service', $serviceName));
     }
 

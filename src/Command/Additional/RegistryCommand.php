@@ -13,14 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RegistryCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:registry';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['registry']);
         $this->setDescription('Shows the list of registered environments');
     }
 

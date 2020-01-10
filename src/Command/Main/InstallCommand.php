@@ -15,8 +15,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:install';
-
     private array $availableTypes = [Environment::TYPE_MAGENTO2, Environment::TYPE_SYMFONY];
 
     /**
@@ -24,7 +22,6 @@ class InstallCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setAliases(['install']);
         $this->setDescription('Installs a Docker environment in the desired directory');
     }
 

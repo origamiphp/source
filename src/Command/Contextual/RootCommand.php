@@ -12,14 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RootCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:root';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['root']);
         $this->setDescription('Display instructions to set up the environment variables');
     }
 

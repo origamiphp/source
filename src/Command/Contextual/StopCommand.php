@@ -14,14 +14,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class StopCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:stop';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['stop']);
         $this->setDescription('Stops an environment previously started');
     }
 

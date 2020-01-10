@@ -17,9 +17,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CheckCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:check';
-
-    private array $requirements = [];
+    private array $requirements;
 
     public function __construct(
         SystemManager $systemManager,
@@ -40,7 +38,6 @@ class CheckCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setAliases(['check']);
         $this->setDescription('Checks whether all required softwares are installed');
     }
 

@@ -25,11 +25,93 @@ services:
         resource: '../src/*'
         exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
 
-    # controllers are imported separately to make sure services can be injected
-    # as action arguments even if you don't extend any base controller class
-    #App\Controller\:
-    #    resource: '../src/Controller'
-    #    tags: ['controller.service_arguments']
+    # Definition of the custom commands which will be lazy-loaded.
+    App\Command\Additional\CheckCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:check' }
+            - { name: 'console.command', command: 'check' }
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    App\Command\Additional\RegisterCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:register' }
+            - { name: 'console.command', command: 'register' }
+
+    App\Command\Additional\RegistryCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:registry' }
+            - { name: 'console.command', command: 'registry' }
+
+    App\Command\Contextual\Services\ElasticsearchCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:elasticsearch' }
+            - { name: 'console.command', command: 'elasticsearch' }
+
+    App\Command\Contextual\Services\MysqlCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:mysql' }
+            - { name: 'console.command', command: 'mysql' }
+
+    App\Command\Contextual\Services\NginxCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:nginx' }
+            - { name: 'console.command', command: 'nginx' }
+
+    App\Command\Contextual\Services\PhpCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:php' }
+            - { name: 'console.command', command: 'php' }
+
+    App\Command\Contextual\Services\RedisCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:redis' }
+            - { name: 'console.command', command: 'redis' }
+
+    App\Command\Contextual\DataCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:data' }
+            - { name: 'console.command', command: 'data' }
+
+    App\Command\Contextual\LogsCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:logs' }
+            - { name: 'console.command', command: 'logs' }
+
+    App\Command\Contextual\PsCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:ps' }
+            - { name: 'console.command', command: 'ps' }
+
+    App\Command\Contextual\RestartCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:restart' }
+            - { name: 'console.command', command: 'restart' }
+
+    App\Command\Contextual\RootCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:root' }
+            - { name: 'console.command', command: 'root' }
+
+    App\Command\Contextual\StopCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:stop' }
+            - { name: 'console.command', command: 'stop' }
+
+    App\Command\Main\InstallCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:install' }
+            - { name: 'console.command', command: 'install' }
+
+    App\Command\Main\PrepareCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:prepare' }
+            - { name: 'console.command', command: 'prepare' }
+
+    App\Command\Main\StartCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:start' }
+            - { name: 'console.command', command: 'start' }
+
+    App\Command\Main\UninstallCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:uninstall' }
+            - { name: 'console.command', command: 'uninstall' }

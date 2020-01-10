@@ -13,14 +13,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DataCommand extends AbstractBaseCommand
 {
-    protected static $defaultName = 'origami:data';
-
     /**
      * {@inheritdoc}
      */
     protected function configure(): void
     {
-        $this->setAliases(['data']);
         $this->setDescription('Shows the usage statistics of running environment');
     }
 
