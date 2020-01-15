@@ -1,0 +1,57 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: ['master']
+
+jobs:
+  tests:
+    name: Deployment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Prepare the build context'
+        uses: actions/checkout@v1
+
+      - name: 'Install system requirements'
+        run: |
+          sudo apt update
+          sudo apt install -y libicu-dev
+          sudo apt-fast install -y --no-install-recommends \
+            php7.4 php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
+
+      - name: 'Load the keys used to deploy the PHAR archive'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRIVATE_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.PRIVATE_SIGNING_KEY }}" | gpg --import
+
+      - name: 'Configure the committer identity'
+        run: |
+          git config --global user.email "info@ajardin.fr"
+          git config --global user.name "Alexandre Jardin"
+          git config --global commit.gpgsign "true"
+          git config --global user.signingkey "405DC05A6F8FFBA9"
+
+      - name: 'Install Composer dependencies'
+        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
+
+      - name: 'Compile the PHAR archive'
+        run: |
+          composer dump-env prod
+          docker run --interactive --volume=$(pwd):/app ajardin/humbug-box compile
+          docker run --interactive --volume=$(pwd):/app ajardin/humbug-box info ./build/origami.phar
+
+      - name: 'Prepare the local Git repository which contains the PHAR archive'
+        run: |
+          git clone git@github.com:ajardin/origami.git /tmp/origami
+          mkdir -p /tmp/origami/bin/
+          cp ./build/origami.phar /tmp/origami/bin/origami
+
+      - name: 'Update the remote Git repository which contains the PHAR archive'
+        run: |
+          cd /tmp/origami
+          git add bin/origami
+          git commit --message="Update to commit https://github.com/ajardin/origami-source/commit/${{ github.sha }}"
+          git push origin HEAD:master

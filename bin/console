@@ -49,5 +49,7 @@ $tracker = new ReleaseHandler($kernel, new SymfonyStyle($input, new ConsoleOutpu
 $tracker->verify();
 
 $application = new Application($kernel);
+$application->setName('Origami');
+$application->setVersion('@app_version@');
 $application->setDefaultCommand(DefaultCommand::getDefaultName());
 $application->run($input);

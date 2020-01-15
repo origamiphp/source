@@ -1,7 +1,7 @@
 {
-    "name": "ajardin/origami",
-    "type": "application",
-    "description": "A PHP toolbox to manage local Docker environments",
+    "name": "ajardin/origami-source",
+    "type": "project",
+    "description": "A PHP toolbox to manage local Docker environments (source code).",
     "license": "MIT",
     "authors": [
         {
@@ -18,7 +18,7 @@
         "symfony/dotenv": "5.0.*",
         "symfony/flex": "^1.3.1",
         "symfony/framework-bundle": "5.0.*",
-        "symfony/orm-pack": "*",
+        "symfony/orm-pack": "^1.0.7",
         "symfony/process": "5.0.*",
         "symfony/validator": "5.0.*",
         "symfony/yaml": "5.0.*"

@@ -1,0 +1,39 @@
+name: Release Version
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Prepare the build context'
+        uses: actions/checkout@v1
+
+      - name: 'Load the keys used to deploy the PHAR archive'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRIVATE_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.PRIVATE_SIGNING_KEY }}" | gpg --import
+
+      - name: 'Configure the committer identity'
+        run: |
+          git config --global user.email "info@ajardin.fr"
+          git config --global user.name "Alexandre Jardin"
+          git config --global commit.gpgsign "true"
+          git config --global user.signingkey "405DC05A6F8FFBA9"
+
+      - name: 'Prepare the local Git repository which contains the PHAR archive'
+        run: git clone git@github.com:ajardin/origami.git /tmp/origami
+
+      - name: 'Update the remote Git repository which contains the PHAR archive'
+        run: |
+          tag_name=$(git show "${{ github.ref }}" --no-patch --format="" | head -n1 | awk '{print $2}')
+          tag_message=$(git show "${{ github.ref }}" --no-patch --format="" | tail -n1)
+          cd /tmp/origami
+          git tag "${tag_name}" --message="${tag_message}" --force --sign
+          git push origin "${tag_name}" --force
