@@ -1,13 +1,15 @@
 <h1 align="center">Welcome to Origami 👋</h1>
 <p align="center">
-  <img alt="Status: Beta" src="https://img.shields.io/badge/status-beta-yellow" target="_blank" />
-  
-  <a href="https://codecov.io/gh/ajardin/origami">
-    <img src="https://codecov.io/gh/ajardin/origami/branch/master/graph/badge.svg?token=eYBykVI0QK" />
+  <a href="https://codecov.io/gh/ajardin/origami" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/ajardin/origami?style=for-the-badge" alt="Codecov"/>
   </a>
 
-  <a href="https://github.com/ajardin/origami/blob/master/LICENSE">
-    <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg" target="_blank" />
+  <a href="https://github.com/ajardin/origami-source/blob/master/LICENSE" target="_blank">
+    <img src="https://img.shields.io/github/license/ajardin/origami?color=blue&style=for-the-badge" alt="MIT license">
+  </a>
+
+  <a href="https://packagist.org/packages/ajardin/origami" target="_blank">
+    <img src="https://img.shields.io/packagist/dt/ajardin/origami?style=for-the-badge" alt="Packagist downloads"/>
   </a>
 </p>
 
@@ -28,11 +30,11 @@ development certificates.
 ### Disclaimer
 
 As `origami` is still in its earlier stages, **the compatibility with other operating systems than macOS is not
-guaranteed**, for the moment. The support of Linux and Windows could come in the near future. 
+guaranteed**, for the moment. The support of Linux and Windows could come in the near future.
 
 ## 🔍 Architecture
 
-`origami` is built on top of [Symfony](https://symfony.com/), a popular PHP framework. 
+`origami` is built on top of [Symfony](https://symfony.com/), a popular PHP framework.
 
 Unlike common Symfony projects, we use [Box](https://github.com/humbug/box/) to package the tool into a single binary
 file. So that it's possible to easily share it without using Composer, as it could potentially bring conflicts if other
@@ -51,19 +53,18 @@ first), and we would like to facilitate the contributions process by using somet
 ## 📦 Install
 
 ```sh
-# Homebrew (recommended)
-brew tap ajardin/formulae
-brew install origami
+# Composer
+composer global require ajardin/origami
 
 # Manual
-curl https://github.com/ajardin/origami/releases/latest/download/origami.phar --output origami
+curl https://github.com/ajardin/origami-source/releases/latest/download/origami.phar --output origami
 ```
 
 ## 🚀 Usage
 
 ```sh
 # List commands used to manage environments
-origami 
+origami
 
 # Execute a specific command
 origami xxxxx
@@ -84,11 +85,11 @@ make tests
 ## 🤝 Contributing
 
 Contributions, issues and feature requests are welcome!
-Feel free to check [issues page](https://github.com/ajardin/origami/issues).
+Feel free to check [issues page](https://github.com/ajardin/origami-source/issues).
 
 By the way, don't forget you can give a ⭐️ if this project helped you!
 
 ## 📝 License
 
-Copyright © 2019 [Alexandre Jardin](https://github.com/ajardin).
-This project is licensed under the [MIT](https://github.com/ajardin/origami/blob/master/LICENSE) license.
+Copyright © [Alexandre Jardin](https://github.com/ajardin).
+This project is licensed under the [MIT](https://github.com/ajardin/origami-source/blob/master/LICENSE) license.

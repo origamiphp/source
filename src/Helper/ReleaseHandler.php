@@ -67,7 +67,7 @@ class ReleaseHandler
      */
     private function isTrackerUpToDate(): bool
     {
-        return file_exists($this->getAbsolutePath()) && file_get_contents($this->getAbsolutePath()) === '@git_version@';
+        return file_exists($this->getAbsolutePath()) && file_get_contents($this->getAbsolutePath()) === '@app_version@';
     }
 
     /**
@@ -75,7 +75,7 @@ class ReleaseHandler
      */
     private function refreshTrackerValue(): bool
     {
-        return file_put_contents($this->getAbsolutePath(), '@git_version@') !== false;
+        return file_put_contents($this->getAbsolutePath(), '@app_version@') !== false;
     }
 
     /**

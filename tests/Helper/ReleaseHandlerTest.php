@@ -58,7 +58,7 @@ final class ReleaseHandlerTest extends WebTestCase
         $releaseHandler->verify();
 
         static::assertDirectoryNotExists($cacheDir);
-        static::assertStringEqualsFile($trackerFile, '@git_version@');
+        static::assertStringEqualsFile($trackerFile, '@app_version@');
     }
 
     public function testItClearsTheCacheWhenTrackerIsOutdated(): void
@@ -82,7 +82,7 @@ final class ReleaseHandlerTest extends WebTestCase
         $releaseHandler->verify();
 
         static::assertDirectoryNotExists($cacheDir);
-        static::assertStringEqualsFile($trackerFile, '@git_version@');
+        static::assertStringEqualsFile($trackerFile, '@app_version@');
     }
 
     public function testItClearsTheCacheWhenTrackerIsUpToDate(): void
@@ -92,8 +92,8 @@ final class ReleaseHandlerTest extends WebTestCase
         static::assertDirectoryExists($cacheDir);
 
         $trackerFile = $this->location.\DIRECTORY_SEPARATOR.'.release';
-        file_put_contents($trackerFile, '@git_version@');
-        static::assertStringEqualsFile($trackerFile, '@git_version@');
+        file_put_contents($trackerFile, '@app_version@');
+        static::assertStringEqualsFile($trackerFile, '@app_version@');
 
         $kernel = $this->prophesize(Kernel::class);
         $kernel->getCustomDir()->shouldBeCalledTimes(3)->willReturn($this->location);
@@ -106,6 +106,6 @@ final class ReleaseHandlerTest extends WebTestCase
         $releaseHandler->verify();
 
         static::assertDirectoryExists($cacheDir);
-        static::assertStringEqualsFile($trackerFile, '@git_version@');
+        static::assertStringEqualsFile($trackerFile, '@app_version@');
     }
 }
