@@ -16,5 +16,5 @@
     "force-autodiscovery": true,
     "output": "build/origami.phar",
     "compression": "GZ",
-    "git-tag": "app_version"
+    "git": "app_version"
 }
