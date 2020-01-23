@@ -1,10 +1,10 @@
 #!/usr/bin/env php
 <?php
 
-use App\Command\DefaultCommand;
+use App\Application;
 use App\Helper\ReleaseHandler;
 use App\Kernel;
-use Symfony\Bundle\FrameworkBundle\Console\Application;
+use Symfony\Bundle\FrameworkBundle\Console\Application as SymfonyApplication;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -18,7 +18,7 @@ set_time_limit(0);
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-if (!class_exists(Application::class)) {
+if (!class_exists(SymfonyApplication::class)) {
     throw new RuntimeException('You need to add "symfony/framework-bundle" as a Composer dependency.');
 }
 
@@ -49,7 +49,4 @@ $tracker = new ReleaseHandler($kernel, new SymfonyStyle($input, new ConsoleOutpu
 $tracker->verify();
 
 $application = new Application($kernel);
-$application->setName('Origami');
-$application->setVersion('@app_version@');
-$application->setDefaultCommand(DefaultCommand::getDefaultName());
 $application->run($input);
