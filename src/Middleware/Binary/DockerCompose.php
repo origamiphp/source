@@ -14,13 +14,17 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DockerCompose
 {
-    private ValidatorInterface $validator;
+    /** @var ValidatorInterface */
+    private $validator;
 
-    private Environment $environment;
+    /** @var Environment */
+    private $environment;
 
-    private ProcessFactory $processFactory;
+    /** @var ProcessFactory */
+    private $processFactory;
 
-    private array $environmentVariables = [];
+    /** @var array */
+    private $environmentVariables = [];
 
     public function __construct(ValidatorInterface $validator, ProcessFactory $processFactory)
     {
@@ -157,9 +161,9 @@ class DockerCompose
         $command = ['docker-compose', 'exec'];
 
         if ($user !== '') {
-            $command = [...$command, ...['-u', $user, $service, 'sh', '-l']];
+            $command = array_merge($command, ['-u', $user, $service, 'sh', '-l']);
         } else {
-            $command = [...$command, ...[$service, 'sh', '-l']];
+            $command = array_merge($command, [$service, 'sh', '-l']);
         }
 
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);

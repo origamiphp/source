@@ -8,5 +8,6 @@ use Symfony\Component\Validator\Constraint;
 
 class DotEnvExists extends Constraint
 {
-    public string $message = 'The environment is not configured, consider executing the "install" command.';
+    /** @var string */
+    public $message = 'The environment is not configured, consider executing the "install" command.';
 }

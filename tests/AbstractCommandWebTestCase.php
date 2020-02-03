@@ -25,19 +25,19 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 abstract class AbstractCommandWebTestCase extends WebTestCase
 {
     /** @var ObjectProphecy|SystemManager */
-    protected ObjectProphecy $systemManager;
+    protected $systemManager;
 
     /** @var ObjectProphecy|ValidatorInterface */
-    protected ObjectProphecy $validator;
+    protected $validator;
 
     /** @var DockerCompose|ObjectProphecy */
-    protected ObjectProphecy $dockerCompose;
+    protected $dockerCompose;
 
     /** @var EventDispatcherInterface|ObjectProphecy */
-    protected ObjectProphecy $eventDispatcher;
+    protected $eventDispatcher;
 
     /** @var ObjectProphecy|ProcessProxy */
-    protected ObjectProphecy $processProxy;
+    protected $processProxy;
 
     /**
      * {@inheritdoc}

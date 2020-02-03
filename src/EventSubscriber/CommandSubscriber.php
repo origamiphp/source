@@ -16,9 +16,14 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    private Kernel $kernel;
-    private ApplicationFactory $applicationFactory;
-    private string $databaseName;
+    /** @var Kernel|KernelInterface */
+    private $kernel;
+
+    /** @var ApplicationFactory */
+    private $applicationFactory;
+
+    /** @var string */
+    private $databaseName;
 
     /**
      * @param Kernel $kernel

@@ -9,8 +9,11 @@ use Symfony\Component\Process\Process;
 
 class ProcessFactory
 {
-    private ProcessProxy $processProxy;
-    private LoggerInterface $logger;
+    /** @var ProcessProxy */
+    private $processProxy;
+
+    /** @var LoggerInterface */
+    private $logger;
 
     public function __construct(ProcessProxy $processProxy, LoggerInterface $logger)
     {
@@ -25,7 +28,7 @@ class ProcessFactory
     {
         $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
 
-        $process = new Process($command, null, $environmentVariables, null, 3_600);
+        $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $process->run();
 
         return $process;
@@ -38,7 +41,7 @@ class ProcessFactory
     {
         $this->logger->debug('Command "{command}" will be executed.', ['command' => implode(' ', $command)]);
 
-        $process = new Process($command, null, $environmentVariables, null, 3_600);
+        $process = new Process($command, null, $environmentVariables, null, 3600.00);
         $process->setTty($this->processProxy->isTtySupported());
 
         $process->run(static function (string $type, string $buffer) {
@@ -55,7 +58,7 @@ class ProcessFactory
     {
         $this->logger->debug('Command "{command}" will be executed.', ['command' => $command]);
 
-        $process = Process::fromShellCommandline($command, null, $environmentVariables, null, 3_600);
+        $process = Process::fromShellCommandline($command, null, $environmentVariables, null, 3600.00);
         $process->setTty($this->processProxy->isTtySupported());
 
         $process->run(static function (string $type, string $buffer) {

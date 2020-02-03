@@ -14,7 +14,8 @@ class Mutagen
     /** @var string */
     private const DEFAULT_CONTAINER_GID = 'id:1000';
 
-    private ProcessFactory $processFactory;
+    /** @var ProcessFactory */
+    private $processFactory;
 
     public function __construct(ProcessFactory $processFactory)
     {

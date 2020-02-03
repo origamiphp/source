@@ -25,9 +25,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class SystemManagerRepositoryTest extends KernelTestCase
 {
-    private ?EntityManagerInterface $entityManager;
+    /** @var null|EntityManagerInterface */
+    private $entityManager;
 
-    private SystemManager $systemManager;
+    /** @var SystemManager */
+    private $systemManager;
 
     /**
      * {@inheritdoc}

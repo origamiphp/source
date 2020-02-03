@@ -15,15 +15,20 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class SystemManager
 {
-    private Mkcert $mkcert;
+    /** @var Mkcert */
+    private $mkcert;
 
-    private ValidatorInterface $validator;
+    /** @var ValidatorInterface */
+    private $validator;
 
-    private EntityManagerInterface $entityManager;
+    /** @var EntityManagerInterface */
+    private $entityManager;
 
-    private EnvironmentRepository $environmentRepository;
+    /** @var EnvironmentRepository */
+    private $environmentRepository;
 
-    private ProcessFactory $processFactory;
+    /** @var ProcessFactory */
+    private $processFactory;
 
     public function __construct(
         Mkcert $mkcert,

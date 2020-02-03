@@ -27,28 +27,38 @@ class Environment
     /**
      * @ORM\Id
      * @ORM\Column(type="string", length=32, unique=true)
+     *
+     * @var string
      */
-    private string $name;
+    private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
+     *
+     * @var string
      */
-    private string $location;
+    private $location;
 
     /**
      * @ORM\Column(type="string", length=32)
+     *
+     * @var string
      */
-    private string $type;
+    private $type;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     *
+     * @var null|string
      */
-    private ?string $domains;
+    private $domains;
 
     /**
      * @ORM\Column(type="boolean", options={"default": false})
+     *
+     * @var bool
      */
-    private bool $active;
+    private $active;
 
     public function __construct(
         string $name,
