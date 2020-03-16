@@ -21,8 +21,8 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
  */
 final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
 {
-    use TestLocationTrait;
     use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
     /** @var string */
     protected $filePath;
