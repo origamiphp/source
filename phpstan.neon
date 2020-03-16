@@ -6,8 +6,8 @@ includes:
 parameters:
   level: max
   paths:
-    - %currentWorkingDirectory%/src
-    - %currentWorkingDirectory%/tests
+    - '%currentWorkingDirectory%/src'
+    - '%currentWorkingDirectory%/tests'
   symfony:
     container_xml_path: '%currentWorkingDirectory%/var/cache/dev/App_KernelDevDebugContainer.xml'
   excludes_analyse:
@@ -15,29 +15,12 @@ parameters:
     - tests/EventSubscriber/CommandSubscriberTest.php   # False-positives following the upgrade to Symfony 5.0
   ignoreErrors:
     -
-      # False-positive because of the "hasArgument()" method.
-      message: '#Result of && is always false.#'
-      path: %currentWorkingDirectory%/src/Command/AbstractBaseCommand.php
-    -
-      # False-positive because of the "hasArgument()" method.
-      message: '#Else branch is unreachable because previous condition is always true.#'
-      path: %currentWorkingDirectory%/src/Command/AbstractBaseCommand.php
+      # False-positive from PHPStan.
+      message: '#Cannot call method .* on App\\Entity\\Environment\|null.#'
+      path: '%currentWorkingDirectory%/src/Command/Main/StartCommand.php'
     -
       # False-positive from PHPStan.
       message: '#Cannot call method .* on App\\Entity\\Environment\|null.#'
-      path: %currentWorkingDirectory%/src/Command/Main/StartCommand.php
-    -
-      # False-positive from PHPStan.
-      message: '#Cannot call method .* on App\\Entity\\Environment\|null.#'
-      path: %currentWorkingDirectory%/src/Command/Main/UninstallCommand.php
-    -
-      # False-positive because of the PHP-CS-Fixer "no_unset_on_property" rule.
-      message: '#Property .* \(Doctrine\\ORM\\EntityManagerInterface\) does not accept null.#'
-      path: %currentWorkingDirectory%/tests/Middleware/SystemManagerRepositoryTest.php
-    -
-      # False-positive because of the "\Symfony\Component\Validator\ConstraintValidatorInterface::validate" signature.
-      message: '#Method .* has parameter \$domains with no typehint specified.#'
-      path: src/Validator/Constraints/*
-  reportUnmatchedIgnoredErrors: false
+      path: '%currentWorkingDirectory%/src/Command/Main/UninstallCommand.php'
   inferPrivatePropertyTypeFromConstructor: true
   checkMissingIterableValueType: false

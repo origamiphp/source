@@ -1,25 +1,22 @@
 #!/usr/bin/env php
 <?php
 
-use App\Application;
-use App\Helper\ReleaseHandler;
+use App\Command\DefaultCommand;
 use App\Kernel;
-use Symfony\Bundle\FrameworkBundle\Console\Application as SymfonyApplication;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
-use Symfony\Component\Console\Output\ConsoleOutput;
-use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Debug\Debug;
+use Symfony\Component\ErrorHandler\Debug;
 
-if (false === in_array(\PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
-    echo 'Warning: The console should be invoked via the CLI version of PHP, not the '.\PHP_SAPI.' SAPI'.\PHP_EOL;
+if (!in_array(PHP_SAPI, ['cli', 'phpdbg', 'embed'], true)) {
+    echo 'Warning: The console should be invoked via the CLI version of PHP, not the '.PHP_SAPI.' SAPI'.PHP_EOL;
 }
 
 set_time_limit(0);
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
-if (!class_exists(SymfonyApplication::class)) {
-    throw new RuntimeException('You need to add "symfony/framework-bundle" as a Composer dependency.');
+if (!class_exists(Application::class)) {
+    throw new LogicException('You need to add "symfony/framework-bundle" as a Composer dependency.');
 }
 
 $input = new ArgvInput();
@@ -43,10 +40,6 @@ if ($_SERVER['APP_DEBUG']) {
 
 /** @var Kernel $kernel */
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
-
-// Executes a custom check to avoid potential errors following an application upgrade.
-$tracker = new ReleaseHandler($kernel, new SymfonyStyle($input, new ConsoleOutput()));
-$tracker->verify();
-
 $application = new Application($kernel);
+$application->setDefaultCommand(DefaultCommand::getDefaultName());
 $application->run($input);
