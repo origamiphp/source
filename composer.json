@@ -66,10 +66,7 @@
         }
     },
     "scripts": {
-        "post-install-cmd": [
-            "@auto-scripts"
-        ],
-        "post-update-cmd": [
+        "post-autoload-dump": [
             "@auto-scripts"
         ],
         "auto-scripts": {

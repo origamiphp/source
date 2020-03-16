@@ -6,7 +6,8 @@
 
 box: ## Compiles the project into a PHAR archive
 	composer dump-env prod
-	rm -rf ${HOME}/.origami/cache/* ${HOME}/.origami/logs/* var/*
+	./bin/console cache:clear
+	./bin/console cache:warmup
 	box compile
 	rm .env.local.php
 .PHONY: box
@@ -24,6 +25,7 @@ phpcpd: ## Executes a copy/paste analysis
 .PHONY: phpcpd
 
 phpstan: ## Executes a static analysis at the higher level on all PHP files
+	./bin/console cache:warmup
 	docker run --interactive --volume=$$(pwd):/app ajardin/phpstan
 .PHONY: phpstan
 

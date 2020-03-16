@@ -22,46 +22,4 @@ final class KernelTest extends KernelTestCase
 
         static::assertGreaterThan(\strlen('/.origami'), \strlen($customDirectory));
     }
-
-    public function testItRetrievesTheCacheDirectoryAsProject(): void
-    {
-        /** @var Kernel $kernel */
-        $kernel = self::bootKernel();
-
-        static::assertSame($kernel->getProjectDir().'/var/cache/test', $kernel->getCacheDir());
-    }
-
-    public function testItRetrievesTheCacheDirectoryAsPhar(): void
-    {
-        $kernel = $this->getMockBuilder(Kernel::class)
-            ->setConstructorArgs(['test', false])
-            ->setMethods(['getProjectDir'])
-            ->getMock()
-        ;
-        $kernel->method('getProjectDir')->willReturn('phar://azerty');
-
-        static::assertTrue($kernel->isArchiveContext());
-        static::assertSame($kernel->getCustomDir().'/cache', $kernel->getCacheDir());
-    }
-
-    public function testItRetrievesTheLogDirectoryAsProject(): void
-    {
-        /** @var Kernel $kernel */
-        $kernel = self::bootKernel();
-
-        static::assertSame($kernel->getProjectDir().'/var/log', $kernel->getLogDir());
-    }
-
-    public function testItRetrievesTheLogDirectoryAsPhar(): void
-    {
-        $kernel = $this->getMockBuilder(Kernel::class)
-            ->setConstructorArgs(['test', false])
-            ->setMethods(['getProjectDir'])
-            ->getMock()
-        ;
-        $kernel->method('getProjectDir')->willReturn('phar://azerty');
-
-        static::assertTrue($kernel->isArchiveContext());
-        static::assertSame($kernel->getCustomDir().'/log', $kernel->getLogDir());
-    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests;
 
 use App\Application;
+use App\Kernel;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -45,6 +46,7 @@ final class ApplicationTest extends WebTestCase
 {
     public function testItPrintTheApplicationHeader(): void
     {
+        /** @var Kernel $kernel */
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
@@ -57,6 +59,7 @@ final class ApplicationTest extends WebTestCase
 
     public function testItDoesNotPrintTheApplicationHeader(): void
     {
+        /** @var Kernel $kernel */
         $kernel = self::bootKernel();
         $application = new Application($kernel);
 
