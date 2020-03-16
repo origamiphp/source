@@ -29,7 +29,6 @@ class Kernel extends BaseKernel
     {
         /** @noinspection PhpIncludeInspection */
         $contents = require $this->getProjectDir().'/config/bundles.php';
-
         foreach ($contents as $class => $envs) {
             if ($envs[$this->environment] ?? $envs['all'] ?? false) {
                 yield new $class();
@@ -57,38 +56,12 @@ class Kernel extends BaseKernel
 
     /**
      * {@inheritdoc}
+     *
+     * @codeCoverageIgnore
      */
     public function getProjectDir(): string
     {
         return \dirname(__DIR__);
-    }
-
-    /**
-     * Checks whether the application is currently run as a PHAR.
-     */
-    public function isArchiveContext(): bool
-    {
-        return strpos($this->getProjectDir(), 'phar://') !== false;
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws InvalidConfigurationException
-     */
-    public function getCacheDir()
-    {
-        return $this->isArchiveContext() ? $this->getCustomDir().'/cache' : parent::getCacheDir();
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @throws InvalidConfigurationException
-     */
-    public function getLogDir()
-    {
-        return $this->isArchiveContext() ? $this->getCustomDir().'/log' : parent::getLogDir();
     }
 
     /**
@@ -101,14 +74,14 @@ class Kernel extends BaseKernel
     protected function configureContainer(ContainerBuilder $container, LoaderInterface $loader): void
     {
         $container->addResource(new FileResource($this->getProjectDir().'/config/bundles.php'));
-        $container->setParameter('container.dumper.inline_class_loader', true);
-
+        $container->setParameter('container.dumper.inline_class_loader', \PHP_VERSION_ID < 70400 || $this->debug);
+        $container->setParameter('container.dumper.inline_factories', true);
         $confDir = $this->getProjectDir().'/config';
 
         $loader->load($confDir.'/{packages}/*'.self::CONFIG_EXTS, 'glob');
-        $loader->load($confDir.'/{packages}/'.$this->getEnvironment().'/**/*'.self::CONFIG_EXTS, 'glob');
+        $loader->load($confDir.'/{packages}/'.$this->environment.'/*'.self::CONFIG_EXTS, 'glob');
         $loader->load($confDir.'/{services}'.self::CONFIG_EXTS, 'glob');
-        $loader->load($confDir.'/{services}_'.$this->getEnvironment().self::CONFIG_EXTS, 'glob');
+        $loader->load($confDir.'/{services}_'.$this->environment.self::CONFIG_EXTS, 'glob');
     }
 
     /**
@@ -122,7 +95,7 @@ class Kernel extends BaseKernel
     {
         $confDir = $this->getProjectDir().'/config';
 
-        $routes->import($confDir.'/{routes}/'.$this->getEnvironment().'/**/*'.self::CONFIG_EXTS, '/', 'glob');
+        $routes->import($confDir.'/{routes}/'.$this->environment.'/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
     }

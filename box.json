@@ -6,12 +6,9 @@
         "vendor"
     ],
     "files": [
-        "config/secrets/prod/.gitignore",
+        "src/Controller/.gitignore",
         "src/Resources/magento2/.env",
         ".env.local.php"
-    ],
-    "blacklist": [
-        "var"
     ],
     "force-autodiscovery": true,
     "output": "build/origami.phar",
