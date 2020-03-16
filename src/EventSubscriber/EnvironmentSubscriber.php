@@ -17,9 +17,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EnvironmentSubscriber implements EventSubscriberInterface
 {
-    private DockerCompose $dockerCompose;
-    private Mutagen $mutagen;
-    private EntityManagerInterface $entityManager;
+    /** @var DockerCompose */
+    private $dockerCompose;
+
+    /** @var Mutagen */
+    private $mutagen;
+
+    /** @var EntityManagerInterface */
+    private $entityManager;
 
     public function __construct(DockerCompose $dockerCompose, Mutagen $mutagen, EntityManagerInterface $entityManager)
     {

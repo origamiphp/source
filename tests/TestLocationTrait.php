@@ -9,7 +9,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 trait TestLocationTrait
 {
-    protected string $location;
+    /** @var string */
+    protected $location;
 
     /**
      * Creates the temporary directory that will be used by the current test.

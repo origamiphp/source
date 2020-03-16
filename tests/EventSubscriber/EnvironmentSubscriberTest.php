@@ -30,13 +30,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class EnvironmentSubscriberTest extends WebTestCase
 {
     /** @var DockerCompose|ObjectProphecy */
-    private ObjectProphecy $dockerCompose;
+    private $dockerCompose;
 
     /** @var Mutagen|ObjectProphecy */
-    private ObjectProphecy $mutagen;
+    private $mutagen;
 
     /** @var EntityManagerInterface|ObjectProphecy */
-    private ObjectProphecy $entityManager;
+    private $entityManager;
 
     /**
      * {@inheritdoc}

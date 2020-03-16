@@ -25,12 +25,13 @@ abstract class AbstractDockerComposeTestCase extends TestCase
     use TestLocationTrait;
 
     /** @var ObjectProphecy|ValidatorInterface */
-    protected ObjectProphecy $validator;
+    protected $validator;
 
     /** @var ObjectProphecy|ProcessFactory */
-    protected ObjectProphecy $processFactory;
+    protected $processFactory;
 
-    protected Environment $environment;
+    /** @var Environment */
+    protected $environment;
 
     /**
      * {@inheritdoc}

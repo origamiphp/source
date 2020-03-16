@@ -33,19 +33,19 @@ final class SystemManagerFilesystemTest extends TestCase
     use TestLocationTrait;
 
     /** @var Mkcert|ObjectProphecy */
-    private ObjectProphecy $mkcert;
+    private $mkcert;
 
     /** @var ObjectProphecy|ValidatorInterface */
-    private ObjectProphecy $validator;
+    private $validator;
 
     /** @var EntityManagerInterface|ObjectProphecy */
-    private ObjectProphecy $entityManager;
+    private $entityManager;
 
     /** @var EnvironmentRepository|ObjectProphecy */
-    private ObjectProphecy $environmentRepository;
+    private $environmentRepository;
 
     /** @var ObjectProphecy|ProcessFactory */
-    private ObjectProphecy $processFactory;
+    private $processFactory;
 
     /**
      * {@inheritdoc}

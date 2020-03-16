@@ -112,7 +112,7 @@
         "version": "2.2.3"
     },
     "php": {
-        "version": "7.4"
+        "version": "7.3"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -313,9 +313,6 @@
     },
     "symfony/yaml": {
         "version": "v5.0.0"
-    },
-    "webimpress/safe-writer": {
-        "version": "2.0.0"
     },
     "zendframework/zend-code": {
         "version": "3.4.0"

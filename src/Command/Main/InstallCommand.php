@@ -15,7 +15,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
-    private array $availableTypes = [Environment::TYPE_MAGENTO2, Environment::TYPE_SYMFONY];
+    /** @var array */
+    private $availableTypes = [Environment::TYPE_MAGENTO2, Environment::TYPE_SYMFONY];
 
     /**
      * {@inheritdoc}
@@ -38,7 +39,9 @@ class InstallCommand extends AbstractBaseCommand
                 $this->io->ask(
                     'Where do you want to install the environment?',
                     '.',
-                    fn ($answer) => $this->installationPathCallback($answer)
+                    function ($answer) {
+                        return $this->installationPathCallback($answer);
+                    }
                 )
             );
 
@@ -46,7 +49,9 @@ class InstallCommand extends AbstractBaseCommand
                 $domains = $this->io->ask(
                     'Which domains does this certificate belong to?',
                     sprintf('%s.localhost www.%s.localhost', $type, $type),
-                    fn ($answer) => $this->localDomainsCallback($answer)
+                    function ($answer) {
+                        return $this->localDomainsCallback($answer);
+                    }
                 );
             } else {
                 $domains = null;

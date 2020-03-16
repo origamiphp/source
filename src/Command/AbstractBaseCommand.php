@@ -18,19 +18,26 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class AbstractBaseCommand extends Command
 {
-    protected SystemManager $systemManager;
+    /** @var SystemManager */
+    protected $systemManager;
 
-    protected ValidatorInterface $validator;
+    /** @var ValidatorInterface */
+    protected $validator;
 
-    protected DockerCompose $dockerCompose;
+    /** @var DockerCompose */
+    protected $dockerCompose;
 
-    protected EventDispatcherInterface $eventDispatcher;
+    /** @var EventDispatcherInterface */
+    protected $eventDispatcher;
 
-    protected ProcessProxy $processProxy;
+    /** @var ProcessProxy */
+    protected $processProxy;
 
-    protected ?Environment $environment;
+    /** @var null|Environment */
+    protected $environment;
 
-    protected SymfonyStyle $io;
+    /** @var SymfonyStyle */
+    protected $io;
 
     public function __construct(
         SystemManager $systemManager,

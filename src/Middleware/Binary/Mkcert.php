@@ -8,7 +8,8 @@ use App\Helper\ProcessFactory;
 
 class Mkcert
 {
-    private ProcessFactory $processFactory;
+    /** @var ProcessFactory */
+    private $processFactory;
 
     public function __construct(ProcessFactory $processFactory)
     {
@@ -20,7 +21,7 @@ class Mkcert
      */
     public function generateCertificate(string $certificate, string $privateKey, array $domains): bool
     {
-        $command = [...['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], ...$domains];
+        $command = array_merge(['mkcert', '-cert-file', $certificate, '-key-file', $privateKey], $domains);
         $process = $this->processFactory->runBackgroundProcess($command);
 
         return $process->isSuccessful();

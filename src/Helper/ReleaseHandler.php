@@ -13,13 +13,14 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class ReleaseHandler
 {
-    /**
-     * @var string
-     */
+    /** @var string */
     private const TRACKER_FILENAME = '.release';
 
-    private Kernel $kernel;
-    private SymfonyStyle $io;
+    /** @var Kernel */
+    private $kernel;
+
+    /** @var SymfonyStyle */
+    private $io;
 
     /**
      * @param Kernel $kernel
