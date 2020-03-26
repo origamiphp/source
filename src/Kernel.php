@@ -18,6 +18,9 @@ class Kernel extends BaseKernel
     use MicroKernelTrait;
 
     /** @var string */
+    private const APP_DIRECTORY = '.origami';
+
+    /** @var string */
     private const CONFIG_EXTS = '.{php,xml,yaml,yml}';
 
     /**
@@ -43,15 +46,12 @@ class Kernel extends BaseKernel
      */
     public function getCustomDir(): string
     {
-        $home = PHP_OS_FAMILY !== 'Windows' ? getenv('HOME') : $_SERVER['HOMEDRIVE'].$_SERVER['HOMEPATH'];
-
-        if (\is_string($home) && $home !== '') {
-            $home = rtrim($home, \DIRECTORY_SEPARATOR);
-        } else {
+        $home = PHP_OS_FAMILY !== 'Windows' ? getenv('HOME') : getenv('HOMEDRIVE').getenv('HOMEPATH');
+        if (!\is_string($home) || !is_dir($home)) {
             throw new InvalidConfigurationException('Unable to determine the home directory.'); // @codeCoverageIgnore
         }
 
-        return sprintf('%s/.origami', $home);
+        return $home.\DIRECTORY_SEPARATOR.self::APP_DIRECTORY;
     }
 
     /**
