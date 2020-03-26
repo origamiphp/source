@@ -1,7 +1,7 @@
 <h1 align="center">Welcome to Origami 👋</h1>
 <p align="center">
-  <a href="https://codecov.io/gh/ajardin/origami" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/ajardin/origami?style=for-the-badge" alt="Codecov"/>
+  <a href="https://codecov.io/gh/ajardin/origami-source" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/ajardin/origami-source?style=for-the-badge" alt="Codecov"/>
   </a>
 
   <a href="https://github.com/ajardin/origami-source/blob/master/LICENSE" target="_blank">
