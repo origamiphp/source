@@ -18,7 +18,7 @@ jobs:
           sudo apt update
           sudo apt install -y libicu-dev
           sudo apt-fast install -y --no-install-recommends \
-            php7.4 php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
+            php7.4 php7.4-ctype php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
 
       - name: 'Load the keys used to deploy the PHAR archive'
         run: |
@@ -37,11 +37,15 @@ jobs:
       - name: 'Install Composer dependencies'
         run: composer install --optimize-autoloader --classmap-authoritative
 
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v2
+
       - name: 'Compile the PHAR archive'
         run: |
-          composer dump-env prod
-          docker run --interactive --volume=$(pwd):/app ajardin/humbug-box compile
-          docker run --interactive --volume=$(pwd):/app ajardin/humbug-box info ./build/origami.phar
+          composer global config minimum-stability dev
+          composer global require humbug/box:dev-master --no-suggest --optimize-autoloader --classmap-authoritative
+          export PATH="${PATH}:/home/runner/.composer/vendor/bin"
+          make box
 
       - name: 'Prepare the local Git repository which contains the PHAR archive'
         run: |

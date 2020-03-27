@@ -25,7 +25,7 @@ phpcpd: ## Executes a copy/paste analysis
 .PHONY: phpcpd
 
 phpstan: ## Executes a static analysis at the higher level on all PHP files
-	./bin/console cache:warmup
+	docker run --interactive --volume=$$(pwd):/app ajardin/symfony-php sh -c "php /app/bin/console cache:warmup"
 	docker run --interactive --volume=$$(pwd):/app ajardin/phpstan
 .PHONY: phpstan
 
