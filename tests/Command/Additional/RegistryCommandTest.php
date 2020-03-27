@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Command\Additional;
 
 use App\Command\Additional\RegistryCommand;
-use App\Entity\Environment;
+use App\Environment\EnvironmentCollection;
+use App\Environment\EnvironmentEntity;
 use App\Tests\AbstractCommandWebTestCase;
 use Generator;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -20,17 +21,9 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
 {
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
-        $this->systemManager->getAllEnvironments()->shouldBeCalledOnce()->willReturn([]);
+        $this->database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection());
 
-        $command = new RegistryCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(RegistryCommand::class));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -40,19 +33,12 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
     /**
      * @dataProvider provideEnvironmentList
      */
-    public function testItPrintsEnvironmentDetailsInTable(Environment $environment): void
+    public function testItPrintsEnvironmentDetailsInTable(EnvironmentEntity $environment): void
     {
-        $this->systemManager->getAllEnvironments()->shouldBeCalledOnce()->willReturn([$environment]);
+        $collection = new EnvironmentCollection([$environment]);
+        $this->database->getAllEnvironments()->shouldBeCalledOnce()->willReturn($collection);
 
-        $command = new RegistryCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(RegistryCommand::class));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -74,17 +60,17 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
 
     public function provideEnvironmentList(): Generator
     {
-        $envinonmentWithoutDomains = new Environment(
+        $envinonmentWithoutDomains = new EnvironmentEntity(
             'POC',
             '~/Sites/poc-symfony',
-            Environment::TYPE_SYMFONY
+            EnvironmentEntity::TYPE_SYMFONY
         );
         yield [$envinonmentWithoutDomains];
 
-        $envinonmentWithDomains = new Environment(
+        $envinonmentWithDomains = new EnvironmentEntity(
             'Origami',
             '~/Sites/origami',
-            Environment::TYPE_SYMFONY,
+            EnvironmentEntity::TYPE_SYMFONY,
             'origami.localhost',
             true
         );

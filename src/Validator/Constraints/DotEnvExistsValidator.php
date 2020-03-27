@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Constraints;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -21,7 +21,7 @@ class DotEnvExistsValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, DotEnvExists::class);
         }
 
-        /** @var Environment $environment */
+        /** @var EnvironmentEntity $environment */
         $environment = $domains;
 
         $filesystem = new Filesystem();

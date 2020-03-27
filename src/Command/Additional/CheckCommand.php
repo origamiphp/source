@@ -8,6 +8,7 @@ use App\Command\AbstractBaseCommand;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Database;
 use App\Middleware\SystemManager;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,6 +22,7 @@ class CheckCommand extends AbstractBaseCommand
     private $requirements;
 
     public function __construct(
+        Database $database,
         SystemManager $systemManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
@@ -29,7 +31,7 @@ class CheckCommand extends AbstractBaseCommand
         array $requirements,
         ?string $name = null
     ) {
-        parent::__construct($systemManager, $validator, $dockerCompose, $eventDispatcher, $processProxy, $name);
+        parent::__construct($database, $systemManager, $validator, $dockerCompose, $eventDispatcher, $processProxy, $name);
 
         $this->requirements = $requirements;
     }

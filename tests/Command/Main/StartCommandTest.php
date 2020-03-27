@@ -27,20 +27,12 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(true);
         $this->eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
 
-        $command = new StartCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(StartCommand::class));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -52,7 +44,7 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
         $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
 
@@ -61,15 +53,7 @@ final class StartCommandTest extends AbstractCommandWebTestCase
 
         $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
 
-        $command = new StartCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(StartCommand::class));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -81,21 +65,13 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(false);
 
         $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
 
-        $command = new StartCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(StartCommand::class));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();

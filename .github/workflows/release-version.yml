@@ -38,11 +38,7 @@ jobs:
         run: composer install --optimize-autoloader --classmap-authoritative
 
       - name: 'Compile the PHAR archive'
-        run: |
-          composer global config minimum-stability dev
-          composer global require humbug/box:dev-master --no-suggest --optimize-autoloader --classmap-authoritative
-          export PATH="${PATH}:/home/runner/.composer/vendor/bin"
-          make box
+        run: make box
 
       - name: 'Prepare the local Git repository which contains the PHAR archive'
         run: |

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middleware\Binary;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
@@ -17,7 +17,7 @@ class DockerCompose
     /** @var ValidatorInterface */
     private $validator;
 
-    /** @var Environment */
+    /** @var EnvironmentEntity */
     private $environment;
 
     /** @var ProcessFactory */
@@ -37,7 +37,7 @@ class DockerCompose
      *
      * @throws InvalidEnvironmentException
      */
-    public function setActiveEnvironment(Environment $environment): void
+    public function setActiveEnvironment(EnvironmentEntity $environment): void
     {
         $this->environment = $environment;
 
@@ -50,7 +50,7 @@ class DockerCompose
      */
     public function getRequiredVariables(): array
     {
-        if ($this->environment->getType() !== Environment::TYPE_CUSTOM) {
+        if ($this->environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $result = [
                 'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $this->environment->getLocation()),
                 'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
@@ -95,8 +95,6 @@ class DockerCompose
 
     /**
      * Shows the logs of the services associated to the current environment.
-     *
-     * @param int $tail
      */
     public function showServicesLogs(?int $tail = 0, ?string $service = ''): bool
     {

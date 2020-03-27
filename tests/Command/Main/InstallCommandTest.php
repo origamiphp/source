@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\InstallCommand;
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Tests\AbstractCommandWebTestCase;
@@ -63,15 +63,7 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new InstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
         if ($domains !== '') {
             $commandTester->setInputs([$type, $location, 'yes', $domains]);
         } else {
@@ -88,27 +80,19 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     {
         $location = sys_get_temp_dir().'/origami/InstallCommandTest';
 
-        yield [$location, Environment::TYPE_MAGENTO2, 'www.magento.localhost magento.localhost'];
-        yield [$location, Environment::TYPE_MAGENTO2, ''];
+        yield [$location, EnvironmentEntity::TYPE_MAGENTO2, 'www.magento.localhost magento.localhost'];
+        yield [$location, EnvironmentEntity::TYPE_MAGENTO2, ''];
 
-        yield [$location, Environment::TYPE_SYMFONY, 'www.symfony.localhost symfony.localhost'];
-        yield [$location, Environment::TYPE_SYMFONY, ''];
+        yield [$location, EnvironmentEntity::TYPE_SYMFONY, 'www.symfony.localhost symfony.localhost'];
+        yield [$location, EnvironmentEntity::TYPE_SYMFONY, ''];
     }
 
     public function testItAbortsTheInstallationWithInvalidLocation(): void
     {
-        $command = new InstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
         $this->expectException(RuntimeException::class);
 
-        $commandTester = new CommandTester($command);
-        $commandTester->setInputs([Environment::TYPE_SYMFONY, 'azerty', 'no']);
+        $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'azerty', 'no']);
         $commandTester->execute([]);
     }
 
@@ -125,38 +109,22 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
             ->willReturn($errors)
         ;
 
-        $command = new InstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
         $this->expectException(RuntimeException::class);
 
-        $commandTester = new CommandTester($command);
-        $commandTester->setInputs([Environment::TYPE_SYMFONY, '.', 'yes', 'azerty']);
+        $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, '.', 'yes', 'azerty']);
         $commandTester->execute([]);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->systemManager->install(realpath('.'), Environment::TYPE_SYMFONY, null)
+        $this->systemManager->install(realpath('.'), EnvironmentEntity::TYPE_SYMFONY, null)
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
-        $command = new InstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
-        $commandTester->setInputs([Environment::TYPE_SYMFONY, '.', 'no']);
+        $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, '.', 'no']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();

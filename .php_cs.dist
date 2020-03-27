@@ -6,6 +6,7 @@ return PhpCsFixer\Config::create()
             '@PhpCsFixer' => true,
             '@PhpCsFixer:risky' => true,
             '@DoctrineAnnotation' => true,
+            'php_unit_strict' => ['assertAttributeEquals', 'assertAttributeNotEquals'],
             'yoda_style' => false,
         ]
     )

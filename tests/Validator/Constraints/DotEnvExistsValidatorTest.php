@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Validator\Constraints;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Tests\TestFakeEnvironmentTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\DotEnvExists;
@@ -63,7 +63,7 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
 
     public function testItValidatesAnAcceptableValue(): void
     {
-        $this->validator->validate(new Environment('', $this->location, ''), new DotEnvExists());
+        $this->validator->validate(new EnvironmentEntity('', $this->location, ''), new DotEnvExists());
         $this->assertNoViolation();
     }
 
