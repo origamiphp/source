@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\AbstractDockerComposeTestCase;
@@ -57,7 +57,7 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
 
         $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
         $dockerCompose->setActiveEnvironment(
-            new Environment('bar', $this->location, Environment::TYPE_CUSTOM, null, true)
+            new EnvironmentEntity('bar', $this->location, EnvironmentEntity::TYPE_CUSTOM, null, true)
         );
         $variables = $dockerCompose->getRequiredVariables();
 

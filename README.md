@@ -37,8 +37,8 @@ guaranteed**, for the moment. The support of Linux and Windows could come in the
 `origami` is built on top of [Symfony](https://symfony.com/), a popular PHP framework.
 
 Unlike common Symfony projects, we use [Box](https://github.com/humbug/box/) to package the tool into a single binary
-file. So that it's possible to easily share it without using Composer, as it could potentially bring conflicts if other
-projects with outdated dependencies are already globally installed on the local machine.
+file. So that it's possible to easily share it without installing all its dependencies, as it could potentially bring
+conflicts if other projects with outdated dependencies are already globally installed on the local machine.
 
 **Why PHP?** The main reason is that `origami` will focus on environments for PHP applications (Magento & Symfony at
 first), and we would like to facilitate the contributions process by using something well-known by our users.

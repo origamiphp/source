@@ -93,6 +93,9 @@
     "doctrine/reflection": {
         "version": "v1.0.0"
     },
+    "ergebnis/environment-variables": {
+        "version": "1.0.0"
+    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
     },
@@ -112,7 +115,7 @@
         "version": "2.2.3"
     },
     "php": {
-        "version": "7.3"
+        "version": "7.4"
     },
     "psr/cache": {
         "version": "1.0.1"
@@ -226,6 +229,9 @@
     "symfony/http-kernel": {
         "version": "v5.0.0"
     },
+    "symfony/inflector": {
+        "version": "v5.0.6"
+    },
     "symfony/maker-bundle": {
         "version": "1.0",
         "recipe": {
@@ -269,6 +275,9 @@
     "symfony/process": {
         "version": "v5.0.0"
     },
+    "symfony/property-access": {
+        "version": "v5.0.6"
+    },
     "symfony/routing": {
         "version": "4.2",
         "recipe": {
@@ -282,6 +291,9 @@
             "config/packages/routing.yaml",
             "config/routes.yaml"
         ]
+    },
+    "symfony/serializer": {
+        "version": "v5.0.6"
     },
     "symfony/service-contracts": {
         "version": "v2.0.0"

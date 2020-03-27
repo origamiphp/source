@@ -55,6 +55,8 @@ class UninstallCommand extends AbstractBaseCommand
                 $this->eventDispatcher->dispatch($event);
 
                 $this->systemManager->uninstall($environment);
+                $this->database->remove($environment);
+                $this->database->save();
 
                 $this->io->success('Environment successfully uninstalled.');
             }

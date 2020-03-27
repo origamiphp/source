@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Constraints;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Validator\Constraint;
@@ -22,7 +22,7 @@ class ConfigurationFilesValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, ConfigurationFiles::class);
         }
 
-        /** @var Environment $environment */
+        /** @var EnvironmentEntity $environment */
         $environment = $domains;
 
         $filesystem = new Filesystem();

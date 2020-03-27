@@ -2,18 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Entity;
-
-use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+namespace App\Environment;
 
 /**
  * @codeCoverageIgnore
- *
- * @ORM\Entity(repositoryClass="App\Repository\EnvironmentRepository")
- * @UniqueEntity(fields={"name"}, message="There is already an environment of the same name.")
  */
-class Environment
+class EnvironmentEntity
 {
     /** @var string */
     public const TYPE_CUSTOM = 'custom';
@@ -24,40 +18,19 @@ class Environment
     /** @var string */
     public const TYPE_SYMFONY = 'symfony';
 
-    /**
-     * @ORM\Id
-     * @ORM\Column(type="string", length=32, unique=true)
-     *
-     * @var string
-     */
+    /** @var string */
     private $name;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     *
-     * @var string
-     */
+    /** @var string */
     private $location;
 
-    /**
-     * @ORM\Column(type="string", length=32)
-     *
-     * @var string
-     */
+    /** @var string */
     private $type;
 
-    /**
-     * @ORM\Column(type="string", length=255, nullable=true)
-     *
-     * @var null|string
-     */
+    /** @var null|string */
     private $domains;
 
-    /**
-     * @ORM\Column(type="boolean", options={"default": false})
-     *
-     * @var bool
-     */
+    /** @var bool */
     private $active;
 
     public function __construct(

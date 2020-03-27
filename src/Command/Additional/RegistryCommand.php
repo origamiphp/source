@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Additional;
 
 use App\Command\AbstractBaseCommand;
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,12 +26,12 @@ class RegistryCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $environments = $this->systemManager->getAllEnvironments();
+        $environments = $this->database->getAllEnvironments();
         if (\count($environments) > 0) {
             $table = new Table($output);
             $table->setHeaders(['Name', 'Location', 'Type', 'Domains']);
 
-            /** @var Environment $environment */
+            /** @var EnvironmentEntity $environment */
             foreach ($environments as $environment) {
                 $table->addRow([
                     $environment->getName(),

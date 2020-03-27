@@ -34,19 +34,11 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce();
 
-        $command = new LogsCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(LogsCommand::class));
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
             ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]
@@ -67,21 +59,13 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->showServicesLogs($tail ?? 0, $service)
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
-        $command = new LogsCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(LogsCommand::class));
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
             ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]

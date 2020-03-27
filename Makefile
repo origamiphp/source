@@ -8,7 +8,7 @@ box: ## Compiles the project into a PHAR archive
 	composer dump-env prod
 	./bin/console cache:clear
 	./bin/console cache:warmup
-	box compile
+	docker run --interactive --volume="$$(pwd):/app" ajardin/humbug-box compile -vvv
 	rm .env.local.php
 .PHONY: box
 
@@ -34,10 +34,6 @@ security: ## Executes a security audit on all PHP dependencies
 .PHONY: security
 
 tests: ## Executes the unit tests and functional tests
-	./bin/console doctrine:database:drop --force --env=test
-	./bin/console doctrine:database:create --env=test
-	./bin/console doctrine:schema:create --env=test
-	./bin/console doctrine:fixtures:load --no-interaction --env=test
 	./bin/phpunit --testdox
 .PHONY: tests
 

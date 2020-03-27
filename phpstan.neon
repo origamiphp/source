@@ -16,11 +16,20 @@ parameters:
   ignoreErrors:
     -
       # False-positive from PHPStan.
-      message: '#Cannot call method .* on App\\Entity\\Environment\|null.#'
+      message: '#Cannot call method .* on App\\Environment\\EnvironmentEntity\|null.#'
       path: '%currentWorkingDirectory%/src/Command/Main/StartCommand.php'
     -
       # False-positive from PHPStan.
-      message: '#Cannot call method .* on App\\Entity\\Environment\|null.#'
+      message: '#Cannot call method .* on App\\Environment\\EnvironmentEntity\|null.#'
       path: '%currentWorkingDirectory%/src/Command/Main/UninstallCommand.php'
+    -
+      # False-positive from PHPStan.
+      message: '#Method .* has parameter \$offset with no typehint specified.#'
+      path: '%currentWorkingDirectory%/src/Environment/EnvironmentCollection.php'
+    -
+      # False-positive from PHPStan.
+      message: '#Method .* has parameter \$value with no typehint specified.#'
+      path: '%currentWorkingDirectory%/src/Environment/EnvironmentCollection.php'
   inferPrivatePropertyTypeFromConstructor: true
+  checkGenericClassInNonGenericObjectType: false
   checkMissingIterableValueType: false

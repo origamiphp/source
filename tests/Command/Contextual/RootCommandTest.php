@@ -28,7 +28,7 @@ final class RootCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn(
             [
@@ -39,15 +39,7 @@ final class RootCommandTest extends AbstractCommandWebTestCase
             ]
         );
 
-        $command = new RootCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(RootCommand::class));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
@@ -62,18 +54,10 @@ final class RootCommandTest extends AbstractCommandWebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->systemManager->getActiveEnvironment()
+        $this->database->getActiveEnvironment()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
-        $command = new RootCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        static::assertExceptionIsHandled($command, '[ERROR] Dummy exception.');
+        static::assertExceptionIsHandled($this->getCommand(RootCommand::class), '[ERROR] Dummy exception.');
     }
 }

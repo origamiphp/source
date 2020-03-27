@@ -8,6 +8,7 @@
     "files": [
         "src/Controller/.gitignore",
         "src/Resources/magento2/.env",
+        "src/Resources/symfony/.env",
         ".env.local.php"
     ],
     "force-autodiscovery": true,

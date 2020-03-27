@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App;
 
-use App\Exception\InvalidConfigurationException;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\Config\Loader\LoaderInterface;
@@ -16,9 +15,6 @@ use Symfony\Component\Routing\RouteCollectionBuilder;
 class Kernel extends BaseKernel
 {
     use MicroKernelTrait;
-
-    /** @var string */
-    private const APP_DIRECTORY = '.origami';
 
     /** @var string */
     private const CONFIG_EXTS = '.{php,xml,yaml,yml}';
@@ -37,21 +33,6 @@ class Kernel extends BaseKernel
                 yield new $class();
             }
         }
-    }
-
-    /**
-     * Retrieves the custom directory located in the HOME directory of the current user.
-     *
-     * @throws InvalidConfigurationException
-     */
-    public function getCustomDir(): string
-    {
-        $home = PHP_OS_FAMILY !== 'Windows' ? getenv('HOME') : getenv('HOMEDRIVE').getenv('HOMEPATH');
-        if (!\is_string($home) || !is_dir($home)) {
-            throw new InvalidConfigurationException('Unable to determine the home directory.'); // @codeCoverageIgnore
-        }
-
-        return $home.\DIRECTORY_SEPARATOR.self::APP_DIRECTORY;
     }
 
     /**
@@ -98,20 +79,5 @@ class Kernel extends BaseKernel
         $routes->import($confDir.'/{routes}/'.$this->environment.'/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
-    }
-
-    /**
-     * {@inheritdoc}
-     *
-     * @codeCoverageIgnore
-     *
-     * @throws InvalidConfigurationException
-     */
-    protected function getKernelParameters(): array
-    {
-        $parameters = parent::getKernelParameters();
-        $parameters['kernel.custom_dir'] = $this->getCustomDir();
-
-        return $parameters;
     }
 }

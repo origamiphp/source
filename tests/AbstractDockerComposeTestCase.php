@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
@@ -30,7 +30,7 @@ abstract class AbstractDockerComposeTestCase extends TestCase
     /** @var ObjectProphecy|ProcessFactory */
     protected $processFactory;
 
-    /** @var Environment */
+    /** @var EnvironmentEntity */
     protected $environment;
 
     /**
@@ -45,7 +45,7 @@ abstract class AbstractDockerComposeTestCase extends TestCase
 
         $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
-        $this->environment = new Environment('foo', $this->location, Environment::TYPE_SYMFONY, null, true);
+        $this->environment = new EnvironmentEntity('foo', $this->location, EnvironmentEntity::TYPE_SYMFONY, null, true);
 
         $filesystem = new Filesystem();
         $filesystem->mirror(__DIR__.'/../src/Resources/symfony/', $this->location.'/var/docker');
