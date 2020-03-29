@@ -53,8 +53,6 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
      */
     public function testItDefinesTheActiveEnvironmentWithExternals(): void
     {
-        $this->initializeSuccessfulValidators();
-
         $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
         $dockerCompose->setActiveEnvironment(
             new EnvironmentEntity('bar', $this->location, EnvironmentEntity::TYPE_CUSTOM, null, true)
