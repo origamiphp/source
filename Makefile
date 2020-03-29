@@ -8,7 +8,7 @@ box: ## Compiles the project into a PHAR archive
 	composer dump-env prod
 	./bin/console cache:clear
 	./bin/console cache:warmup
-	docker run -it --volume="$$(pwd):/app" ajardin/humbug-box compile -vvv
+	docker run --interactive --volume="$$(pwd):/app" ajardin/humbug-box compile -vvv
 	rm .env.local.php
 .PHONY: box
 

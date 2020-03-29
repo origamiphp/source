@@ -18,7 +18,21 @@ jobs:
           sudo apt update
           sudo apt install -y libicu-dev
           sudo apt-fast install -y --no-install-recommends \
-            php7.4 php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
+            php7.4 php7.4-ctype php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
+
+      - name: 'Load the keys used to deploy the PHAR archive'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PRIVATE_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.PRIVATE_SIGNING_KEY }}" | gpg --import
+
+      - name: 'Configure the committer identity'
+        run: |
+          git config --global user.email "info@ajardin.fr"
+          git config --global user.name "Alexandre Jardin"
+          git config --global commit.gpgsign "true"
+          git config --global user.signingkey "405DC05A6F8FFBA9"
 
       - name: 'Install Composer dependencies'
         run: composer install --optimize-autoloader --classmap-authoritative
