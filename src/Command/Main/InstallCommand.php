@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
@@ -16,7 +16,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 class InstallCommand extends AbstractBaseCommand
 {
     /** @var array */
-    private $availableTypes = [Environment::TYPE_MAGENTO2, Environment::TYPE_SYMFONY];
+    private $availableTypes = [EnvironmentEntity::TYPE_MAGENTO2, EnvironmentEntity::TYPE_SYMFONY];
 
     /**
      * {@inheritdoc}
@@ -57,7 +57,10 @@ class InstallCommand extends AbstractBaseCommand
                 $domains = null;
             }
 
-            $this->systemManager->install($location, $type, $domains);
+            $environment = $this->systemManager->install($location, $type, $domains);
+            $this->database->add($environment);
+            $this->database->save();
+
             $this->io->success('Environment successfully installed.');
         } catch (OrigamiExceptionInterface $exception) {
             $this->io->error($exception->getMessage());

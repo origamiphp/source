@@ -30,16 +30,7 @@ final class CheckCommandTest extends AbstractCommandWebTestCase
             ;
         }
 
-        $command = new CheckCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-            $requirements
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCheckCommand($requirements));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -59,16 +50,7 @@ final class CheckCommandTest extends AbstractCommandWebTestCase
             ;
         }
 
-        $command = new CheckCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-            $requirements
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCheckCommand($requirements));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -85,5 +67,21 @@ final class CheckCommandTest extends AbstractCommandWebTestCase
                 'homebrew' => 'The package manager for macOS.',
             ],
         ];
+    }
+
+    /**
+     * Retrieves the \App\Command\Additional\CheckCommand instance to use within the tests.
+     */
+    protected function getCheckCommand(array $requirements): CheckCommand
+    {
+        return new CheckCommand(
+            $this->database->reveal(),
+            $this->systemManager->reveal(),
+            $this->validator->reveal(),
+            $this->dockerCompose->reveal(),
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
+            $requirements
+        );
     }
 }

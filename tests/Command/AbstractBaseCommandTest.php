@@ -25,7 +25,7 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItSuccessfullyRunsWithActiveEnvironment(): void
     {
-        $this->systemManager->getActiveEnvironment()
+        $this->database->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($this->getFakeEnvironment())
         ;
@@ -38,10 +38,10 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItSuccessfullyRunsWithUserInput(): void
     {
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
 
         $environment = $this->getFakeEnvironment();
-        $this->systemManager->getEnvironmentByName($environment->getName())
+        $this->database->getEnvironmentByName($environment->getName())
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -57,11 +57,11 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItSuccessfullyRunsFromLocation(): void
     {
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
         $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
 
         $environment = $this->getFakeEnvironment();
-        $this->systemManager->getEnvironmentByLocation('')
+        $this->database->getEnvironmentByLocation('')
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -87,7 +87,7 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
      */
     private function getFakeCommand(): AbstractBaseCommand
     {
-        return new class($this->systemManager->reveal(), $this->validator->reveal(), $this->dockerCompose->reveal(), $this->eventDispatcher->reveal(), $this->processProxy->reveal()) extends AbstractBaseCommand {
+        return new class($this->database->reveal(), $this->systemManager->reveal(), $this->validator->reveal(), $this->dockerCompose->reveal(), $this->eventDispatcher->reveal(), $this->processProxy->reveal()) extends AbstractBaseCommand {
             protected static $defaultName = 'origami:test';
 
             /**

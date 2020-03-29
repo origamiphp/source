@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 
 trait TestFakeEnvironmentTrait
 {
     /**
      * Retrieves a new fake Environment instance.
      */
-    public function getFakeEnvironment(): Environment
+    public function getFakeEnvironment(): EnvironmentEntity
     {
-        return new Environment(
+        return new EnvironmentEntity(
             'origami',
             '~/Sites/origami',
-            Environment::TYPE_SYMFONY,
+            EnvironmentEntity::TYPE_SYMFONY,
             'origami.localhost www.origami.localhost',
             false
         );

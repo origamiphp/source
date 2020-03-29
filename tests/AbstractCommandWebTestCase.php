@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use App\Entity\Environment;
+use App\Command\AbstractBaseCommand;
+use App\Environment\EnvironmentEntity;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Database;
 use App\Middleware\SystemManager;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -26,6 +28,9 @@ abstract class AbstractCommandWebTestCase extends WebTestCase
 {
     /** @var ObjectProphecy|SystemManager */
     protected $systemManager;
+
+    /** @var Database|ObjectProphecy */
+    protected $database;
 
     /** @var ObjectProphecy|ValidatorInterface */
     protected $validator;
@@ -47,6 +52,7 @@ abstract class AbstractCommandWebTestCase extends WebTestCase
         parent::setUp();
 
         $this->systemManager = $this->prophesize(SystemManager::class);
+        $this->database = $this->prophesize(Database::class);
         $this->validator = $this->prophesize(ValidatorInterface::class);
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
@@ -58,7 +64,7 @@ abstract class AbstractCommandWebTestCase extends WebTestCase
     /**
      * Asserts that the environment details are displayed in verbose mode.
      */
-    public static function assertDisplayIsVerbose(Environment $environment, string $display): void
+    public static function assertDisplayIsVerbose(EnvironmentEntity $environment, string $display): void
     {
         static::assertStringContainsString('[OK] An environment is currently running.', $display);
         static::assertStringContainsString(sprintf('Environment location: %s', $environment->getLocation()), $display);
@@ -76,5 +82,20 @@ abstract class AbstractCommandWebTestCase extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString($message, $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+    }
+
+    /**
+     * Retrieves the \App\Command\AbstractBaseCommand instance to use within the tests according to the given class.
+     */
+    protected function getCommand(string $class): AbstractBaseCommand
+    {
+        return new $class(
+            $this->database->reveal(),
+            $this->systemManager->reveal(),
+            $this->validator->reveal(),
+            $this->dockerCompose->reveal(),
+            $this->eventDispatcher->reveal(),
+            $this->processProxy->reveal(),
+        );
     }
 }
