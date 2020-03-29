@@ -42,20 +42,12 @@ final class CommonCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->{$method}()->shouldBeCalledOnce()->willReturn(true);
         $this->eventDispatcher->dispatch(Argument::any())->willReturn(new stdClass());
 
-        $command = new $classname(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand($classname));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
@@ -76,19 +68,11 @@ final class CommonCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->{$method}()->shouldBeCalledOnce()->willReturn(false);
 
-        $command = new $classname(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        static::assertExceptionIsHandled($command, $messages['error']);
+        static::assertExceptionIsHandled($this->getCommand($classname), $messages['error']);
     }
 
     public function provideCommandDetails(): Generator

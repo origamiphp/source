@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Validator\Constraints;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Tests\TestFakeEnvironmentTrait;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\ConfigurationFiles;
@@ -60,7 +60,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
         $filesystem = new Filesystem();
         $filesystem->mirror(__DIR__.'/../../../src/Resources/'.$type, $this->location.'/var/docker');
 
-        $this->validator->validate(new Environment($type, $this->location, $type), new ConfigurationFiles());
+        $this->validator->validate(new EnvironmentEntity($type, $this->location, $type), new ConfigurationFiles());
         $this->assertNoViolation();
     }
 
@@ -70,7 +70,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
     public function testItInvalidatesMissingConfiguration(string $type): void
     {
         $constraint = new ConfigurationFiles();
-        $this->validator->validate(new Environment($type, $this->location, $type), $constraint);
+        $this->validator->validate(new EnvironmentEntity($type, $this->location, $type), $constraint);
 
         $this->buildViolation($constraint->message)
             ->assertRaised()
@@ -79,8 +79,8 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
 
     public function provideEnvironmentTypes(): Generator
     {
-        yield [Environment::TYPE_MAGENTO2];
-        yield [Environment::TYPE_SYMFONY];
+        yield [EnvironmentEntity::TYPE_MAGENTO2];
+        yield [EnvironmentEntity::TYPE_SYMFONY];
     }
 
     /**

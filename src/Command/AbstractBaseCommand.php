@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Database;
 use App\Middleware\SystemManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,6 +19,9 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 abstract class AbstractBaseCommand extends Command
 {
+    /** @var Database */
+    protected $database;
+
     /** @var SystemManager */
     protected $systemManager;
 
@@ -33,13 +37,14 @@ abstract class AbstractBaseCommand extends Command
     /** @var ProcessProxy */
     protected $processProxy;
 
-    /** @var null|Environment */
+    /** @var null|EnvironmentEntity */
     protected $environment;
 
     /** @var SymfonyStyle */
     protected $io;
 
     public function __construct(
+        Database $database,
         SystemManager $systemManager,
         ValidatorInterface $validator,
         DockerCompose $dockerCompose,
@@ -49,6 +54,7 @@ abstract class AbstractBaseCommand extends Command
     ) {
         parent::__construct($name);
 
+        $this->database = $database;
         $this->systemManager = $systemManager;
         $this->validator = $validator;
         $this->dockerCompose = $dockerCompose;
@@ -71,39 +77,39 @@ abstract class AbstractBaseCommand extends Command
      *
      * @throws InvalidEnvironmentException
      */
-    protected function getEnvironment(InputInterface $input): Environment
+    protected function getEnvironment(InputInterface $input): EnvironmentEntity
     {
         // 1. Try to load the currently running environment.
-        $environment = $this->systemManager->getActiveEnvironment();
-        if ($environment instanceof Environment) {
+        $environment = $this->database->getActiveEnvironment();
+        if ($environment instanceof EnvironmentEntity) {
             $this->environment = $environment;
         }
 
         // 2. Try to load the environment from the user input (i.e. BuildCommand, StartCommand, and UninstallCommand).
-        if (!$this->environment instanceof Environment && $input->hasArgument('environment')) {
+        if (!$this->environment instanceof EnvironmentEntity && $input->hasArgument('environment')) {
             $argument = $input->getArgument('environment');
 
             if (\is_string($argument) && $argument !== '') {
-                $environment = $this->systemManager->getEnvironmentByName($argument);
+                $environment = $this->database->getEnvironmentByName($argument);
 
-                if ($environment instanceof Environment) {
+                if ($environment instanceof EnvironmentEntity) {
                     $this->environment = $environment;
                 }
             }
         }
 
         // 3. Try to load the environment from the current location.
-        if (!$this->environment instanceof Environment) {
+        if (!$this->environment instanceof EnvironmentEntity) {
             $location = $this->processProxy->getWorkingDirectory();
-            $environment = $this->systemManager->getEnvironmentByLocation($location);
+            $environment = $this->database->getEnvironmentByLocation($location);
 
-            if ($environment instanceof Environment) {
+            if ($environment instanceof EnvironmentEntity) {
                 $this->environment = $environment;
             }
         }
 
         // 4. Throw an exception is there is still no defined environment.
-        if ($this->environment instanceof Environment) {
+        if ($this->environment instanceof EnvironmentEntity) {
             $this->dockerCompose->setActiveEnvironment($this->environment);
         } else {
             throw new InvalidEnvironmentException(
@@ -119,7 +125,7 @@ abstract class AbstractBaseCommand extends Command
      */
     protected function printEnvironmentDetails(): void
     {
-        if ($this->environment instanceof Environment) {
+        if ($this->environment instanceof EnvironmentEntity) {
             $this->io->success('An environment is currently running.');
             $this->io->listing(
                 [

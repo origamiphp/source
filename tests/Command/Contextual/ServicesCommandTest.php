@@ -43,19 +43,11 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new $classname(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand($classname));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
@@ -70,19 +62,11 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
 
-        $command = new $classname(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        self::assertExceptionIsHandled($command, 'An error occurred while opening a terminal.');
+        self::assertExceptionIsHandled($this->getCommand($classname), 'An error occurred while opening a terminal.');
     }
 
     public function provideServiceDetails(): Generator

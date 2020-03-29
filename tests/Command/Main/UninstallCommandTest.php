@@ -28,21 +28,15 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
         $environment = $this->getFakeEnvironment();
         $environment->setActive(false);
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(true);
         $this->eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
         $this->systemManager->uninstall($environment)->shouldBeCalledOnce();
+        $this->database->remove($environment)->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
-        $command = new UninstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(UninstallCommand::class));
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
 
@@ -56,21 +50,15 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
         $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->removeServices()->shouldNotBeCalled();
         $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
         $this->systemManager->uninstall($environment)->shouldNotBeCalled();
+        $this->database->remove($environment)->shouldNotBeCalled();
+        $this->database->save()->shouldNotBeCalled();
 
-        $command = new UninstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(UninstallCommand::class));
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
 
@@ -83,21 +71,15 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->systemManager->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $this->dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(false);
         $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
         $this->systemManager->uninstall($environment)->shouldNotBeCalled();
+        $this->database->remove($environment)->shouldNotBeCalled();
+        $this->database->save()->shouldNotBeCalled();
 
-        $command = new UninstallCommand(
-            $this->systemManager->reveal(),
-            $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-        );
-
-        $commandTester = new CommandTester($command);
+        $commandTester = new CommandTester($this->getCommand(UninstallCommand::class));
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
 

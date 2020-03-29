@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\EventSubscriber;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
@@ -12,7 +12,7 @@ use App\Event\EnvironmentUninstallEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Middleware\Database;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -35,8 +35,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
     /** @var Mutagen|ObjectProphecy */
     private $mutagen;
 
-    /** @var EntityManagerInterface|ObjectProphecy */
-    private $entityManager;
+    /** @var Database|ObjectProphecy */
+    private $database;
 
     /**
      * {@inheritdoc}
@@ -47,15 +47,15 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
         $this->dockerCompose = $this->prophesize(DockerCompose::class);
         $this->mutagen = $this->prophesize(Mutagen::class);
-        $this->entityManager = $this->prophesize(EntityManagerInterface::class);
+        $this->database = $this->prophesize(Database::class);
     }
 
     public function testItStartsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
         $environment->setActive(true)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
-        $this->entityManager->flush()->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $this->database->save()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -65,7 +65,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -77,10 +77,10 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStartsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
         $environment->setActive(true)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
-        $this->entityManager->flush()->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $this->database->save()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -90,7 +90,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -102,10 +102,10 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStopsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
         $environment->setActive(false)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
-        $this->entityManager->flush()->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $this->database->save()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -115,7 +115,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -127,10 +127,10 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStopsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
         $environment->setActive(false)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
-        $this->entityManager->flush()->shouldBeCalledOnce();
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $this->database->save()->shouldBeCalledOnce();
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -140,7 +140,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -152,8 +152,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItRestartsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -164,7 +164,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -176,8 +176,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItRestartsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -188,7 +188,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -200,8 +200,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItUninstallsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -211,7 +211,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
@@ -223,8 +223,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItUninstallsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(Environment::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(Environment::TYPE_SYMFONY);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
@@ -234,7 +234,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->entityManager->reveal()
+            $this->database->reveal()
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
@@ -12,7 +12,7 @@ use App\Event\EnvironmentUninstallEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Middleware\Database;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EnvironmentSubscriber implements EventSubscriberInterface
@@ -23,14 +23,14 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     /** @var Mutagen */
     private $mutagen;
 
-    /** @var EntityManagerInterface */
-    private $entityManager;
+    /** @var Database */
+    private $database;
 
-    public function __construct(DockerCompose $dockerCompose, Mutagen $mutagen, EntityManagerInterface $entityManager)
+    public function __construct(DockerCompose $dockerCompose, Mutagen $mutagen, Database $database)
     {
         $this->dockerCompose = $dockerCompose;
         $this->mutagen = $mutagen;
-        $this->entityManager = $entityManager;
+        $this->database = $database;
     }
 
     /**
@@ -63,7 +63,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $this->dockerCompose->setActiveEnvironment($environment);
 
-        if ($environment->getType() !== Environment::TYPE_CUSTOM) {
+        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $environmentVariables = $this->dockerCompose->getRequiredVariables();
             $io = $event->getSymfonyStyle();
 
@@ -75,7 +75,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         }
 
         $environment->setActive(true);
-        $this->entityManager->flush();
+        $this->database->save();
     }
 
     /**
@@ -88,7 +88,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $this->dockerCompose->setActiveEnvironment($environment);
 
-        if ($environment->getType() !== Environment::TYPE_CUSTOM) {
+        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $environmentVariables = $this->dockerCompose->getRequiredVariables();
             $io = $event->getSymfonyStyle();
 
@@ -100,7 +100,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         }
 
         $environment->setActive(false);
-        $this->entityManager->flush();
+        $this->database->save();
     }
 
     /**
@@ -113,7 +113,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $this->dockerCompose->setActiveEnvironment($environment);
 
-        if ($environment->getType() !== Environment::TYPE_CUSTOM) {
+        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $environmentVariables = $this->dockerCompose->getRequiredVariables();
             $io = $event->getSymfonyStyle();
 
@@ -137,7 +137,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $this->dockerCompose->setActiveEnvironment($environment);
 
-        if ($environment->getType() !== Environment::TYPE_CUSTOM) {
+        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $environmentVariables = $this->dockerCompose->getRequiredVariables();
             $io = $event->getSymfonyStyle();
 

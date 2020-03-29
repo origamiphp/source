@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Entity\Environment;
+use App\Environment\EnvironmentEntity;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractEnvironmentEvent extends Event
 {
-    /** @var Environment */
+    /** @var EnvironmentEntity */
     protected $environment;
 
     /** @var SymfonyStyle */
     protected $symfonyStyle;
 
-    public function __construct(Environment $environment, SymfonyStyle $symfonyStyle)
+    public function __construct(EnvironmentEntity $environment, SymfonyStyle $symfonyStyle)
     {
         $this->environment = $environment;
         $this->symfonyStyle = $symfonyStyle;
@@ -25,7 +25,7 @@ abstract class AbstractEnvironmentEvent extends Event
     /**
      * Retrieves the environment associated to the current event.
      */
-    public function getEnvironment(): Environment
+    public function getEnvironment(): EnvironmentEntity
     {
         return $this->environment;
     }

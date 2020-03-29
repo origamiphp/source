@@ -6,8 +6,6 @@ namespace App;
 
 use App\Command\DefaultCommand;
 use Symfony\Bundle\FrameworkBundle\Console\Application as SymfonyApplication;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 class Application extends SymfonyApplication
@@ -25,9 +23,6 @@ ASCII;
 
     public const CONSOLE_NAME = 'Origami';
 
-    /** @var Kernel */
-    private $kernel;
-
     /**
      * {@inheritdoc}
      *
@@ -36,7 +31,6 @@ ASCII;
     public function __construct(KernelInterface $kernel)
     {
         parent::__construct($kernel);
-        $this->kernel = $kernel;
 
         if ($defaultName = DefaultCommand::getDefaultName()) {
             $this->setDefaultCommand($defaultName);
@@ -66,21 +60,5 @@ ASCII;
     {
         return preg_match('/^v\d+\.\d+\.\d+/', '@app_version@')
             ? ltrim('@app_version@', 'v') : '@app_version@';
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function run(InputInterface $input = null, OutputInterface $output = null): int
-    {
-        $directory = $this->kernel->getCustomDir();
-
-        if (!is_dir($directory)
-            && !mkdir($concurrentDirectory = $directory, 0777, true) && !is_dir($concurrentDirectory)
-        ) {
-            throw new \RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory)); // @codeCoverageIgnore
-        }
-
-        return parent::run($input, $output);
     }
 }
