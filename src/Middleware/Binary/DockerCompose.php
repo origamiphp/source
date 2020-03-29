@@ -41,7 +41,9 @@ class DockerCompose
     {
         $this->environment = $environment;
 
-        $this->checkEnvironmentConfiguration();
+        if ($this->environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
+            $this->checkEnvironmentConfiguration();
+        }
         $this->environmentVariables = $this->getRequiredVariables();
     }
 
