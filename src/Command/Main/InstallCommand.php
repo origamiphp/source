@@ -93,6 +93,7 @@ class InstallCommand extends AbstractBaseCommand
     {
         $constraint = new LocalDomains();
         $errors = $this->validator->validate($answer, $constraint);
+
         if ($errors->has(0)) {
             /** @var string $message */
             $message = $errors->get(0)->getMessage();

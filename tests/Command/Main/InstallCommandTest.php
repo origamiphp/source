@@ -12,7 +12,6 @@ use App\Tests\AbstractCommandWebTestCase;
 use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
-use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -80,39 +79,44 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     {
         $location = sys_get_temp_dir().'/origami/InstallCommandTest';
 
-        yield [$location, EnvironmentEntity::TYPE_MAGENTO2, 'www.magento.localhost magento.localhost'];
+        yield [$location, EnvironmentEntity::TYPE_MAGENTO2, 'magento.localhost www.magento.localhost'];
         yield [$location, EnvironmentEntity::TYPE_MAGENTO2, ''];
 
-        yield [$location, EnvironmentEntity::TYPE_SYMFONY, 'www.symfony.localhost symfony.localhost'];
+        yield [$location, EnvironmentEntity::TYPE_SYMFONY, 'symfony.localhost www.symfony.localhost'];
         yield [$location, EnvironmentEntity::TYPE_SYMFONY, ''];
     }
 
-    public function testItAbortsTheInstallationWithInvalidLocation(): void
+    public function testItReplacesAnInvalidLocationByTheDefaultValue(): void
     {
-        $this->expectException(RuntimeException::class);
+        $this->systemManager->install(realpath('.'), EnvironmentEntity::TYPE_SYMFONY, null)
+            ->shouldBeCalledOnce()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
-        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'azerty', 'no']);
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'azerty']);
         $commandTester->execute([]);
     }
 
-    public function testItAbortsTheInstallationWithInvalidDomains(): void
+    public function testItReplacesAnInvalidDomainByTheDefaultValue(): void
     {
+        $invalidDomains = 'azerty';
+        $defaultDomains = 'symfony.localhost www.symfony.localhost';
+
         $violation = $this->prophesize(ConstraintViolation::class);
         $violation->getMessage()->shouldBeCalledOnce()->willReturn('Dummy exception');
 
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        $this->validator->validate('azerty', new LocalDomains())
+        $this->validator->validate($invalidDomains, new LocalDomains())->shouldBeCalledOnce()->willReturn($errors);
+        $this->validator->validate($defaultDomains, new LocalDomains())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+
+        $this->systemManager->install(realpath('.'), EnvironmentEntity::TYPE_SYMFONY, $defaultDomains)
             ->shouldBeCalledOnce()
-            ->willReturn($errors)
         ;
 
-        $this->expectException(RuntimeException::class);
-
         $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
-        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, '.', 'yes', 'azerty']);
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, null, 'yes', $invalidDomains]);
         $commandTester->execute([]);
     }
 
@@ -124,7 +128,7 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         ;
 
         $commandTester = new CommandTester($this->getCommand(InstallCommand::class));
-        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, '.', 'no']);
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, null, 'no']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
