@@ -75,6 +75,12 @@ final class SystemManagerTest extends TestCase
      */
     public function testItInstallsConfigurationFiles(string $type, ?string $domains = null): void
     {
+        $phpVersion = 'latest';
+
+        /** @var string $defaultConfiguration */
+        $defaultConfiguration = file_get_contents(__DIR__."/../../src/Resources/{$type}/.env");
+        static::assertStringNotContainsString($phpVersion, $defaultConfiguration);
+
         $destination = sprintf('%s/var/docker', $this->location);
 
         if ($domains !== null) {
@@ -88,7 +94,7 @@ final class SystemManagerTest extends TestCase
         }
 
         $systemManager = new SystemManager($this->mkcert->reveal(), $this->processFactory->reveal());
-        $systemManager->install($this->location, $type, $domains);
+        $systemManager->install($this->location, $type, 'latest', $domains);
 
         $finder = new Finder();
         $finder->files()->in(__DIR__.sprintf('/../../src/Resources/%s', $type));
@@ -99,6 +105,10 @@ final class SystemManagerTest extends TestCase
 
             static::assertFileEquals($file->getPathname(), $destination.'/'.$relativePath);
         }
+
+        /** @var string $projectConfiguration */
+        $projectConfiguration = file_get_contents(sprintf('%s/.env', $destination));
+        static::assertStringContainsString($phpVersion, $projectConfiguration);
     }
 
     /**

@@ -30,7 +30,7 @@ class RegisterCommand extends AbstractBaseCommand
             if ($this->io->confirm('Do you want to register the current directory as a custom environment?', false)) {
                 $location = $this->processProxy->getWorkingDirectory();
 
-                $environment = $this->systemManager->install($location, EnvironmentEntity::TYPE_CUSTOM, null);
+                $environment = $this->systemManager->install($location, EnvironmentEntity::TYPE_CUSTOM);
                 $this->database->add($environment);
                 $this->database->save();
 

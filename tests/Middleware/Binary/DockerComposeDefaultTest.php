@@ -42,7 +42,7 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
         static::assertSame('symfony_foo', $variables['COMPOSE_PROJECT_NAME']);
 
         static::assertArrayHasKey('DOCKER_PHP_IMAGE', $variables);
-        static::assertSame('default', $variables['DOCKER_PHP_IMAGE']);
+        static::assertSame('', $variables['DOCKER_PHP_IMAGE']);
 
         static::assertArrayHasKey('PROJECT_LOCATION', $variables);
         static::assertSame($this->location, $variables['PROJECT_LOCATION']);
