@@ -19,9 +19,7 @@ class ProcessProxy
      */
     public function getWorkingDirectory(): string
     {
-        $cwd = getcwd();
-
-        if (!$cwd) {
+        if (!$cwd = getcwd()) {
             throw new InvalidEnvironmentException('Unable to determine the current working directory.');
         }
 

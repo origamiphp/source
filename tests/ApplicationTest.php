@@ -40,6 +40,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Middleware\Binary\DockerCompose
  * @uses \App\Middleware\Binary\Mkcert
  * @uses \App\Middleware\Database
+ * @uses \App\Middleware\DockerHub
  * @uses \App\Middleware\SystemManager
  */
 final class ApplicationTest extends WebTestCase

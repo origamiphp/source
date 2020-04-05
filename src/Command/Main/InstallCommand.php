@@ -9,14 +9,39 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Database;
+use App\Middleware\DockerHub;
+use App\Middleware\SystemManager;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
+    /** @var DockerHub */
+    private $dockerHub;
+
     /** @var array */
     private $availableTypes = [EnvironmentEntity::TYPE_MAGENTO2, EnvironmentEntity::TYPE_SYMFONY];
+
+    public function __construct(
+        Database $database,
+        SystemManager $systemManager,
+        ValidatorInterface $validator,
+        DockerCompose $dockerCompose,
+        EventDispatcherInterface $eventDispatcher,
+        ProcessProxy $processProxy,
+        DockerHub $dockerHub,
+        ?string $name = null
+    ) {
+        parent::__construct($database, $systemManager, $validator, $dockerCompose, $eventDispatcher, $processProxy, $name);
+
+        $this->dockerHub = $dockerHub;
+    }
 
     /**
      * {@inheritdoc}
@@ -33,6 +58,12 @@ class InstallCommand extends AbstractBaseCommand
     {
         try {
             $type = $this->io->choice('Which type of environment you want to install?', $this->availableTypes);
+
+            $availableVersions = $this->dockerHub->getImageTags("{$type}-php");
+            $phpVersion = \count($availableVersions) > 1
+                ? $this->io->choice('Which version of PHP do you want to use?', $availableVersions)
+                : $availableVersions[0]
+            ;
 
             /** @var string $location */
             $location = realpath(
@@ -57,7 +88,7 @@ class InstallCommand extends AbstractBaseCommand
                 $domains = null;
             }
 
-            $environment = $this->systemManager->install($location, $type, $domains);
+            $environment = $this->systemManager->install($location, $type, $phpVersion, $domains);
             $this->database->add($environment);
             $this->database->save();
 

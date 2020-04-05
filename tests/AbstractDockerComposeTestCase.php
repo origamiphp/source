@@ -83,7 +83,7 @@ abstract class AbstractDockerComposeTestCase extends TestCase
         return [
             'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
             'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-            'DOCKER_PHP_IMAGE' => 'default',
+            'DOCKER_PHP_IMAGE' => '',
             'PROJECT_LOCATION' => $this->location,
         ];
     }
