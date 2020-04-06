@@ -67,6 +67,12 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $environmentVariables = $this->dockerCompose->getRequiredVariables();
             $io = $event->getSymfonyStyle();
 
+            if ($this->dockerCompose->fixPermissionsOnSharedSSHAgent()) {
+                $io->success('Permissions on the shared SSH agent successfully fixed.');
+            } else {
+                $io->error('An error occurred while trying to fix the permissions on the shared SSH agent.');
+            }
+
             if ($this->mutagen->startDockerSynchronization($environmentVariables)) {
                 $io->success('Docker synchronization successfully started.');
             } else {

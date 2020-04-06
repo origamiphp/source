@@ -154,6 +154,17 @@ class DockerCompose
     }
 
     /**
+     * Allow "www-data:www-data" to use the shared SSH agent.
+     */
+    public function fixPermissionsOnSharedSSHAgent(): bool
+    {
+        $command = ['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+
+        return $process->isSuccessful();
+    }
+
+    /**
      * Opens a terminal on the service associated to the command.
      */
     public function openTerminal(string $service, string $user = ''): bool
