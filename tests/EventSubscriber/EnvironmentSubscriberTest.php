@@ -60,6 +60,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
 
+        $this->dockerCompose->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(true);
         $this->mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
 
         $subscriber = new EnvironmentSubscriber(
@@ -69,6 +70,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $symfonyStyle->success('Permissions on the shared SSH agent successfully fixed.')->shouldBeCalledOnce();
         $symfonyStyle->success('Docker synchronization successfully started.')->shouldBeCalledOnce();
         $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
 
@@ -84,6 +86,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
         $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
         $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
+        $this->dockerCompose->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(false);
 
         $this->mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
 
@@ -94,6 +97,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         );
 
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $symfonyStyle->error('An error occurred while trying to fix the permissions on the shared SSH agent.')->shouldBeCalledOnce();
         $symfonyStyle->error('An error occurred while starting the Docker synchronization.')->shouldBeCalledOnce();
         $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
 

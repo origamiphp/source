@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\AbstractDockerComposeTestCase;
 use Symfony\Component\Process\Process;
@@ -16,7 +17,30 @@ use Symfony\Component\Process\Process;
 final class DockerComposeTerminalTest extends AbstractDockerComposeTestCase
 {
     /**
-     * @throws \App\Exception\InvalidEnvironmentException
+     * @throws InvalidEnvironmentException
+     */
+    public function testItFixesPermissionsOnSharedSSHAgent(): void
+    {
+        $this->prophesizeSuccessfulValidations();
+
+        $process = $this->prophesize(Process::class);
+        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+
+        $environmentVariables = $this->getFakeEnvironmentVariables();
+
+        $this->processFactory->runForegroundProcess(['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'], $environmentVariables)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
+
+        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $dockerCompose->setActiveEnvironment($this->environment);
+
+        static::assertTrue($dockerCompose->fixPermissionsOnSharedSSHAgent());
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
      */
     public function testItOpensTerminalOnGivenServiceWithSpecificUser(): void
     {
@@ -39,7 +63,7 @@ final class DockerComposeTerminalTest extends AbstractDockerComposeTestCase
     }
 
     /**
-     * @throws \App\Exception\InvalidEnvironmentException
+     * @throws InvalidEnvironmentException
      */
     public function testItOpensTerminalOnGivenServiceWithoutSpecificUser(): void
     {
