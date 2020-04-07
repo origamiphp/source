@@ -10,7 +10,6 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\DockerHub;
 use App\Tests\AbstractCommandWebTestCase;
-use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -28,8 +27,6 @@ use Symfony\Component\Validator\ConstraintViolationList;
  */
 final class InstallCommandTest extends AbstractCommandWebTestCase
 {
-    use TestLocationTrait;
-
     /** @var DockerHub|ObjectProphecy */
     protected $dockerHub;
 
@@ -39,24 +36,14 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->createLocation();
 
         $this->dockerHub = $this->prophesize(DockerHub::class);
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        $this->removeLocation();
-    }
-
-    /**
      * @dataProvider provideEnvironmentConfigurations
      */
-    public function testItInstallTheRequestedEnvironment(string $type, string $phpVersion, string $location, ?string $domains): void
+    public function testItInstallTheRequestedEnvironment(string $type, string $phpVersion, ?string $domains): void
     {
         if ($domains) {
             $this->validator->validate($domains, new LocalDomains())
@@ -69,15 +56,17 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
             ->shouldBeCalledOnce()->willReturn(['foo', 'bar', 'latest'])
         ;
 
-        $this->systemManager->install(realpath($location), $type, $phpVersion, $domains)
+        /** @var string $location */
+        $location = realpath('.');
+        $this->systemManager->install($location, $type, $phpVersion, $domains)
             ->shouldBeCalledOnce()
         ;
 
         $commandTester = new CommandTester($this->getInstallCommand());
         if ($domains) {
-            $commandTester->setInputs([$type, $phpVersion, $location, 'yes', $domains]);
+            $commandTester->setInputs([$type, $phpVersion, 'yes', $domains]);
         } else {
-            $commandTester->setInputs([$type, $phpVersion, $location, 'no']);
+            $commandTester->setInputs([$type, $phpVersion, 'no']);
         }
         $commandTester->execute([]);
 
@@ -88,27 +77,11 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
 
     public function provideEnvironmentConfigurations(): Generator
     {
-        $location = sys_get_temp_dir().'/origami/InstallCommandTest';
+        yield [EnvironmentEntity::TYPE_MAGENTO2, 'latest', 'magento.localhost www.magento.localhost'];
+        yield [EnvironmentEntity::TYPE_MAGENTO2, 'latest', null];
 
-        yield [EnvironmentEntity::TYPE_MAGENTO2, 'latest', $location, 'magento.localhost www.magento.localhost'];
-        yield [EnvironmentEntity::TYPE_MAGENTO2, 'latest', $location, null];
-
-        yield [EnvironmentEntity::TYPE_SYMFONY, 'latest', $location, 'symfony.localhost www.symfony.localhost'];
-        yield [EnvironmentEntity::TYPE_SYMFONY, 'latest', $location, null];
-    }
-
-    public function testItReplacesAnInvalidLocationByTheDefaultValue(): void
-    {
-        $this->dockerHub->getImageTags(EnvironmentEntity::TYPE_SYMFONY.'-php')
-            ->shouldBeCalledOnce()->willReturn(['latest']);
-
-        $this->systemManager->install(realpath('.'), EnvironmentEntity::TYPE_SYMFONY, 'latest', null)
-            ->shouldBeCalledOnce()
-        ;
-
-        $commandTester = new CommandTester($this->getInstallCommand());
-        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'azerty']);
-        $commandTester->execute([]);
+        yield [EnvironmentEntity::TYPE_SYMFONY, 'latest', 'symfony.localhost www.symfony.localhost'];
+        yield [EnvironmentEntity::TYPE_SYMFONY, 'latest', null];
     }
 
     public function testItReplacesAnInvalidDomainByTheDefaultValue(): void
@@ -128,12 +101,14 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         $this->validator->validate($invalidDomains, new LocalDomains())->shouldBeCalledOnce()->willReturn($errors);
         $this->validator->validate($defaultDomains, new LocalDomains())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
 
-        $this->systemManager->install(realpath('.'), EnvironmentEntity::TYPE_SYMFONY, 'latest', $defaultDomains)
+        /** @var string $location */
+        $location = realpath('.');
+        $this->systemManager->install($location, EnvironmentEntity::TYPE_SYMFONY, 'latest', $defaultDomains)
             ->shouldBeCalledOnce()
         ;
 
         $commandTester = new CommandTester($this->getInstallCommand());
-        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, null, 'yes', $invalidDomains]);
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'yes', $invalidDomains]);
         $commandTester->execute([]);
     }
 
@@ -142,13 +117,15 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         $this->dockerHub->getImageTags(EnvironmentEntity::TYPE_SYMFONY.'-php')
             ->shouldBeCalledOnce()->willReturn(['latest']);
 
-        $this->systemManager->install(realpath('.'), EnvironmentEntity::TYPE_SYMFONY, 'latest', null)
+        /** @var string $location */
+        $location = realpath('.');
+        $this->systemManager->install($location, EnvironmentEntity::TYPE_SYMFONY, 'latest', null)
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
         $commandTester = new CommandTester($this->getInstallCommand());
-        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, null, 'no']);
+        $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'no']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();

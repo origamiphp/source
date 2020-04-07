@@ -56,25 +56,16 @@ class InstallCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->io->comment('Please note that the environment will be installed in the current directory.');
+
         try {
             $type = $this->io->choice('Which type of environment you want to install?', $this->availableTypes);
 
             $availableVersions = $this->dockerHub->getImageTags("{$type}-php");
             $phpVersion = \count($availableVersions) > 1
-                ? $this->io->choice('Which version of PHP do you want to use?', $availableVersions)
+                ? $this->io->choice('Which version of PHP do you want to use?', $availableVersions, 'latest')
                 : $availableVersions[0]
             ;
-
-            /** @var string $location */
-            $location = realpath(
-                $this->io->ask(
-                    'Where do you want to install the environment?',
-                    '.',
-                    function ($answer) {
-                        return $this->installationPathCallback($answer);
-                    }
-                )
-            );
 
             if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
                 $domains = $this->io->ask(
@@ -88,7 +79,10 @@ class InstallCommand extends AbstractBaseCommand
                 $domains = null;
             }
 
+            /** @var string $location */
+            $location = realpath('.');
             $environment = $this->systemManager->install($location, $type, $phpVersion, $domains);
+
             $this->database->add($environment);
             $this->database->save();
 
@@ -99,20 +93,6 @@ class InstallCommand extends AbstractBaseCommand
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
-    }
-
-    /**
-     * Validates the response provided by the user to the installation path question.
-     *
-     * @throws InvalidConfigurationException
-     */
-    private function installationPathCallback(string $answer): string
-    {
-        if (!is_dir($answer)) {
-            throw new InvalidConfigurationException('An existing directory must be provided.');
-        }
-
-        return $answer;
     }
 
     /**
