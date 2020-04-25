@@ -10,10 +10,14 @@ use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstallEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
+use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
+use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Prophet;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -29,13 +33,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 final class EnvironmentSubscriberTest extends WebTestCase
 {
-    /** @var DockerCompose|ObjectProphecy */
+    /** @var Prophet */
+    protected $prophet;
+
+    /** @var ObjectProphecy */
     private $dockerCompose;
 
-    /** @var Mutagen|ObjectProphecy */
+    /** @var ObjectProphecy */
     private $mutagen;
 
-    /** @var Database|ObjectProphecy */
+    /** @var ObjectProphecy */
     private $database;
 
     /**
@@ -45,23 +52,52 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         parent::setUp();
 
-        $this->dockerCompose = $this->prophesize(DockerCompose::class);
-        $this->mutagen = $this->prophesize(Mutagen::class);
-        $this->database = $this->prophesize(Database::class);
+        $this->prophet = new Prophet();
+        $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
+        $this->mutagen = $this->prophet->prophesize(Mutagen::class);
+        $this->database = $this->prophet->prophesize(Database::class);
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->prophet->checkPredictions();
+    }
+
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItStartsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->setActive(true)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
-        $this->database->save()->shouldBeCalledOnce();
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
+        (new MethodProphecy($environment, 'setActive', [true]))
+            ->shouldBeCalledOnce()
+        ;
 
-        $this->dockerCompose->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(true);
-        $this->mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'fixPermissionsOnSharedSSHAgent', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'fixPermissionsOnSharedSSHAgent', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->mutagen, 'startDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -69,26 +105,43 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->success('Permissions on the shared SSH agent successfully fixed.')->shouldBeCalledOnce();
-        $symfonyStyle->success('Docker synchronization successfully started.')->shouldBeCalledOnce();
-        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
+            ->shouldBeCalledTimes(2)
+        ;
 
+        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentStart($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItStartsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->setActive(true)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
-        $this->database->save()->shouldBeCalledOnce();
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
-        $this->dockerCompose->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($environment, 'setActive', [true]))
+            ->shouldBeCalledOnce()
+        ;
 
-        $this->mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'fixPermissionsOnSharedSSHAgent', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        (new MethodProphecy($this->mutagen, 'startDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -96,25 +149,38 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->error('An error occurred while trying to fix the permissions on the shared SSH agent.')->shouldBeCalledOnce();
-        $symfonyStyle->error('An error occurred while starting the Docker synchronization.')->shouldBeCalledOnce();
-        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
+            ->shouldBeCalledTimes(2)
+        ;
 
+        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentStart($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItStopsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->setActive(false)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
-        $this->database->save()->shouldBeCalledOnce();
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
+        (new MethodProphecy($environment, 'setActive', [false]))
+            ->shouldBeCalledOnce()
+        ;
 
-        $this->mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->mutagen, 'stopDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -122,24 +188,38 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->success('Docker synchronization successfully stopped.')->shouldBeCalledOnce();
-        $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
+            ->shouldBeCalledOnce()
+        ;
 
+        $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentStop($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItStopsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->setActive(false)->shouldBeCalledOnce();
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
-        $this->database->save()->shouldBeCalledOnce();
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
+        (new MethodProphecy($environment, 'setActive', [false]))
+            ->shouldBeCalledOnce()
+        ;
 
-        $this->mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->mutagen, 'stopDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -147,23 +227,35 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->error('An error occurred while stopping the Docker synchronization.')->shouldBeCalledOnce();
-        $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
+            ->shouldBeCalledOnce()
+        ;
 
+        $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentStop($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRestartsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
+        (new MethodProphecy($this->mutagen, 'startDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $this->mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
-        $this->mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($this->mutagen, 'stopDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -171,23 +263,35 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->success('Docker synchronization successfully restarted.')->shouldBeCalledOnce();
-        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
+            ->shouldBeCalledOnce()
+        ;
 
+        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentRestart($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRestartsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
+        (new MethodProphecy($this->mutagen, 'stopDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $this->mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
-        $this->mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->mutagen, 'startDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -195,22 +299,30 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->error('An error occurred while restarting the Docker synchronization.')->shouldBeCalledOnce();
-        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
+            ->shouldBeCalledOnce()
+        ;
 
+        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentRestart($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItUninstallsTheDockerSynchronizationWithSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
-
-        $this->mutagen->removeDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($this->mutagen, 'removeDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -218,22 +330,30 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->success('Docker synchronization successfully removed.')->shouldBeCalledOnce();
-        $event = new EnvironmentUninstallEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
+            ->shouldBeCalledOnce()
+        ;
 
+        $event = new EnvironmentUninstallEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentUninstall($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItUninstallsTheDockerSynchronizationWithoutSuccess(): void
     {
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $environment->getType()->shouldBeCalledOnce()->willReturn(EnvironmentEntity::TYPE_SYMFONY);
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $this->prophesizeCommonMethods($environment);
 
-        $this->dockerCompose->setActiveEnvironment($environment->reveal())->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn([]);
-
-        $this->mutagen->removeDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->mutagen, 'removeDockerSynchronization', [[]]))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
@@ -241,10 +361,35 @@ final class EnvironmentSubscriberTest extends WebTestCase
             $this->database->reveal()
         );
 
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
-        $symfonyStyle->error('An error occurred while removing the Docker synchronization.')->shouldBeCalledOnce();
-        $event = new EnvironmentUninstallEvent($environment->reveal(), $symfonyStyle->reveal());
+        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
+            ->shouldBeCalledOnce()
+        ;
 
+        $event = new EnvironmentUninstallEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentUninstall($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
+    }
+
+    /**
+     * Prophesizes common methods for tests above.
+     */
+    private function prophesizeCommonMethods(ObjectProphecy $environment): void
+    {
+        (new MethodProphecy($environment, 'getType', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(EnvironmentEntity::TYPE_SYMFONY)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment->reveal()]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'getRequiredVariables', [$environment->reveal()]))
+            ->shouldBeCalledOnce()
+            ->willReturn([])
+        ;
     }
 }

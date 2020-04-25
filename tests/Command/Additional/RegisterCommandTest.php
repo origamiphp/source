@@ -8,8 +8,8 @@ use App\Command\Additional\RegisterCommand;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
-use Prophecy\Argument;
+use App\Tests\Command\AbstractCommandWebTestCase;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -22,8 +22,14 @@ final class RegisterCommandTest extends AbstractCommandWebTestCase
 {
     public function testItRegistersAnExternalEnvironment(): void
     {
-        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
-        $this->systemManager->install('', EnvironmentEntity::TYPE_CUSTOM, null)->shouldBeCalledOnce();
+        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('')
+        ;
+
+        (new MethodProphecy($this->systemManager, 'install', ['', EnvironmentEntity::TYPE_CUSTOM, null]))
+            ->shouldBeCalledOnce()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(RegisterCommand::class));
         $commandTester->setInputs(['yes']);
@@ -36,8 +42,13 @@ final class RegisterCommandTest extends AbstractCommandWebTestCase
 
     public function testItAbortsTheRegistrationAfterDisapproval(): void
     {
-        $this->processProxy->getWorkingDirectory()->shouldNotBeCalled();
-        $this->systemManager->install(Argument::type('string'), EnvironmentEntity::TYPE_CUSTOM, null)->shouldNotBeCalled();
+        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->systemManager, 'install', ['', EnvironmentEntity::TYPE_CUSTOM, null]))
+            ->shouldNotBeCalled()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(RegisterCommand::class));
         $commandTester->setInputs(['no']);
@@ -50,11 +61,14 @@ final class RegisterCommandTest extends AbstractCommandWebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->processProxy->getWorkingDirectory()
-            ->shouldBeCalledOnce()
+        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+            ->shouldBeCalled()
             ->willThrow(new InvalidEnvironmentException('Unable to determine the current working directory.'))
         ;
-        $this->systemManager->install(Argument::type('string'), EnvironmentEntity::TYPE_CUSTOM, null)->shouldNotBeCalled();
+
+        (new MethodProphecy($this->systemManager, 'install', ['', EnvironmentEntity::TYPE_CUSTOM, null]))
+            ->shouldNotBeCalled()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(RegisterCommand::class));
         $commandTester->setInputs(['yes']);

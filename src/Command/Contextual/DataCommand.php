@@ -10,6 +10,7 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DataCommand extends AbstractBaseCommand
 {
@@ -26,18 +27,20 @@ class DataCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
-            $this->getEnvironment($input);
+            $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
-                $this->printEnvironmentDetails();
+                $this->printEnvironmentDetails($environment, $io);
             }
 
             if (!$this->dockerCompose->showResourcesUsage()) {
                 throw new InvalidEnvironmentException('An error occurred while checking the resources usage.');
             }
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

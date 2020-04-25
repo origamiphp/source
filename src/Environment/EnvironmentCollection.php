@@ -18,6 +18,8 @@ class EnvironmentCollection implements \Countable, \Iterator, \ArrayAccess
     private $values = [];
 
     /**
+     * @param array<array-key, EnvironmentEntity> $values
+     *
      * @throws InvalidEnvironmentException
      */
     public function __construct(array $values = [])

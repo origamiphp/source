@@ -26,11 +26,16 @@ class Kernel extends BaseKernel
      */
     public function registerBundles(): iterable
     {
-        /** @noinspection PhpIncludeInspection */
-        $contents = require $this->getProjectDir().'/config/bundles.php';
-        foreach ($contents as $class => $envs) {
-            if ($envs[$this->environment] ?? $envs['all'] ?? false) {
-                yield new $class();
+        $path = $this->getProjectDir().'/config/bundles.php';
+
+        if (file_exists($path)) {
+            /** @noinspection PhpIncludeInspection */
+            $contents = require $path;
+
+            foreach ($contents as $class => $envs) {
+                if ($envs[$this->environment] ?? $envs['all'] ?? false) {
+                    yield new $class();
+                }
             }
         }
     }

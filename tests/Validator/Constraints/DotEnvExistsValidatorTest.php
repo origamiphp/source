@@ -72,14 +72,10 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
         $constraint = new DotEnvExists();
         $this->validator->validate($this->getFakeEnvironment(), $constraint);
 
-        $this->buildViolation($constraint->message)
-            ->assertRaised()
-        ;
+        $this->buildViolation($constraint->message);
+        $this->expectNoValidate();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createValidator(): ConstraintValidatorInterface
     {
         return new DotEnvExistsValidator();

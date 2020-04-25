@@ -34,7 +34,7 @@ class DockerHub
         $response = $this->httpClient->request(Request::METHOD_GET, sprintf(self::API_ENDPOINT, $image));
         $parsedResponse = $this->parseResponse($response);
 
-        if (\array_key_exists('results', $parsedResponse) && \is_array($parsedResponse)) {
+        if (\array_key_exists('results', $parsedResponse) && \is_array($parsedResponse['results'])) {
             return array_column($parsedResponse['results'], 'name');
         }
 

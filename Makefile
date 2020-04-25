@@ -24,10 +24,9 @@ phpcpd: ## Executes a copy/paste analysis
 	docker run --interactive --volume=$$(pwd):/app ajardin/phpcpd
 .PHONY: phpcpd
 
-phpstan: ## Executes a static analysis at the higher level on all PHP files
-	./bin/console cache:warmup
-	docker run --interactive --volume=$$(pwd):/app ajardin/phpstan
-.PHONY: phpstan
+psalm: ## Executes a static analysis on all PHP files
+	docker run --interactive --volume=$$(pwd):/app ajardin/psalm
+.PHONY: psalm
 
 security: ## Executes a security audit on all PHP dependencies
 	docker run --interactive --volume=$$(pwd):/app ajardin/security-checker
@@ -36,6 +35,10 @@ security: ## Executes a security audit on all PHP dependencies
 tests: ## Executes the unit tests and functional tests
 	./bin/phpunit --testdox
 .PHONY: tests
+
+update: ## Executes a Composer update within a PHP 7.3 environment
+	docker run -it -v=$$(pwd):/var/www/html ajardin/symfony-php:7.3 sh -c "composer update --optimize-autoloader"
+.PHONY: update
 
 help:
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) \

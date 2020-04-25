@@ -45,7 +45,7 @@ class ProcessFactory
         $process->setTty($this->processProxy->isTtySupported());
 
         $process->run(static function (string $type, string $buffer) {
-            echo $buffer;
+            echo Process::ERR === $type ? "ERR > {$buffer}" : $buffer;
         });
 
         return $process;
@@ -62,7 +62,7 @@ class ProcessFactory
         $process->setTty($this->processProxy->isTtySupported());
 
         $process->run(static function (string $type, string $buffer) {
-            echo $buffer;
+            echo Process::ERR === $type ? "ERR > {$buffer}" : $buffer;
         });
 
         return $process;

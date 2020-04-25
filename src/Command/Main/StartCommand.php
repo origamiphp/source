@@ -12,6 +12,7 @@ use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class StartCommand extends AbstractBaseCommand
 {
@@ -34,26 +35,26 @@ class StartCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
             $environment = $this->getEnvironment($input);
 
-            if (!$this->environment->isActive()
-                || $this->environment->getLocation() === $this->processProxy->getWorkingDirectory()
-            ) {
+            if (!$environment->isActive() || $environment->getLocation() === $this->processProxy->getWorkingDirectory()) {
                 if (!$this->dockerCompose->startServices()) {
                     throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
                 }
 
-                $this->io->success('Docker services successfully started.');
+                $io->success('Docker services successfully started.');
 
-                $event = new EnvironmentStartedEvent($environment, $this->io);
+                $event = new EnvironmentStartedEvent($environment, $io);
                 $this->eventDispatcher->dispatch($event);
             } else {
-                $this->io->error('Unable to start an environment when there is already a running one.');
+                $io->error('Unable to start an environment when there is already a running one.');
                 $exitCode = CommandExitCode::INVALID;
             }
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

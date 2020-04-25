@@ -6,9 +6,10 @@ namespace App\Tests\Command\Main;
 
 use App\Command\Main\StartCommand;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -27,10 +28,23 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(true);
-        $this->eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'startServices', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldBeCalledOnce()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(StartCommand::class));
         $commandTester->execute([]);
@@ -44,14 +58,28 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
-        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->startServices()->shouldNotBeCalled();
+        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('')
+        ;
 
-        $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'startServices', []))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldNotBeCalled()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(StartCommand::class));
         $commandTester->execute([]);
@@ -65,11 +93,23 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'startServices', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldNotBeCalled()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(StartCommand::class));
         $commandTester->execute([]);

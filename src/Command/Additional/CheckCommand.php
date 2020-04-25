@@ -13,6 +13,7 @@ use App\Middleware\SystemManager;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -49,7 +50,8 @@ class CheckCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io->section('Docker Requirements Checker');
+        $io = new SymfonyStyle($input, $output);
+        $io->section('Docker Requirements Checker');
 
         $table = new Table($output);
         $table->setHeaders(['Binary', 'Description', 'Status']);
@@ -66,9 +68,9 @@ class CheckCommand extends AbstractBaseCommand
         $table->render();
 
         if ($ready) {
-            $this->io->success('Your system is ready.');
+            $io->success('Your system is ready.');
         } else {
-            $this->io->error('At least one system requirement is missing.');
+            $io->error('At least one system requirement is missing.');
             $exitCode = CommandExitCode::INVALID;
         }
 

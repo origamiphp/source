@@ -2,15 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Tests;
+namespace App\Tests\Middleware\Binary;
 
 use App\Environment\EnvironmentEntity;
 use App\Helper\ProcessFactory;
+use App\Tests\TestLocationTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Prophet;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -24,10 +27,13 @@ abstract class AbstractDockerComposeTestCase extends TestCase
 {
     use TestLocationTrait;
 
-    /** @var ObjectProphecy|ValidatorInterface */
+    /** @var Prophet */
+    protected $prophet;
+
+    /** @var ObjectProphecy */
     protected $validator;
 
-    /** @var ObjectProphecy|ProcessFactory */
+    /** @var ObjectProphecy */
     protected $processFactory;
 
     /** @var EnvironmentEntity */
@@ -40,15 +46,16 @@ abstract class AbstractDockerComposeTestCase extends TestCase
     {
         parent::setUp();
 
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->processFactory = $this->prophesize(ProcessFactory::class);
+        $this->prophet = new Prophet();
+        $this->validator = $this->prophet->prophesize(ValidatorInterface::class);
+        $this->processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
         $this->createLocation();
         mkdir($this->location.'/var/docker', 0777, true);
         $this->environment = new EnvironmentEntity('foo', $this->location, EnvironmentEntity::TYPE_SYMFONY, null, true);
 
         $filesystem = new Filesystem();
-        $filesystem->mirror(__DIR__.'/../src/Resources/symfony/', $this->location.'/var/docker');
+        $filesystem->mirror(__DIR__.'/../../../src/Resources/symfony/', $this->location.'/var/docker');
     }
 
     /**
@@ -57,6 +64,8 @@ abstract class AbstractDockerComposeTestCase extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
+        $this->prophet->checkPredictions();
         $this->removeLocation();
     }
 
@@ -65,11 +74,12 @@ abstract class AbstractDockerComposeTestCase extends TestCase
      */
     public function prophesizeSuccessfulValidations(): void
     {
-        $this->validator->validate(Argument::any(), new DotEnvExists())
+        (new MethodProphecy($this->validator, 'validate', [Argument::any(), new DotEnvExists()]))
             ->shouldBeCalledOnce()
             ->willReturn(new ConstraintViolationList())
         ;
-        $this->validator->validate(Argument::any(), new ConfigurationFiles())
+
+        (new MethodProphecy($this->validator, 'validate', [Argument::any(), new ConfigurationFiles()]))
             ->shouldBeCalledOnce()
             ->willReturn(new ConstraintViolationList())
         ;

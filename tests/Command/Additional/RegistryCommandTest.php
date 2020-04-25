@@ -7,8 +7,10 @@ namespace App\Tests\Command\Additional;
 use App\Command\Additional\RegistryCommand;
 use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Exception\InvalidEnvironmentException;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use Generator;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -21,7 +23,10 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
 {
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
-        $this->database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection());
+        (new MethodProphecy($this->database, 'getAllEnvironments', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(new EnvironmentCollection())
+        ;
 
         $commandTester = new CommandTester($this->getCommand(RegistryCommand::class));
         $commandTester->execute([]);
@@ -32,26 +37,27 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideEnvironmentList
+     *
+     * @throws InvalidEnvironmentException
      */
     public function testItPrintsEnvironmentDetailsInTable(EnvironmentEntity $environment): void
     {
-        $collection = new EnvironmentCollection([$environment]);
-        $this->database->getAllEnvironments()->shouldBeCalledOnce()->willReturn($collection);
+        (new MethodProphecy($this->database, 'getAllEnvironments', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(new EnvironmentCollection([$environment]))
+        ;
 
         $commandTester = new CommandTester($this->getCommand(RegistryCommand::class));
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
 
-        /** @var string $name */
         $name = $environment->getName();
         static::assertStringContainsString($name, $display);
 
-        /** @var string $location */
         $location = $environment->getLocation();
         static::assertStringContainsString($location, $display);
 
-        /** @var string $type */
         $type = $environment->getType();
         static::assertStringContainsString($type, $display);
 

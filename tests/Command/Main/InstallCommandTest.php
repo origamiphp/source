@@ -9,10 +9,12 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Middleware\DockerHub;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
+use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Prophet;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -27,7 +29,10 @@ use Symfony\Component\Validator\ConstraintViolationList;
  */
 final class InstallCommandTest extends AbstractCommandWebTestCase
 {
-    /** @var DockerHub|ObjectProphecy */
+    /** @var Prophet */
+    protected $prophet;
+
+    /** @var ObjectProphecy */
     protected $dockerHub;
 
     /**
@@ -37,7 +42,18 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     {
         parent::setUp();
 
-        $this->dockerHub = $this->prophesize(DockerHub::class);
+        $this->prophet = new Prophet();
+        $this->dockerHub = $this->prophet->prophesize(DockerHub::class);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->prophet->checkPredictions();
     }
 
     /**
@@ -46,19 +62,21 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     public function testItInstallTheRequestedEnvironment(string $type, string $phpVersion, ?string $domains): void
     {
         if ($domains) {
-            $this->validator->validate($domains, new LocalDomains())
+            (new MethodProphecy($this->validator, 'validate', [$domains, new LocalDomains()]))
                 ->shouldBeCalledOnce()
                 ->willReturn(new ConstraintViolationList())
             ;
         }
 
-        $this->dockerHub->getImageTags("{$type}-php")
-            ->shouldBeCalledOnce()->willReturn(['foo', 'bar', 'latest'])
+        (new MethodProphecy($this->dockerHub, 'getImageTags', ["{$type}-php"]))
+            ->shouldBeCalledOnce()
+            ->willReturn(['foo', 'bar', 'latest'])
         ;
 
         /** @var string $location */
         $location = realpath('.');
-        $this->systemManager->install($location, $type, $phpVersion, $domains)
+
+        (new MethodProphecy($this->systemManager, 'install', [$location, $type, $phpVersion, $domains]))
             ->shouldBeCalledOnce()
         ;
 
@@ -86,40 +104,59 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
 
     public function testItReplacesAnInvalidDomainByTheDefaultValue(): void
     {
-        $this->dockerHub->getImageTags(EnvironmentEntity::TYPE_SYMFONY.'-php')
-            ->shouldBeCalledOnce()->willReturn(['latest']);
+        (new MethodProphecy($this->dockerHub, 'getImageTags', [EnvironmentEntity::TYPE_SYMFONY.'-php']))
+            ->shouldBeCalledOnce()
+            ->willReturn(['latest'])
+        ;
 
         $invalidDomains = 'azerty';
         $defaultDomains = 'symfony.localhost www.symfony.localhost';
 
-        $violation = $this->prophesize(ConstraintViolation::class);
-        $violation->getMessage()->shouldBeCalledOnce()->willReturn('Dummy exception');
+        $violation = $this->prophet->prophesize(ConstraintViolation::class);
+        (new MethodProphecy($violation, 'getMessage', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('Dummy exception')
+        ;
 
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        $this->validator->validate($invalidDomains, new LocalDomains())->shouldBeCalledOnce()->willReturn($errors);
-        $this->validator->validate($defaultDomains, new LocalDomains())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+        (new MethodProphecy($this->validator, 'validate', [$invalidDomains, new LocalDomains()]))
+            ->shouldBeCalledOnce()
+            ->willReturn($errors)
+        ;
+        (new MethodProphecy($this->validator, 'validate', [$defaultDomains, new LocalDomains()]))
+            ->shouldBeCalledOnce()
+            ->willReturn(new ConstraintViolationList())
+        ;
 
         /** @var string $location */
         $location = realpath('.');
-        $this->systemManager->install($location, EnvironmentEntity::TYPE_SYMFONY, 'latest', $defaultDomains)
+
+        (new MethodProphecy($this->systemManager, 'install', [$location, EnvironmentEntity::TYPE_SYMFONY, 'latest', $defaultDomains]))
             ->shouldBeCalledOnce()
         ;
 
         $commandTester = new CommandTester($this->getInstallCommand());
         $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'yes', $invalidDomains]);
         $commandTester->execute([]);
+
+        $display = $commandTester->getDisplay();
+        static::assertStringContainsString('[OK] Environment successfully installed.', $display);
+        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->dockerHub->getImageTags(EnvironmentEntity::TYPE_SYMFONY.'-php')
-            ->shouldBeCalledOnce()->willReturn(['latest']);
+        (new MethodProphecy($this->dockerHub, 'getImageTags', [EnvironmentEntity::TYPE_SYMFONY.'-php']))
+            ->shouldBeCalledOnce()
+            ->willReturn(['latest'])
+        ;
 
         /** @var string $location */
         $location = realpath('.');
-        $this->systemManager->install($location, EnvironmentEntity::TYPE_SYMFONY, 'latest', null)
+
+        (new MethodProphecy($this->systemManager, 'install', [$location, EnvironmentEntity::TYPE_SYMFONY, 'latest', null]))
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;

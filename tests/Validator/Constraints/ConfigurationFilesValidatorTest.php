@@ -72,9 +72,8 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
         $constraint = new ConfigurationFiles();
         $this->validator->validate(new EnvironmentEntity($type, $this->location, $type), $constraint);
 
-        $this->buildViolation($constraint->message)
-            ->assertRaised()
-        ;
+        $this->buildViolation($constraint->message);
+        $this->expectNoValidate();
     }
 
     public function provideEnvironmentTypes(): Generator
@@ -83,9 +82,6 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
         yield [EnvironmentEntity::TYPE_SYMFONY];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createValidator(): ConstraintValidatorInterface
     {
         return new ConfigurationFilesValidator();

@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class LogsCommand extends AbstractBaseCommand
 {
@@ -40,21 +41,21 @@ class LogsCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
-            $this->getEnvironment($input);
+            $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
-                $this->printEnvironmentDetails();
+                $this->printEnvironmentDetails($environment, $io);
             }
 
-            /** @var null|string $tail */
             $tail = $input->getOption('tail');
-            /** @var null|string $service */
             $service = $input->getArgument('service');
 
             $this->dockerCompose->showServicesLogs((int) $tail, $service);
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

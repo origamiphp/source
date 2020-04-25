@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests;
+namespace App\Tests\Command;
 
 use App\Command\AbstractBaseCommand;
 use App\Environment\EnvironmentEntity;
@@ -12,6 +12,7 @@ use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Database;
 use App\Middleware\SystemManager;
 use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Prophet;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,22 +27,25 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 abstract class AbstractCommandWebTestCase extends WebTestCase
 {
-    /** @var ObjectProphecy|SystemManager */
+    /** @var Prophet */
+    protected $prophet;
+
+    /** @var ObjectProphecy */
     protected $systemManager;
 
-    /** @var Database|ObjectProphecy */
+    /** @var ObjectProphecy */
     protected $database;
 
-    /** @var ObjectProphecy|ValidatorInterface */
+    /** @var ObjectProphecy */
     protected $validator;
 
-    /** @var DockerCompose|ObjectProphecy */
+    /** @var ObjectProphecy */
     protected $dockerCompose;
 
-    /** @var EventDispatcherInterface|ObjectProphecy */
+    /** @var ObjectProphecy */
     protected $eventDispatcher;
 
-    /** @var ObjectProphecy|ProcessProxy */
+    /** @var ObjectProphecy */
     protected $processProxy;
 
     /**
@@ -51,14 +55,25 @@ abstract class AbstractCommandWebTestCase extends WebTestCase
     {
         parent::setUp();
 
-        $this->systemManager = $this->prophesize(SystemManager::class);
-        $this->database = $this->prophesize(Database::class);
-        $this->validator = $this->prophesize(ValidatorInterface::class);
-        $this->dockerCompose = $this->prophesize(DockerCompose::class);
-        $this->eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
-        $this->processProxy = $this->prophesize(ProcessProxy::class);
+        $this->prophet = new Prophet();
+        $this->systemManager = $this->prophet->prophesize(SystemManager::class);
+        $this->database = $this->prophet->prophesize(Database::class);
+        $this->validator = $this->prophet->prophesize(ValidatorInterface::class);
+        $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
+        $this->eventDispatcher = $this->prophet->prophesize(EventDispatcherInterface::class);
+        $this->processProxy = $this->prophet->prophesize(ProcessProxy::class);
 
         putenv('COLUMNS=120'); // Required by tests running with Github Actions
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->prophet->checkPredictions();
     }
 
     /**
@@ -89,6 +104,12 @@ abstract class AbstractCommandWebTestCase extends WebTestCase
      */
     protected function getCommand(string $class): AbstractBaseCommand
     {
+        if (!is_subclass_of($class, AbstractBaseCommand::class)) {
+            throw new \RuntimeException(
+                sprintf('Expected subclass of "%s", "%s" given.', AbstractBaseCommand::class, $class)
+            );
+        }
+
         return new $class(
             $this->database->reveal(),
             $this->systemManager->reveal(),

@@ -17,6 +17,7 @@ use App\Middleware\SystemManager;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -56,22 +57,23 @@ class InstallCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->io->comment('Please note that the environment will be installed in the current directory.');
+        $io = new SymfonyStyle($input, $output);
+        $io->comment('Please note that the environment will be installed in the current directory.');
 
         try {
-            $type = $this->io->choice('Which type of environment you want to install?', $this->availableTypes);
+            $type = $io->choice('Which type of environment you want to install?', $this->availableTypes);
 
             $availableVersions = $this->dockerHub->getImageTags("{$type}-php");
             $phpVersion = \count($availableVersions) > 1
-                ? $this->io->choice('Which version of PHP do you want to use?', $availableVersions, 'latest')
+                ? $io->choice('Which version of PHP do you want to use?', $availableVersions, 'latest')
                 : $availableVersions[0]
             ;
 
-            if ($this->io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
-                $domains = $this->io->ask(
+            if ($io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
+                $domains = $io->ask(
                     'Which domains does this certificate belong to?',
                     sprintf('%s.localhost www.%s.localhost', $type, $type),
-                    function ($answer) {
+                    function (string $answer) {
                         return $this->localDomainsCallback($answer);
                     }
                 );
@@ -86,9 +88,9 @@ class InstallCommand extends AbstractBaseCommand
             $this->database->add($environment);
             $this->database->save();
 
-            $this->io->success('Environment successfully installed.');
+            $io->success('Environment successfully installed.');
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

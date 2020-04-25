@@ -8,12 +8,12 @@ use App\Command\Contextual\DataCommand;
 use App\Command\Contextual\PsCommand;
 use App\Command\Contextual\RestartCommand;
 use App\Command\Contextual\StopCommand;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
 use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use stdClass;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -35,17 +35,28 @@ final class CommonCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideCommandDetails
-     *
-     * @throws InvalidEnvironmentException
      */
     public function testItExecutesProcessSuccessfully(string $classname, string $method, array $messages): void
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->{$method}()->shouldBeCalledOnce()->willReturn(true);
-        $this->eventDispatcher->dispatch(Argument::any())->willReturn(new stdClass());
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, $method, []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->willReturn(new stdClass())
+        ;
 
         $commandTester = new CommandTester($this->getCommand($classname));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
@@ -61,16 +72,24 @@ final class CommonCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideCommandDetails
-     *
-     * @throws InvalidEnvironmentException
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(string $classname, string $method, array $messages): void
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->{$method}()->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, $method, []))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         static::assertExceptionIsHandled($this->getCommand($classname), $messages['error']);
     }

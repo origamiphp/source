@@ -6,9 +6,10 @@ namespace App\Tests\Command\Main;
 
 use App\Command\Main\UninstallCommand;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -28,13 +29,35 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
         $environment = $this->getFakeEnvironment();
         $environment->setActive(false);
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(true);
-        $this->eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
-        $this->systemManager->uninstall($environment)->shouldBeCalledOnce();
-        $this->database->remove($environment)->shouldBeCalledOnce();
-        $this->database->save()->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'removeServices', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->systemManager, 'uninstall', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->database, 'remove', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldBeCalledOnce()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(UninstallCommand::class));
         $commandTester->setInputs(['yes']);
@@ -50,13 +73,34 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
         $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->removeServices()->shouldNotBeCalled();
-        $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
-        $this->systemManager->uninstall($environment)->shouldNotBeCalled();
-        $this->database->remove($environment)->shouldNotBeCalled();
-        $this->database->save()->shouldNotBeCalled();
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'removeServices', []))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->systemManager, 'uninstall', [$environment]))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->database, 'remove', [$environment]))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldNotBeCalled()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(UninstallCommand::class));
         $commandTester->setInputs(['yes']);
@@ -71,13 +115,35 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(false);
-        $this->eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
-        $this->systemManager->uninstall($environment)->shouldNotBeCalled();
-        $this->database->remove($environment)->shouldNotBeCalled();
-        $this->database->save()->shouldNotBeCalled();
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'removeServices', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->systemManager, 'uninstall', [$environment]))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->database, 'remove', [$environment]))
+            ->shouldNotBeCalled()
+        ;
+
+        (new MethodProphecy($this->database, 'save', []))
+            ->shouldNotBeCalled()
+        ;
 
         $commandTester = new CommandTester($this->getCommand(UninstallCommand::class));
         $commandTester->setInputs(['yes']);

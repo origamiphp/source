@@ -12,6 +12,7 @@ use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UninstallCommand extends AbstractBaseCommand
 {
@@ -34,16 +35,18 @@ class UninstallCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
             $environment = $this->getEnvironment($input);
 
             $question = sprintf(
                 'Are you sure you want to uninstall the "%s" environment?',
-                $this->environment->getName()
+                $environment->getName()
             );
 
-            if ($this->io->confirm($question, false)) {
-                if ($this->environment->isActive()) {
+            if ($io->confirm($question, false)) {
+                if ($environment->isActive()) {
                     throw new InvalidEnvironmentException('Unable to uninstall a running environment.');
                 }
 
@@ -51,17 +54,17 @@ class UninstallCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
                 }
 
-                $event = new EnvironmentUninstallEvent($environment, $this->io);
+                $event = new EnvironmentUninstallEvent($environment, $io);
                 $this->eventDispatcher->dispatch($event);
 
                 $this->systemManager->uninstall($environment);
                 $this->database->remove($environment);
                 $this->database->save();
 
-                $this->io->success('Environment successfully uninstalled.');
+                $io->success('Environment successfully uninstalled.');
             }
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 
