@@ -10,6 +10,7 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RegisterCommand extends AbstractBaseCommand
 {
@@ -26,18 +27,20 @@ class RegisterCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
-            if ($this->io->confirm('Do you want to register the current directory as a custom environment?', false)) {
+            if ($io->confirm('Do you want to register the current directory as a custom environment?', false)) {
                 $location = $this->processProxy->getWorkingDirectory();
 
                 $environment = $this->systemManager->install($location, EnvironmentEntity::TYPE_CUSTOM);
                 $this->database->add($environment);
                 $this->database->save();
 
-                $this->io->success('Environment successfully registered.');
+                $io->success('Environment successfully registered.');
             }
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

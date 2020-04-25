@@ -49,9 +49,8 @@ final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase
         $constraint = new LocalDomains();
         $this->validator->validate($value, $constraint);
 
-        $this->buildViolation($constraint->message)
-            ->assertRaised()
-        ;
+        $this->buildViolation($constraint->message);
+        $this->expectNoValidate();
     }
 
     public function provideUnacceptableValues(): Generator
@@ -61,9 +60,6 @@ final class LocalDomainsValidatorTest extends ConstraintValidatorTestCase
         yield ['.azerty'];
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function createValidator(): ConstraintValidatorInterface
     {
         return new LocalDomainsValidator();

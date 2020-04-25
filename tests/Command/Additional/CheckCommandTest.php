@@ -6,8 +6,9 @@ namespace App\Tests\Command\Additional;
 
 use App\Command\Additional\CheckCommand;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use Generator;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -23,8 +24,8 @@ final class CheckCommandTest extends AbstractCommandWebTestCase
      */
     public function testItPrintsSuccessWithAllRequirements(array $requirements): void
     {
-        foreach ($requirements as $name => $description) {
-            $this->systemManager->isBinaryInstalled($name)
+        foreach (array_keys($requirements) as $name) {
+            (new MethodProphecy($this->systemManager, 'isBinaryInstalled', [$name]))
                 ->shouldBeCalledOnce()
                 ->willReturn(true)
             ;
@@ -43,8 +44,8 @@ final class CheckCommandTest extends AbstractCommandWebTestCase
      */
     public function testItPrintsErrorWithoutAllRequirements(array $requirements): void
     {
-        foreach ($requirements as $name => $description) {
-            $this->systemManager->isBinaryInstalled($name)
+        foreach (array_keys($requirements) as $name) {
+            (new MethodProphecy($this->systemManager, 'isBinaryInstalled', [$name]))
                 ->shouldBeCalledOnce()
                 ->willReturn(false)
             ;

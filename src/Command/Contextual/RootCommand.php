@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Command\Contextual;
 
 use App\Command\AbstractBaseCommand;
+use App\Environment\EnvironmentEntity;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RootCommand extends AbstractBaseCommand
 {
@@ -25,16 +27,18 @@ class RootCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
-            $this->getEnvironment($input);
+            $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
-                $this->printEnvironmentDetails();
+                $this->printEnvironmentDetails($environment, $io);
             }
 
-            $this->writeInstructions();
+            $this->writeInstructions($environment, $io);
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 
@@ -44,16 +48,16 @@ class RootCommand extends AbstractBaseCommand
     /**
      * Writes instructions to the console output.
      */
-    private function writeInstructions(): void
+    private function writeInstructions(EnvironmentEntity $environment, SymfonyStyle $io): void
     {
         $result = '';
-        foreach ($this->dockerCompose->getRequiredVariables() as $key => $value) {
-            $result .= sprintf('export %s="%s"
-', $key, $value);
+
+        foreach ($this->dockerCompose->getRequiredVariables($environment) as $key => $value) {
+            $result .= sprintf('export %s="%s"', $key, $value);
         }
 
-        $this->io->writeln($result);
-        $this->io->writeln('# Run this command to configure your shell:');
-        $this->io->writeln('# eval $(origami root)');
+        $io->writeln($result);
+        $io->writeln('# Run this command to configure your shell:');
+        $io->writeln('# eval $(origami root)');
     }
 }

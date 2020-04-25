@@ -9,11 +9,11 @@ use App\Command\Contextual\Services\MysqlCommand;
 use App\Command\Contextual\Services\NginxCommand;
 use App\Command\Contextual\Services\PhpCommand;
 use App\Command\Contextual\Services\RedisCommand;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -36,16 +36,24 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideServiceDetails
-     *
-     * @throws InvalidEnvironmentException
      */
     public function testItOpensTerminalOnService(string $classname, string $service, string $user): void
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'openTerminal', [$service, $user]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $commandTester = new CommandTester($this->getCommand($classname));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
@@ -55,16 +63,24 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideServiceDetails
-     *
-     * @throws InvalidEnvironmentException
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(string $classname, string $service, string $user): void
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'openTerminal', [$service, $user]))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         self::assertExceptionIsHandled($this->getCommand($classname), 'An error occurred while opening a terminal.');
     }

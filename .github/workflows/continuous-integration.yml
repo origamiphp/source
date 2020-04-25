@@ -29,8 +29,8 @@ jobs:
       - name: 'Execute a copy/paste analysis'
         run: make phpcpd
 
-      - name: 'Execute PHPStan analysis'
-        run: make phpstan
+      - name: 'Execute Psalm analysis'
+        run: make psalm
 
       - name: 'Execute security analysis'
         run: make security

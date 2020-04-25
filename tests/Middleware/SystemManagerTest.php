@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Middleware;
 
 use App\Environment\EnvironmentEntity;
+use App\Exception\FilesystemException;
 use App\Helper\ProcessFactory;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\Mkcert;
@@ -12,7 +13,9 @@ use App\Middleware\SystemManager;
 use App\Tests\TestLocationTrait;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\Prophet;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Finder\Finder;
 
@@ -25,10 +28,13 @@ final class SystemManagerTest extends TestCase
 {
     use TestLocationTrait;
 
-    /** @var Mkcert|ObjectProphecy */
+    /** @var Prophet */
+    protected $prophet;
+
+    /** @var ObjectProphecy */
     private $mkcert;
 
-    /** @var ObjectProphecy|ProcessFactory */
+    /** @var ObjectProphecy */
     private $processFactory;
 
     /**
@@ -38,8 +44,9 @@ final class SystemManagerTest extends TestCase
     {
         parent::setUp();
 
-        $this->mkcert = $this->prophesize(Mkcert::class);
-        $this->processFactory = $this->prophesize(ProcessFactory::class);
+        $this->prophet = new Prophet();
+        $this->mkcert = $this->prophet->prophesize(Mkcert::class);
+        $this->processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
         $this->createLocation();
     }
@@ -50,6 +57,8 @@ final class SystemManagerTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
+        $this->prophet->checkPredictions();
         $this->removeLocation();
     }
 
@@ -61,8 +70,8 @@ final class SystemManagerTest extends TestCase
         $systemManager = new SystemManager(
             $this->mkcert->reveal(),
             new ProcessFactory(
-                $this->prophesize(ProcessProxy::class)->reveal(),
-                $this->prophesize(LoggerInterface::class)->reveal()
+                $this->prophet->prophesize(ProcessProxy::class)->reveal(),
+                $this->prophet->prophesize(LoggerInterface::class)->reveal()
             )
         );
 
@@ -72,6 +81,8 @@ final class SystemManagerTest extends TestCase
 
     /**
      * @dataProvider provideMultipleInstallContexts
+     *
+     * @throws FilesystemException
      */
     public function testItInstallsConfigurationFiles(string $type, ?string $domains = null): void
     {
@@ -87,10 +98,14 @@ final class SystemManagerTest extends TestCase
             $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
             $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
-            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))
-                ->shouldBeCalledOnce()->willReturn(true);
+            (new MethodProphecy($this->mkcert, 'generateCertificate', [$certificate, $privateKey, explode(' ', $domains)]))
+                ->shouldBeCalledOnce()
+                ->willReturn(true)
+            ;
         } else {
-            $this->mkcert->generateCertificate()->shouldNotBeCalled();
+            (new MethodProphecy($this->mkcert, 'generateCertificate', []))
+                ->shouldNotBeCalled()
+            ;
         }
 
         $systemManager = new SystemManager($this->mkcert->reveal(), $this->processFactory->reveal());
@@ -101,7 +116,7 @@ final class SystemManagerTest extends TestCase
 
         foreach ($finder as $file) {
             $pathname = $file->getPathname();
-            $relativePath = substr($pathname, strpos($pathname, $type) + \strlen($type) + 1);
+            $relativePath = substr($pathname, (strpos($pathname, $type) ?: 0) + \strlen($type) + 1);
 
             static::assertFileEquals($file->getPathname(), $destination.'/'.$relativePath);
         }
@@ -125,7 +140,7 @@ final class SystemManagerTest extends TestCase
         static::assertDirectoryExists($destination);
 
         $systemManager->uninstall($environment);
-        static::assertDirectoryNotExists($destination);
+        static::assertDirectoryDoesNotExist($destination);
     }
 
     public function provideMultipleInstallContexts(): Generator

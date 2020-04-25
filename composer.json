@@ -24,6 +24,7 @@
         "symfony/flex": "^1.3.1",
         "symfony/framework-bundle": "5.0.*",
         "symfony/http-client": "5.0.*",
+        "symfony/polyfill-php80": "^1.15",
         "symfony/process": "5.0.*",
         "symfony/property-access": "5.0.*",
         "symfony/serializer": "5.0.*",
@@ -37,13 +38,15 @@
         "symfony/polyfill-php56": "*",
         "symfony/polyfill-php70": "*",
         "symfony/polyfill-php71": "*",
-        "symfony/polyfill-php72": "*"
+        "symfony/polyfill-php72": "*",
+        "symfony/polyfill-php73": "*"
     },
     "conflict": {
         "symfony/symfony": "*"
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
+        "phpspec/prophecy": "^1.10",
         "roave/security-advisories": "dev-master",
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "5.0.*",

@@ -7,8 +7,9 @@ namespace App\Tests\Command\Contextual;
 use App\Command\Contextual\RootCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -28,16 +29,26 @@ final class RootCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->getRequiredVariables()->shouldBeCalledOnce()->willReturn(
-            [
-                'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $environment->getLocation()),
-                'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
-                'DOCKER_PHP_IMAGE' => 'default',
-                'PROJECT_LOCATION' => $environment->getLocation(),
-            ]
-        );
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'getRequiredVariables', [$environment]))
+            ->shouldBeCalledOnce()
+            ->willReturn(
+                [
+                    'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $environment->getLocation()),
+                    'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
+                    'DOCKER_PHP_IMAGE' => 'default',
+                    'PROJECT_LOCATION' => $environment->getLocation(),
+                ]
+            )
+        ;
 
         $commandTester = new CommandTester($this->getCommand(RootCommand::class));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
@@ -54,7 +65,8 @@ final class RootCommandTest extends AbstractCommandWebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->database->getActiveEnvironment()
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 

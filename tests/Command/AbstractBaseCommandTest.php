@@ -7,11 +7,12 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -25,7 +26,7 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItSuccessfullyRunsWithActiveEnvironment(): void
     {
-        $this->database->getActiveEnvironment()
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
             ->shouldBeCalledOnce()
             ->willReturn($this->getFakeEnvironment())
         ;
@@ -38,10 +39,14 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItSuccessfullyRunsWithUserInput(): void
     {
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
-
         $environment = $this->getFakeEnvironment();
-        $this->database->getEnvironmentByName($environment->getName())
+
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
+
+        (new MethodProphecy($this->database, 'getEnvironmentByName', [$environment->getName()]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -57,11 +62,19 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItSuccessfullyRunsFromLocation(): void
     {
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
-        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
-
         $environment = $this->getFakeEnvironment();
-        $this->database->getEnvironmentByLocation('')
+
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
+
+        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('')
+        ;
+
+        (new MethodProphecy($this->database, 'getEnvironmentByLocation', ['']))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -74,7 +87,10 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $this->processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('');
+        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('')
+        ;
 
         self::assertExceptionIsHandled(
             $this->getFakeCommand(),
@@ -110,10 +126,12 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
              */
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
+                $io = new SymfonyStyle($input, $output);
+
                 try {
                     $this->getEnvironment($input);
                 } catch (OrigamiExceptionInterface $exception) {
-                    $this->io->error($exception->getMessage());
+                    $io->error($exception->getMessage());
                     $exitCode = CommandExitCode::EXCEPTION;
                 }
 

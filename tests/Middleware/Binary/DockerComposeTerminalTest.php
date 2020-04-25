@@ -6,7 +6,7 @@ namespace App\Tests\Middleware\Binary;
 
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\AbstractDockerComposeTestCase;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Process\Process;
 
 /**
@@ -22,13 +22,15 @@ final class DockerComposeTerminalTest extends AbstractDockerComposeTestCase
     public function testItFixesPermissionsOnSharedSSHAgent(): void
     {
         $this->prophesizeSuccessfulValidations();
-
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-
+        $process = $this->prophet->prophesize(Process::class);
         $environmentVariables = $this->getFakeEnvironmentVariables();
 
-        $this->processFactory->runForegroundProcess(['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'], $environmentVariables)
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'], $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -45,13 +47,15 @@ final class DockerComposeTerminalTest extends AbstractDockerComposeTestCase
     public function testItOpensTerminalOnGivenServiceWithSpecificUser(): void
     {
         $this->prophesizeSuccessfulValidations();
-
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-
+        $process = $this->prophet->prophesize(Process::class);
         $environmentVariables = $this->getFakeEnvironmentVariables();
 
-        $this->processFactory->runForegroundProcess(['docker-compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'], $environmentVariables)
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'], $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -68,13 +72,15 @@ final class DockerComposeTerminalTest extends AbstractDockerComposeTestCase
     public function testItOpensTerminalOnGivenServiceWithoutSpecificUser(): void
     {
         $this->prophesizeSuccessfulValidations();
-
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-
+        $process = $this->prophet->prophesize(Process::class);
         $environmentVariables = $this->getFakeEnvironmentVariables();
 
-        $this->processFactory->runForegroundProcess(['docker-compose', 'exec', 'php', 'sh', '-l'], $environmentVariables)
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'exec', 'php', 'sh', '-l'], $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;

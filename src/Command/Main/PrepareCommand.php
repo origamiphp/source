@@ -11,6 +11,7 @@ use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class PrepareCommand extends AbstractBaseCommand
 {
@@ -33,20 +34,22 @@ class PrepareCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
-            $this->getEnvironment($input);
+            $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
-                $this->printEnvironmentDetails();
+                $this->printEnvironmentDetails($environment, $io);
             }
 
             if (!$this->dockerCompose->prepareServices()) {
                 throw new InvalidEnvironmentException('An error occurred while preparing the Docker services.');
             }
 
-            $this->io->success('Docker services successfully prepared.');
+            $io->success('Docker services successfully prepared.');
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

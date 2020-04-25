@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 /**
  * @internal
@@ -18,6 +19,10 @@ use Symfony\Component\HttpFoundation\Response;
  */
 final class DockerHubTest extends TestCase
 {
+    /**
+     * @throws DockerHubException
+     * @throws TransportExceptionInterface
+     */
     public function testItRetrievesImageTags(): void
     {
         $successResponse = new MockResponse($this->getFakeSuccessfullyResponse(), ['http_code' => Response::HTTP_OK]);
@@ -29,6 +34,10 @@ final class DockerHubTest extends TestCase
         static::assertSame(['foo', 'bar', 'latest'], $imageTags);
     }
 
+    /**
+     * @throws DockerHubException
+     * @throws TransportExceptionInterface
+     */
     public function testItManagesResultsException(): void
     {
         $successResponse = new MockResponse('', ['http_code' => Response::HTTP_OK]);
@@ -40,6 +49,10 @@ final class DockerHubTest extends TestCase
         $dockerHub->getImageTags('origami');
     }
 
+    /**
+     * @throws DockerHubException
+     * @throws TransportExceptionInterface
+     */
     public function testItManagesParseException(): void
     {
         $successResponse = new MockResponse('', ['http_code' => Response::HTTP_BAD_GATEWAY]);

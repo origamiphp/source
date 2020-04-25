@@ -11,6 +11,7 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RestartCommand extends AbstractBaseCommand
 {
@@ -27,23 +28,25 @@ class RestartCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $io = new SymfonyStyle($input, $output);
+
         try {
             $environment = $this->getEnvironment($input);
 
             if ($output->isVerbose()) {
-                $this->printEnvironmentDetails();
+                $this->printEnvironmentDetails($environment, $io);
             }
 
             if (!$this->dockerCompose->restartServices()) {
                 throw new InvalidEnvironmentException('An error occurred while restarting the Docker services.');
             }
 
-            $this->io->success('Docker services successfully restarted.');
+            $io->success('Docker services successfully restarted.');
 
-            $event = new EnvironmentRestartedEvent($environment, $this->io);
+            $event = new EnvironmentRestartedEvent($environment, $io);
             $this->eventDispatcher->dispatch($event);
         } catch (OrigamiExceptionInterface $exception) {
-            $this->io->error($exception->getMessage());
+            $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
         }
 

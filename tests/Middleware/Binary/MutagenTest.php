@@ -7,6 +7,8 @@ namespace App\Tests\Middleware\Binary;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Mutagen;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophet;
 use Symfony\Component\Process\Process;
 
 /**
@@ -16,37 +18,64 @@ use Symfony\Component\Process\Process;
  */
 final class MutagenTest extends TestCase
 {
+    /** @var Prophet */
+    protected $prophet;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->prophet = new Prophet();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->prophet->checkPredictions();
+    }
+
     public function testItStartsSynchronizationSession(): void
     {
         $environmentVariables = ['COMPOSE_PROJECT_NAME' => 'type_project', 'PROJECT_LOCATION' => 'project_location'];
+        $process = $this->prophet->prophesize(Process::class);
+        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $process->getOutput()->shouldBeCalledOnce()->willReturn('No sessions found');
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $processFactory = $this->prophesize(ProcessFactory::class);
-        $processFactory->runBackgroundProcess(
-            ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
-            $environmentVariables
-        )
+        (new MethodProphecy($process, 'getOutput', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('No sessions found')
+        ;
+
+        $command = ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
+        (new MethodProphecy($processFactory, 'runBackgroundProcess', [$command, $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
-        $processFactory->runForegroundProcess(
-            [
-                'mutagen',
-                'create',
-                '--default-owner-beta=id:1000',
-                '--default-group-beta=id:1000',
-                '--sync-mode=two-way-resolved',
-                '--ignore-vcs',
-                '--symlink-mode=posix-raw',
-                '--label=name=type_project',
-                'project_location',
-                'docker://type_project_synchro/var/www/html/',
-            ],
-            $environmentVariables
-        )
+
+        $command = [
+            'mutagen',
+            'create',
+            '--default-owner-beta=id:1000',
+            '--default-group-beta=id:1000',
+            '--sync-mode=two-way-resolved',
+            '--ignore-vcs',
+            '--symlink-mode=posix-raw',
+            '--label=name=type_project',
+            'project_location',
+            'docker://type_project_synchro/var/www/html/',
+        ];
+        (new MethodProphecy($processFactory, 'runForegroundProcess', [$command, $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -58,23 +87,27 @@ final class MutagenTest extends TestCase
     public function testItResumesSynchronizationSession(): void
     {
         $environmentVariables = ['COMPOSE_PROJECT_NAME' => 'type_project', 'PROJECT_LOCATION' => 'project_location'];
+        $process = $this->prophet->prophesize(Process::class);
+        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $process->getOutput()->shouldBeCalledOnce()->willReturn('azerty');
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $processFactory = $this->prophesize(ProcessFactory::class);
-        $processFactory->runBackgroundProcess(
-            ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
-            $environmentVariables
-        )
+        (new MethodProphecy($process, 'getOutput', []))
+            ->shouldBeCalledOnce()
+            ->willReturn('azerty')
+        ;
+
+        $command = ['mutagen', 'list', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
+        (new MethodProphecy($processFactory, 'runBackgroundProcess', [$command, $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
-        $processFactory->runForegroundProcess(
-            ['mutagen', 'resume', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
-            $environmentVariables
-        )
+
+        $command = ['mutagen', 'resume', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
+        (new MethodProphecy($processFactory, 'runForegroundProcess', [$command, $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -86,15 +119,16 @@ final class MutagenTest extends TestCase
     public function testItStopsSynchronizationSession(): void
     {
         $environmentVariables = ['COMPOSE_PROJECT_NAME' => 'type_project'];
+        $process = $this->prophet->prophesize(Process::class);
+        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $processFactory = $this->prophesize(ProcessFactory::class);
-        $processFactory->runForegroundProcess(
-            ['mutagen', 'pause', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
-            $environmentVariables
-        )
+        $command = ['mutagen', 'pause', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
+        (new MethodProphecy($processFactory, 'runForegroundProcess', [$command, $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -106,15 +140,16 @@ final class MutagenTest extends TestCase
     public function testItRemovesSynchronizationSession(): void
     {
         $environmentVariables = ['COMPOSE_PROJECT_NAME' => 'type_project'];
+        $process = $this->prophet->prophesize(Process::class);
+        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($process, 'isSuccessful', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $processFactory = $this->prophesize(ProcessFactory::class);
-        $processFactory->runForegroundProcess(
-            ['mutagen', 'terminate', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])],
-            $environmentVariables
-        )
+        $command = ['mutagen', 'terminate', sprintf('--label-selector=name=%s', $environmentVariables['COMPOSE_PROJECT_NAME'])];
+        (new MethodProphecy($processFactory, 'runForegroundProcess', [$command, $environmentVariables]))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;

@@ -7,9 +7,10 @@ namespace App\Tests\Command\Contextual;
 use App\Command\Contextual\LogsCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\AbstractCommandWebTestCase;
+use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
+use Prophecy\Prophecy\MethodProphecy;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -27,16 +28,24 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideCommandModifiers
-     *
-     * @throws InvalidEnvironmentException
      */
     public function testItShowsServicesLogs(?int $tail, ?string $service): void
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'showServicesLogs', [$tail ?? 0, $service]))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $commandTester = new CommandTester($this->getCommand(LogsCommand::class));
         $commandTester->execute(
@@ -52,16 +61,22 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
 
     /**
      * @dataProvider provideCommandModifiers
-     *
-     * @throws InvalidEnvironmentException
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(?int $tail, ?string $service): void
     {
         $environment = $this->getFakeEnvironment();
 
-        $this->database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $this->dockerCompose->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $this->dockerCompose->showServicesLogs($tail ?? 0, $service)
+        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
+            ->shouldBeCalledOnce()
+        ;
+
+        (new MethodProphecy($this->dockerCompose, 'showServicesLogs', [$tail ?? 0, $service]))
+            ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 

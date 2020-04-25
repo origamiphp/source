@@ -8,6 +8,8 @@ use App\Helper\ProcessFactory;
 use App\Helper\ProcessProxy;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophet;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -18,13 +20,37 @@ use Psr\Log\LoggerInterface;
  */
 final class ProcessFactoryTest extends TestCase
 {
+    /** @var Prophet */
+    protected $prophet;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->prophet = new Prophet();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->prophet->checkPredictions();
+    }
+
     public function testItRunsBackgroundProcess(): void
     {
-        $procesProxy = $this->prophesize(ProcessProxy::class);
-        $procesProxy->isTtySupported()->willReturn(false);
+        $procesProxy = $this->prophet->prophesize(ProcessProxy::class);
+        $logger = $this->prophet->prophesize(LoggerInterface::class);
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->debug(Argument::type('string'), ['command' => 'php -v'])->shouldBeCalledOnce();
+        (new MethodProphecy($logger, 'debug', [Argument::type('string'), ['command' => 'php -v']]))
+            ->shouldBeCalledOnce()
+        ;
 
         $factory = new ProcessFactory($procesProxy->reveal(), $logger->reveal());
         $process = $factory->runBackgroundProcess(['php', '-v']);
@@ -34,11 +60,17 @@ final class ProcessFactoryTest extends TestCase
 
     public function testItRunsForegroundProcess(): void
     {
-        $procesProxy = $this->prophesize(ProcessProxy::class);
-        $procesProxy->isTtySupported()->willReturn(false);
+        $procesProxy = $this->prophet->prophesize(ProcessProxy::class);
+        $logger = $this->prophet->prophesize(LoggerInterface::class);
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->debug(Argument::type('string'), ['command' => 'php -v'])->shouldBeCalledOnce();
+        (new MethodProphecy($procesProxy, 'isTtySupported', []))
+            ->shouldBeCalled()
+            ->willReturn(false)
+        ;
+
+        (new MethodProphecy($logger, 'debug', [Argument::type('string'), ['command' => 'php -v']]))
+            ->shouldBeCalledOnce()
+        ;
 
         $this->expectOutputRegex('/^PHP 7\.\d{1}\.{1,2}\d/');
 
@@ -48,11 +80,17 @@ final class ProcessFactoryTest extends TestCase
 
     public function testitRunsForegroundProcessFromShellCommandLine(): void
     {
-        $procesProxy = $this->prophesize(ProcessProxy::class);
-        $procesProxy->isTtySupported()->willReturn(false);
+        $procesProxy = $this->prophet->prophesize(ProcessProxy::class);
+        $logger = $this->prophet->prophesize(LoggerInterface::class);
 
-        $logger = $this->prophesize(LoggerInterface::class);
-        $logger->debug(Argument::type('string'), ['command' => 'php -v | grep PHP'])->shouldBeCalledOnce();
+        (new MethodProphecy($procesProxy, 'isTtySupported', []))
+            ->shouldBeCalled()
+            ->willReturn(false)
+        ;
+
+        (new MethodProphecy($logger, 'debug', [Argument::type('string'), ['command' => 'php -v | grep PHP']]))
+            ->shouldBeCalledOnce()
+        ;
 
         $this->expectOutputRegex('/^PHP 7\.\d{1}\.{1,2}\d/');
 

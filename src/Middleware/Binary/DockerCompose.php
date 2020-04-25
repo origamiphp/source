@@ -17,9 +17,6 @@ class DockerCompose
     /** @var ValidatorInterface */
     private $validator;
 
-    /** @var EnvironmentEntity */
-    private $environment;
-
     /** @var ProcessFactory */
     private $processFactory;
 
@@ -39,31 +36,29 @@ class DockerCompose
      */
     public function setActiveEnvironment(EnvironmentEntity $environment): void
     {
-        $this->environment = $environment;
-
-        if ($this->environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $this->checkEnvironmentConfiguration();
+        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
+            $this->checkEnvironmentConfiguration($environment);
         }
-        $this->environmentVariables = $this->getRequiredVariables();
+        $this->environmentVariables = $this->getRequiredVariables($environment);
     }
 
     /**
      * Retrieves environment variables required to run processes.
      */
-    public function getRequiredVariables(): array
+    public function getRequiredVariables(EnvironmentEntity $environment): array
     {
-        if ($this->environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
+        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $result = [
-                'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $this->environment->getLocation()),
-                'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
+                'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $environment->getLocation()),
+                'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
                 'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
-                'PROJECT_LOCATION' => $this->environment->getLocation(),
+                'PROJECT_LOCATION' => $environment->getLocation(),
             ];
         } else {
             $result = [
-                'COMPOSE_FILE' => sprintf('%s/docker-compose.yml', $this->environment->getLocation()),
-                'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
-                'PROJECT_LOCATION' => $this->environment->getLocation(),
+                'COMPOSE_FILE' => sprintf('%s/docker-compose.yml', $environment->getLocation()),
+                'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
+                'PROJECT_LOCATION' => $environment->getLocation(),
             ];
         }
 
@@ -98,12 +93,14 @@ class DockerCompose
     /**
      * Shows the logs of the services associated to the current environment.
      */
-    public function showServicesLogs(?int $tail = 0, ?string $service = ''): bool
+    public function showServicesLogs(?int $tail = null, ?string $service = null): bool
     {
-        $command = ['docker-compose', 'logs', '--follow', sprintf('--tail=%s', $tail)];
+        $command = ['docker-compose', 'logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
+
         if ($service) {
             $command[] = $service;
         }
+
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -198,19 +195,19 @@ class DockerCompose
      *
      * @throws InvalidEnvironmentException
      */
-    private function checkEnvironmentConfiguration(): void
+    private function checkEnvironmentConfiguration(EnvironmentEntity $environment): void
     {
         $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($this->environment, $dotEnvConstraint);
+        $errors = $this->validator->validate($environment, $dotEnvConstraint);
         if (!$errors->has(0)) {
             $dotenv = new Dotenv(true);
-            $dotenv->overload(sprintf('%s/var/docker/.env', $this->environment->getLocation()));
+            $dotenv->overload(sprintf('%s/var/docker/.env', $environment->getLocation()));
         } else {
             throw new InvalidEnvironmentException($errors[0]->getMessage());
         }
 
         $filesConstraint = new ConfigurationFiles();
-        $errors = $this->validator->validate($this->environment, $filesConstraint);
+        $errors = $this->validator->validate($environment, $filesConstraint);
         if ($errors->has(0)) {
             throw new InvalidEnvironmentException($errors[0]->getMessage());
         }

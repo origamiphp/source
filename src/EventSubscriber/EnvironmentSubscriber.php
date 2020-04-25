@@ -64,7 +64,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $this->dockerCompose->setActiveEnvironment($environment);
 
         if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $environmentVariables = $this->dockerCompose->getRequiredVariables();
+            $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
             if ($this->dockerCompose->fixPermissionsOnSharedSSHAgent()) {
@@ -95,7 +95,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $this->dockerCompose->setActiveEnvironment($environment);
 
         if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $environmentVariables = $this->dockerCompose->getRequiredVariables();
+            $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
             if ($this->mutagen->stopDockerSynchronization($environmentVariables)) {
@@ -120,7 +120,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $this->dockerCompose->setActiveEnvironment($environment);
 
         if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $environmentVariables = $this->dockerCompose->getRequiredVariables();
+            $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
             if ($this->mutagen->stopDockerSynchronization($environmentVariables)
@@ -144,7 +144,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $this->dockerCompose->setActiveEnvironment($environment);
 
         if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $environmentVariables = $this->dockerCompose->getRequiredVariables();
+            $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
             if ($this->mutagen->removeDockerSynchronization($environmentVariables)) {

@@ -44,9 +44,12 @@ final class DatabaseTest extends TestCase
         $this->removeLocation();
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItCreatesTheDatabaseFile(): void
     {
-        static::assertFileNotExists($this->databasePath);
+        static::assertFileDoesNotExist($this->databasePath);
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         new Database($fakeVariables);
@@ -54,6 +57,9 @@ final class DatabaseTest extends TestCase
         static::assertFileExists($this->databasePath);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItThrowsAnExceptionIfTheDatabaseIsNotCreated(): void
     {
         $this->expectException(InvalidEnvironmentException::class);
@@ -62,6 +68,9 @@ final class DatabaseTest extends TestCase
         new Database($fakeVariables);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRetrievesTheEnvironmentList(): void
     {
         file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
@@ -94,6 +103,9 @@ final class DatabaseTest extends TestCase
         static::assertCount(2, $environments);
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRetrievesTheActiveEnvironment(): void
     {
         file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
@@ -118,6 +130,9 @@ final class DatabaseTest extends TestCase
         static::assertNull($database->getActiveEnvironment());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRetrievesAnEnvironmentByName(): void
     {
         file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
@@ -139,6 +154,9 @@ final class DatabaseTest extends TestCase
         static::assertNull($database->getEnvironmentByName('nothing'));
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRetrievesAnEnvironmentByLocation(): void
     {
         file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
@@ -160,6 +178,9 @@ final class DatabaseTest extends TestCase
         static::assertNull($database->getEnvironmentByLocation('nothing'));
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItAddsAnEnvironment(): void
     {
         file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
@@ -182,6 +203,9 @@ final class DatabaseTest extends TestCase
         static::assertStringEqualsFile($this->databasePath, $this->getFakeDatabaseContentAfterAddition());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     */
     public function testItRemovesAnEnvironment(): void
     {
         file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
