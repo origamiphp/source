@@ -16,6 +16,9 @@ class EnvironmentEntity
     public const TYPE_MAGENTO2 = 'magento2';
 
     /** @var string */
+    public const TYPE_SYLIUS = 'sylius';
+
+    /** @var string */
     public const TYPE_SYMFONY = 'symfony';
 
     /** @var string */

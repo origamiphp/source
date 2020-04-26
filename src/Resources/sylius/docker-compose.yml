@@ -31,8 +31,19 @@ services:
       - php
     tty: true
 
+#  nodejs:
+#    image:
+#    env_file: ${PROJECT_LOCATION}/var/docker/.env
+#    ports:
+#      - 35729:35729
+#    volumes:
+#      # Project files
+#      - code_sync:/var/www/html:nocopy
+#      # SSH socket
+#      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+
   php:
-    image: ajardin/symfony-php:${DOCKER_PHP_IMAGE}
+    image: ajardin/sylius-php:${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
@@ -40,18 +51,19 @@ services:
       # Project files
       - code_sync:/var/www/html:nocopy
       # Custom configuration
-      - ${PROJECT_LOCATION}/var/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ${PROJECT_LOCATION}/var/docker/php/php-cli.ini:/usr/local/etc/php/php-cli.ini:ro
+      - ${PROJECT_LOCATION}/var/docker/php/php-fpm-fcgi.ini:/usr/local/etc/php/php-fpm-fcgi.ini:ro
       # SSH socket
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
     tty: true
 
-  postgres:
-    image: postgres:10-alpine
+  percona:
+    image: percona:5.7
     env_file: .env
     ports:
-      - 5432:5432
+      - 3306:3306
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - percona:/var/lib/mysql
     tty: true
 
   synchro:
@@ -62,4 +74,4 @@ services:
 
 volumes:
   code_sync: {}
-  postgres: {}
+  percona: {}

@@ -21,37 +21,32 @@ overview of all installed environments and to perform the actions mentioned abov
 directory.
 
 Basically, `origami` is an abstraction of [Docker](https://docs.docker.com/)
-and [Docker Compose](https://docs.docker.com/compose/). But because Docker can be
-[painfully slow on macOS](https://github.com/docker/for-mac/issues/1592) with projects which contain a large number of
-files, there is an abstraction of [Mutagen](https://mutagen.io/) to improve I/O performance. And because the HTTPS has
+and [Docker Compose](https://docs.docker.com/compose/). Because Docker can be
+[painfully slow on macOS](https://github.com/docker/for-mac/issues/1592) with projects which contain many files, there
+is an abstraction of [Mutagen](https://mutagen.io/) to improve I/O performance. And because the HTTPS has
 become the norm, there is also an abstraction of [mkcert](https://github.com/FiloSottile/mkcert) to make locally trusted
 development certificates.
 
-### Disclaimer
-
-As `origami` is still in its earlier stages, **the compatibility with other operating systems than macOS is not
-guaranteed**, for the moment. The support of Linux and Windows could come in the near future.
-
-## 🔍 Architecture
-
+🔍 Architecture
+---------------
 `origami` is built on top of [Symfony](https://symfony.com/), a popular PHP framework.
 
 Unlike common Symfony projects, we use [Box](https://github.com/humbug/box/) to package the tool into a single binary
 file. So that it's possible to easily share it without installing all its dependencies, as it could potentially bring
 conflicts if other projects with outdated dependencies are already globally installed on the local machine.
 
-**Why PHP?** The main reason is that `origami` will focus on environments for PHP applications (Magento & Symfony at
-first), and we would like to facilitate the contributions process by using something well-known by our users.
+**Why PHP?** The main reason is that `origami` will focus on environments for PHP applications (Magento, Sylius, and
+Symfony at the moment), and we would like to facilitate the contributions process by using something well-known by our users.
 
-## ✨ Demo
-
+✨ Demo
+-------
 <p align="center">
   <img src="https://gist.githubusercontent.com/ajardin/ec3d9487fc86bdc25a7dac74bf8a1d34/raw/515b67168d87340612fd7cd51a4a13b8fc760dc8/origami.gif"
     width="700" alt="demo"/>
 </p>
 
-## 📦 Install
-
+📦 Install
+----------
 ```sh
 # Composer
 composer global require ajardin/origami
@@ -60,8 +55,8 @@ composer global require ajardin/origami
 curl https://github.com/ajardin/origami-source/releases/latest/download/origami.phar --output origami
 ```
 
-## 🚀 Usage
-
+🚀 Usage
+--------
 ```sh
 # List commands used to manage environments
 origami
@@ -76,20 +71,20 @@ origami xxxxx --help
 origami list
 ```
 
-## ✅ Run tests
-
+✅ Run tests
+------------
 ```sh
 make tests
 ```
 
-## 🤝 Contributing
-
+🤝 Contributing
+---------------
 Contributions, issues and feature requests are welcome!
 Feel free to check [issues page](https://github.com/ajardin/origami-source/issues).
 
 By the way, don't forget you can give a ⭐️ if this project helped you!
 
-## 📝 License
-
+📝 License
+----------
 Copyright © [Alexandre Jardin](https://github.com/ajardin).
 This project is licensed under the [MIT](https://github.com/ajardin/origami-source/blob/master/LICENSE) license.

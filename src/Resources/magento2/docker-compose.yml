@@ -31,7 +31,7 @@ services:
     tty: true
 
   nginx:
-    image: ajardin/magento2-nginx:latest
+    image: ajardin/nginx:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - 443:443
