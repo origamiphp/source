@@ -14,7 +14,6 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @covers \App\Application
  *
- * @uses \App\Command\Additional\CheckCommand
  * @uses \App\Command\Additional\RegisterCommand
  * @uses \App\Command\Additional\RegistryCommand
  * @uses \App\Command\Contextual\DataCommand
