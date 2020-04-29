@@ -27,7 +27,11 @@ class InstallCommand extends AbstractBaseCommand
     private $dockerHub;
 
     /** @var array */
-    private $availableTypes = [EnvironmentEntity::TYPE_MAGENTO2, EnvironmentEntity::TYPE_SYMFONY];
+    private $availableTypes = [
+        EnvironmentEntity::TYPE_MAGENTO2,
+        EnvironmentEntity::TYPE_SYLIUS,
+        EnvironmentEntity::TYPE_SYMFONY,
+    ];
 
     public function __construct(
         Database $database,
