@@ -8,6 +8,7 @@ parameters:
         docker: 'A self-sufficient runtime for containers.'
         docker-compose: 'Define and run multi-container applications with Docker.'
         mutagen: 'Fast and efficient way to synchronize code to Docker containers.'
+        mkcert: 'A simple zero-config tool to make locally trusted development certificates.'
 
 services:
     # default configuration for services in *this* file
@@ -29,11 +30,6 @@ services:
     Ergebnis\Environment\Variables: '@Ergebnis\Environment\SystemVariables'
 
     # Definition of the custom commands which will be lazy-loaded.
-    App\Command\Additional\CheckCommand:
-        tags:
-            - { name: 'console.command', command: 'origami:check' }
-            - { name: 'console.command', command: 'check' }
-
     App\Command\Additional\RegisterCommand:
         tags:
             - { name: 'console.command', command: 'origami:register' }
