@@ -6,6 +6,7 @@ namespace App\Command\Additional;
 
 use App\Command\AbstractBaseCommand;
 use App\Helper\CommandExitCode;
+use App\Middleware\Database;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -13,6 +14,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RegistryCommand extends AbstractBaseCommand
 {
+    /** @var Database */
+    private $database;
+
+    public function __construct(Database $database, ?string $name = null)
+    {
+        parent::__construct($name);
+
+        $this->database = $database;
+    }
+
     /**
      * {@inheritdoc}
      */

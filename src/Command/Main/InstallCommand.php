@@ -6,14 +6,12 @@ namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
 use App\Environment\EnvironmentEntity;
+use App\Event\EnvironmentInstalledEvent;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
-use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
-use App\Middleware\Database;
+use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Middleware\DockerHub;
-use App\Middleware\SystemManager;
 use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,9 +21,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
-    /** @var DockerHub */
-    private $dockerHub;
-
     /** @var array */
     private $availableTypes = [
         EnvironmentEntity::TYPE_MAGENTO2,
@@ -33,19 +28,31 @@ class InstallCommand extends AbstractBaseCommand
         EnvironmentEntity::TYPE_SYMFONY,
     ];
 
+    /** @var DockerHub */
+    private $dockerHub;
+
+    /** @var ValidatorInterface */
+    private $validator;
+
+    /** @var ConfigurationInstaller */
+    private $installer;
+
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
     public function __construct(
-        Database $database,
-        SystemManager $systemManager,
-        ValidatorInterface $validator,
-        DockerCompose $dockerCompose,
-        EventDispatcherInterface $eventDispatcher,
-        ProcessProxy $processProxy,
         DockerHub $dockerHub,
+        ValidatorInterface $validator,
+        ConfigurationInstaller $installer,
+        EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
-        parent::__construct($database, $systemManager, $validator, $dockerCompose, $eventDispatcher, $processProxy, $name);
+        parent::__construct($name);
 
         $this->dockerHub = $dockerHub;
+        $this->validator = $validator;
+        $this->installer = $installer;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -62,35 +69,19 @@ class InstallCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $io->comment('Please note that the environment will be installed in the current directory.');
+        $io->note('The environment will be installed in the current directory.');
 
         try {
-            $type = $io->choice('Which type of environment you want to install?', $this->availableTypes);
-
-            $availableVersions = $this->dockerHub->getImageTags("{$type}-php");
-            $phpVersion = \count($availableVersions) > 1
-                ? $io->choice('Which version of PHP do you want to use?', $availableVersions, 'latest')
-                : $availableVersions[0]
-            ;
-
-            if ($io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
-                $domains = $io->ask(
-                    'Which domains does this certificate belong to?',
-                    sprintf('%s.localhost www.%s.localhost', $type, $type),
-                    function (string $answer) {
-                        return $this->localDomainsCallback($answer);
-                    }
-                );
-            } else {
-                $domains = null;
-            }
+            $type = $this->askEnvironmentType($io);
+            $phpVersion = $this->askPhpVersion($type, $io);
+            $domains = $this->askDomains($type, $io);
 
             /** @var string $location */
             $location = realpath('.');
-            $environment = $this->systemManager->install($location, $type, $phpVersion, $domains);
+            $environment = $this->installer->install($location, $type, $phpVersion, $domains);
 
-            $this->database->add($environment);
-            $this->database->save();
+            $event = new EnvironmentInstalledEvent($environment, $io);
+            $this->eventDispatcher->dispatch($event);
 
             $io->success('Environment successfully installed.');
         } catch (OrigamiExceptionInterface $exception) {
@@ -99,6 +90,46 @@ class InstallCommand extends AbstractBaseCommand
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
+    }
+
+    /**
+     * Asks the choice question about the environment type.
+     */
+    private function askEnvironmentType(SymfonyStyle $io): string
+    {
+        return $io->choice('Which type of environment you want to install?', $this->availableTypes);
+    }
+
+    /**
+     * Asks the choice question about the PHP version.
+     */
+    private function askPhpVersion(string $type, SymfonyStyle $io): string
+    {
+        $availableVersions = $this->dockerHub->getImageTags("{$type}-php");
+        $defaultVersion = DockerHub::DEFAULT_IMAGE_VERSION;
+
+        return \count($availableVersions) > 1
+            ? $io->choice('Which version of PHP do you want to use?', $availableVersions, $defaultVersion)
+            : $availableVersions[0]
+        ;
+    }
+
+    /**
+     * Asks the question about the environment domains.
+     */
+    private function askDomains(string $type, SymfonyStyle $io): ?string
+    {
+        if ($io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
+            $domains = $io->ask(
+                'Which domains does this certificate belong to?',
+                sprintf('%s.localhost www.%s.localhost', $type, $type),
+                function (string $answer) {
+                    return $this->localDomainsCallback($answer);
+                }
+            );
+        }
+
+        return $domains ?? null;
     }
 
     /**

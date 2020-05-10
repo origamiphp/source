@@ -7,10 +7,10 @@ namespace App\Tests\Command\Contextual;
 use App\Command\Contextual\LogsCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\Command\AbstractCommandWebTestCase;
-use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
+use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -22,10 +22,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class LogsCommandTest extends AbstractCommandWebTestCase
+final class LogsCommandTest extends AbstractContextualCommandWebTestCase
 {
-    use TestFakeEnvironmentTrait;
-
     /**
      * @dataProvider provideCommandModifiers
      */
@@ -33,13 +31,9 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'showServicesLogs', [$tail ?? 0, $service]))
@@ -47,7 +41,7 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
             ->willReturn(true)
         ;
 
-        $commandTester = new CommandTester($this->getCommand(LogsCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
             ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]
@@ -66,13 +60,9 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'showServicesLogs', [$tail ?? 0, $service]))
@@ -80,7 +70,7 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
-        $commandTester = new CommandTester($this->getCommand(LogsCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
             ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]
@@ -97,5 +87,16 @@ final class LogsCommandTest extends AbstractCommandWebTestCase
         yield [50, null];
         yield [50, 'php'];
         yield [null, 'php'];
+    }
+
+    /**
+     * Retrieves the \App\Command\Contextual\LogsCommand instance to use within the tests.
+     */
+    private function getCommand(): LogsCommand
+    {
+        return new LogsCommand(
+            $this->currentContext->reveal(),
+            $this->dockerCompose->reveal()
+        );
     }
 }

@@ -8,16 +8,19 @@ use App\Command\Main\InstallCommand;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Middleware\DockerHub;
 use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Validator\Constraints\LocalDomains;
 use Generator;
+use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
@@ -29,11 +32,17 @@ use Symfony\Component\Validator\ConstraintViolationList;
  */
 final class InstallCommandTest extends AbstractCommandWebTestCase
 {
-    /** @var Prophet */
-    protected $prophet;
+    /** @var ObjectProphecy */
+    private $dockerHub;
 
     /** @var ObjectProphecy */
-    protected $dockerHub;
+    private $validator;
+
+    /** @var ObjectProphecy */
+    private $installer;
+
+    /** @var ObjectProphecy */
+    private $eventDispatcher;
 
     /**
      * {@inheritdoc}
@@ -42,18 +51,10 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     {
         parent::setUp();
 
-        $this->prophet = new Prophet();
         $this->dockerHub = $this->prophet->prophesize(DockerHub::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
+        $this->validator = $this->prophet->prophesize(ValidatorInterface::class);
+        $this->installer = $this->prophet->prophesize(ConfigurationInstaller::class);
+        $this->eventDispatcher = $this->prophet->prophesize(EventDispatcher::class);
     }
 
     /**
@@ -76,11 +77,15 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         /** @var string $location */
         $location = realpath('.');
 
-        (new MethodProphecy($this->systemManager, 'install', [$location, $type, $phpVersion, $domains]))
+        (new MethodProphecy($this->installer, 'install', [$location, $type, $phpVersion, $domains]))
             ->shouldBeCalledOnce()
         ;
 
-        $commandTester = new CommandTester($this->getInstallCommand());
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldBeCalledOnce()
+        ;
+
+        $commandTester = new CommandTester($this->getCommand());
         if ($domains) {
             $commandTester->setInputs([$type, $phpVersion, 'yes', $domains]);
         } else {
@@ -133,11 +138,15 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         /** @var string $location */
         $location = realpath('.');
 
-        (new MethodProphecy($this->systemManager, 'install', [$location, EnvironmentEntity::TYPE_SYMFONY, 'latest', $defaultDomains]))
+        (new MethodProphecy($this->installer, 'install', [$location, EnvironmentEntity::TYPE_SYMFONY, 'latest', $defaultDomains]))
             ->shouldBeCalledOnce()
         ;
 
-        $commandTester = new CommandTester($this->getInstallCommand());
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+            ->shouldBeCalledOnce()
+        ;
+
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'yes', $invalidDomains]);
         $commandTester->execute([]);
 
@@ -156,12 +165,12 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         /** @var string $location */
         $location = realpath('.');
 
-        (new MethodProphecy($this->systemManager, 'install', [$location, EnvironmentEntity::TYPE_SYMFONY, 'latest', null]))
+        (new MethodProphecy($this->installer, 'install', [$location, EnvironmentEntity::TYPE_SYMFONY, 'latest', null]))
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
-        $commandTester = new CommandTester($this->getInstallCommand());
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->setInputs([EnvironmentEntity::TYPE_SYMFONY, 'no']);
         $commandTester->execute([]);
 
@@ -173,16 +182,13 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     /**
      * Retrieves the \App\Command\Additional\InstallCommand instance to use within the tests.
      */
-    protected function getInstallCommand(): InstallCommand
+    private function getCommand(): InstallCommand
     {
         return new InstallCommand(
-            $this->database->reveal(),
-            $this->systemManager->reveal(),
+            $this->dockerHub->reveal(),
             $this->validator->reveal(),
-            $this->dockerCompose->reveal(),
+            $this->installer->reveal(),
             $this->eventDispatcher->reveal(),
-            $this->processProxy->reveal(),
-            $this->dockerHub->reveal()
         );
     }
 }

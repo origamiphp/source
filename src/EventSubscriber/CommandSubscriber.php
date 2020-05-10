@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Exception\InvalidConfigurationException;
-use App\Middleware\SystemManager;
+use App\Helper\BinaryChecker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -16,13 +16,13 @@ class CommandSubscriber implements EventSubscriberInterface
     /** @var array */
     private $requirements;
 
-    /** @var SystemManager */
-    private $systemManager;
+    /** @var BinaryChecker */
+    private $binaryChecker;
 
-    public function __construct(array $requirements, SystemManager $systemManager)
+    public function __construct(array $requirements, BinaryChecker $binaryChecker)
     {
         $this->requirements = $requirements;
-        $this->systemManager = $systemManager;
+        $this->binaryChecker = $binaryChecker;
     }
 
     /**
@@ -57,7 +57,7 @@ class CommandSubscriber implements EventSubscriberInterface
             $result[] = [
                 'binary' => $binary,
                 'description' => $description,
-                'status' => $this->systemManager->isBinaryInstalled($binary),
+                'status' => $this->binaryChecker->isInstalled($binary),
             ];
         }
 

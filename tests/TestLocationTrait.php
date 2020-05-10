@@ -15,7 +15,7 @@ trait TestLocationTrait
     /**
      * Creates the temporary directory that will be used by the current test.
      */
-    protected function createLocation(): void
+    private function createLocation(): void
     {
         $this->location = sys_get_temp_dir()
             .\DIRECTORY_SEPARATOR.'origami'
@@ -27,7 +27,7 @@ trait TestLocationTrait
     /**
      * Removes the temporary directory that has been used by the current test.
      */
-    protected function removeLocation(): void
+    private function removeLocation(): void
     {
         if (is_dir($this->location)) {
             $filesystem = new Filesystem();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Middleware;
 
 use App\Exception\DockerHubException;
+use JsonException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
@@ -13,6 +14,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class DockerHub
 {
+    public const DEFAULT_IMAGE_VERSION = 'latest';
     private const API_ENDPOINT = 'https://hub.docker.com/v2/repositories/ajardin/%s/tags';
 
     /** @var HttpClientInterface */
@@ -28,6 +30,7 @@ class DockerHub
      *
      * @throws DockerHubException
      * @throws TransportExceptionInterface
+     * @throws JsonException
      */
     public function getImageTags(string $image): array
     {
@@ -45,6 +48,7 @@ class DockerHub
      * Analyzes the Docker Hub API response by checking the status code and by decoding the JSON content.
      *
      * @throws DockerHubException
+     * @throws JsonException
      */
     private function parseResponse(ResponseInterface $response): array
     {

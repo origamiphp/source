@@ -2,33 +2,35 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Contextual;
+namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Configuration\ConfigurationUpdater;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-class LogsCommand extends AbstractBaseCommand
+class UpdateCommand extends AbstractBaseCommand
 {
     /** @var CurrentContext */
     private $currentContext;
 
-    /** @var DockerCompose */
-    private $dockerCompose;
+    /** @var ConfigurationUpdater */
+    private $updater;
 
-    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
-    {
+    public function __construct(
+        CurrentContext $currentContext,
+        ConfigurationUpdater $updater,
+        ?string $name = null
+    ) {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->updater = $updater;
     }
 
     /**
@@ -36,19 +38,12 @@ class LogsCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setDescription('Shows the logs of an environment previously started');
+        $this->setDescription('Updates a specific environment');
 
         $this->addArgument(
-            'service',
+            'environment',
             InputArgument::OPTIONAL,
-            'Name of the service for which the logs will be shown'
-        );
-
-        $this->addOption(
-            'tail',
-            't',
-            InputOption::VALUE_OPTIONAL,
-            'Number of lines to show from the end of the logs for each service'
+            'Name of the environment to update'
         );
     }
 
@@ -62,14 +57,15 @@ class LogsCommand extends AbstractBaseCommand
         try {
             $environment = $this->currentContext->getEnvironment($input);
 
-            if ($output->isVerbose()) {
-                $this->printEnvironmentDetails($environment, $io);
+            $question = sprintf(
+                'Are you sure you want to update the "%s" environment?',
+                $environment->getName()
+            );
+
+            if ($io->confirm($question, false)) {
+                $this->updater->update($environment);
+                $io->success('Environment successfully updated.');
             }
-
-            $tail = $input->getOption('tail');
-            $service = $input->getArgument('service');
-
-            $this->dockerCompose->showServicesLogs((int) $tail, $service);
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;

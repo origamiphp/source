@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 final class ProcessFactoryTest extends TestCase
 {
     /** @var Prophet */
-    protected $prophet;
+    private $prophet;
 
     /**
      * {@inheritdoc}
