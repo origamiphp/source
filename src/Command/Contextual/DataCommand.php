@@ -8,12 +8,28 @@ use App\Command\AbstractBaseCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
+use App\Middleware\Binary\DockerCompose;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class DataCommand extends AbstractBaseCommand
 {
+    /** @var CurrentContext */
+    private $currentContext;
+
+    /** @var DockerCompose */
+    private $dockerCompose;
+
+    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
+    {
+        parent::__construct($name);
+
+        $this->currentContext = $currentContext;
+        $this->dockerCompose = $dockerCompose;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -30,7 +46,7 @@ class DataCommand extends AbstractBaseCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $environment = $this->getEnvironment($input);
+            $environment = $this->currentContext->getEnvironment($input);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);

@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
 final class MutagenTest extends TestCase
 {
     /** @var Prophet */
-    protected $prophet;
+    private $prophet;
 
     /**
      * {@inheritdoc}

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\EventSubscriber;
 
 use App\Environment\EnvironmentEntity;
+use App\Event\EnvironmentInstalledEvent;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
-use App\Event\EnvironmentUninstallEvent;
+use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
@@ -28,13 +29,13 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * @covers \App\Event\EnvironmentRestartedEvent
  * @covers \App\Event\EnvironmentStartedEvent
  * @covers \App\Event\EnvironmentStoppedEvent
- * @covers \App\Event\EnvironmentUninstallEvent
+ * @covers \App\Event\EnvironmentUninstalledEvent
  * @covers \App\EventSubscriber\EnvironmentSubscriber
  */
 final class EnvironmentSubscriberTest extends WebTestCase
 {
     /** @var Prophet */
-    protected $prophet;
+    private $prophet;
 
     /** @var ObjectProphecy */
     private $dockerCompose;
@@ -66,6 +67,29 @@ final class EnvironmentSubscriberTest extends WebTestCase
         parent::tearDown();
 
         $this->prophet->checkPredictions();
+    }
+
+    public function testItCreatesTheEnvironmentAfterInstall(): void
+    {
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class)->reveal();
+
+        (new MethodProphecy($this->database, 'add', [$environment]))->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+
+        $subscriber = new EnvironmentSubscriber(
+            $this->dockerCompose->reveal(),
+            $this->mutagen->reveal(),
+            $this->database->reveal()
+        );
+
+        $event = new EnvironmentInstalledEvent(
+            $environment,
+            $this->prophet->prophesize(SymfonyStyle::class)->reveal()
+        );
+        $subscriber->onEnvironmentInstall($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
     }
 
     /**
@@ -335,7 +359,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->shouldBeCalledOnce()
         ;
 
-        $event = new EnvironmentUninstallEvent($environment->reveal(), $symfonyStyle->reveal());
+        $event = new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentUninstall($event);
 
         // Temporary workaround to avoid the test being marked as risky.
@@ -366,7 +390,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->shouldBeCalledOnce()
         ;
 
-        $event = new EnvironmentUninstallEvent($environment->reveal(), $symfonyStyle->reveal());
+        $event = new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentUninstall($event);
 
         // Temporary workaround to avoid the test being marked as risky.

@@ -6,11 +6,17 @@ namespace App\Tests\Command\Main;
 
 use App\Command\Main\StartCommand;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
+use App\Helper\ProcessProxy;
+use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 
 /**
  * @internal
@@ -24,17 +30,38 @@ final class StartCommandTest extends AbstractCommandWebTestCase
 {
     use TestFakeEnvironmentTrait;
 
+    /** @var ObjectProphecy */
+    private $currentContext;
+
+    /** @var ObjectProphecy */
+    private $processProxy;
+
+    /** @var ObjectProphecy */
+    private $dockerCompose;
+
+    /** @var ObjectProphecy */
+    private $eventDispatcher;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->currentContext = $this->prophet->prophesize(CurrentContext::class);
+        $this->processProxy = $this->prophet->prophesize(ProcessProxy::class);
+        $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
+        $this->eventDispatcher = $this->prophet->prophesize(EventDispatcher::class);
+    }
+
     public function testItStartsTheEnvironment(): void
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'startServices', []))
@@ -46,7 +73,7 @@ final class StartCommandTest extends AbstractCommandWebTestCase
             ->shouldBeCalledOnce()
         ;
 
-        $commandTester = new CommandTester($this->getCommand(StartCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -59,7 +86,7 @@ final class StartCommandTest extends AbstractCommandWebTestCase
         $environment = $this->getFakeEnvironment();
         $environment->setActive(true);
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -67,10 +94,6 @@ final class StartCommandTest extends AbstractCommandWebTestCase
         (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
             ->shouldBeCalledOnce()
             ->willReturn('')
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'startServices', []))
@@ -81,7 +104,7 @@ final class StartCommandTest extends AbstractCommandWebTestCase
             ->shouldNotBeCalled()
         ;
 
-        $commandTester = new CommandTester($this->getCommand(StartCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -93,13 +116,9 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'startServices', []))
@@ -111,11 +130,24 @@ final class StartCommandTest extends AbstractCommandWebTestCase
             ->shouldNotBeCalled()
         ;
 
-        $commandTester = new CommandTester($this->getCommand(StartCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] An error occurred while starting the Docker services.', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+    }
+
+    /**
+     * Retrieves the \App\Command\Contextual\StartCommand instance to use within the tests.
+     */
+    private function getCommand(): StartCommand
+    {
+        return new StartCommand(
+            $this->currentContext->reveal(),
+            $this->processProxy->reveal(),
+            $this->dockerCompose->reveal(),
+            $this->eventDispatcher->reveal()
+        );
     }
 }

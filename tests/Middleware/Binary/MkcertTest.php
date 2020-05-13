@@ -20,7 +20,7 @@ use Symfony\Component\Process\Process;
 final class MkcertTest extends TestCase
 {
     /** @var Prophet */
-    protected $prophet;
+    private $prophet;
 
     /**
      * {@inheritdoc}

@@ -5,17 +5,48 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
-use App\Event\EnvironmentUninstallEvent;
+use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Configuration\ConfigurationUninstaller;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class UninstallCommand extends AbstractBaseCommand
 {
+    /** @var CurrentContext */
+    private $currentContext;
+
+    /** @var DockerCompose */
+    private $dockerCompose;
+
+    /** @var ConfigurationUninstaller */
+    private $uninstaller;
+
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
+
+    public function __construct(
+        CurrentContext $currentContext,
+        DockerCompose $dockerCompose,
+        ConfigurationUninstaller $uninstaller,
+        EventDispatcherInterface $eventDispatcher,
+        ?string $name = null
+    ) {
+        parent::__construct($name);
+
+        $this->currentContext = $currentContext;
+        $this->dockerCompose = $dockerCompose;
+        $this->uninstaller = $uninstaller;
+        $this->eventDispatcher = $eventDispatcher;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -38,7 +69,7 @@ class UninstallCommand extends AbstractBaseCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $environment = $this->getEnvironment($input);
+            $environment = $this->currentContext->getEnvironment($input);
 
             $question = sprintf(
                 'Are you sure you want to uninstall the "%s" environment?',
@@ -54,12 +85,10 @@ class UninstallCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
                 }
 
-                $event = new EnvironmentUninstallEvent($environment, $io);
-                $this->eventDispatcher->dispatch($event);
+                $this->uninstaller->uninstall($environment);
 
-                $this->systemManager->uninstall($environment);
-                $this->database->remove($environment);
-                $this->database->save();
+                $event = new EnvironmentUninstalledEvent($environment, $io);
+                $this->eventDispatcher->dispatch($event);
 
                 $io->success('Environment successfully uninstalled.');
             }

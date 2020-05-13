@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Environment\EnvironmentEntity;
+use App\Event\EnvironmentInstalledEvent;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
-use App\Event\EnvironmentUninstallEvent;
+use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
@@ -46,11 +47,23 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
+            EnvironmentInstalledEvent::class => 'onEnvironmentInstall',
             EnvironmentStartedEvent::class => 'onEnvironmentStart',
             EnvironmentStoppedEvent::class => 'onEnvironmentStop',
             EnvironmentRestartedEvent::class => 'onEnvironmentRestart',
-            EnvironmentUninstallEvent::class => 'onEnvironmentUninstall',
+            EnvironmentUninstalledEvent::class => 'onEnvironmentUninstall',
         ];
+    }
+
+    /**
+     * Listener which triggers the environment registration.     *.
+     */
+    public function onEnvironmentInstall(EnvironmentInstalledEvent $event): void
+    {
+        $environment = $event->getEnvironment();
+
+        $this->database->add($environment);
+        $this->database->save();
     }
 
     /**
@@ -134,11 +147,11 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Listener which triggers the Docker synchronization removing.
+     * Listener which triggers the Docker synchronization removing and environment unregistration.
      *
      * @throws InvalidEnvironmentException
      */
-    public function onEnvironmentUninstall(EnvironmentUninstallEvent $event): void
+    public function onEnvironmentUninstall(EnvironmentUninstalledEvent $event): void
     {
         $environment = $event->getEnvironment();
         $this->dockerCompose->setActiveEnvironment($environment);
@@ -153,5 +166,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
                 $io->error('An error occurred while removing the Docker synchronization.');
             }
         }
+
+        $this->database->remove($environment);
+        $this->database->save();
     }
 }

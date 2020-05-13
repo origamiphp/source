@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Tests\Command\Contextual;
 
+use App\Command\Contextual\Services\AbstractServiceCommand;
 use App\Command\Contextual\Services\ElasticsearchCommand;
 use App\Command\Contextual\Services\MysqlCommand;
 use App\Command\Contextual\Services\NginxCommand;
 use App\Command\Contextual\Services\PhpCommand;
 use App\Command\Contextual\Services\RedisCommand;
 use App\Helper\CommandExitCode;
-use App\Tests\Command\AbstractCommandWebTestCase;
-use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
+use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
+use RuntimeException;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -30,10 +32,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class ServicesCommandTest extends AbstractCommandWebTestCase
+final class ServicesCommandTest extends AbstractContextualCommandWebTestCase
 {
-    use TestFakeEnvironmentTrait;
-
     /**
      * @dataProvider provideServiceDetails
      */
@@ -41,13 +41,9 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'openTerminal', [$service, $user]))
@@ -68,13 +64,9 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'openTerminal', [$service, $user]))
@@ -92,5 +84,24 @@ final class ServicesCommandTest extends AbstractCommandWebTestCase
         yield [NginxCommand::class, 'nginx', ''];
         yield [PhpCommand::class, 'php', 'www-data:www-data'];
         yield [RedisCommand::class, 'redis', ''];
+    }
+
+    /**
+     * Retrieves the \App\Command\Contextual\Services\AbstractServiceCommand child instance to use within the tests.
+     */
+    private function getCommand(string $classname): AbstractServiceCommand
+    {
+        if (is_subclass_of($classname, 'ServiceCommandInterface')) {
+            throw new RuntimeException("{$classname} is not a subclass of ServiceCommandInterface.");
+        }
+
+        /** @var AbstractServiceCommand $instance */
+        $instance = new $classname($this->currentContext->reveal(), $this->dockerCompose->reveal());
+
+        if (is_subclass_of($instance, 'ServiceCommandInterface')) {
+            throw new RuntimeException("{$classname} is not an subclass of AbstractServiceCommand.");
+        }
+
+        return $instance;
     }
 }

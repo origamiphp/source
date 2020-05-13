@@ -7,8 +7,11 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
 use App\Tests\TestFakeEnvironmentTrait;
+use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,57 +27,21 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
 {
     use TestFakeEnvironmentTrait;
 
-    public function testItSuccessfullyRunsWithActiveEnvironment(): void
+    /** @var ObjectProphecy */
+    protected $currentContext;
+
+    protected function setUp(): void
     {
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
-            ->shouldBeCalledOnce()
-            ->willReturn($this->getFakeEnvironment())
-        ;
+        parent::setUp();
 
-        $commandTester = new CommandTester($this->getFakeCommand());
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        $this->currentContext = $this->prophet->prophesize(CurrentContext::class);
     }
 
-    public function testItSuccessfullyRunsWithUserInput(): void
+    public function testItDoesPrintDetailsWhenVerbose(): void
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(null)
-        ;
-
-        (new MethodProphecy($this->database, 'getEnvironmentByName', [$environment->getName()]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
-
-        $commandTester = new CommandTester($this->getFakeCommand());
-        $commandTester->execute(
-            ['environment' => $environment->getName()],
-            ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]
-        );
-
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
-    }
-
-    public function testItSuccessfullyRunsFromLocation(): void
-    {
-        $environment = $this->getFakeEnvironment();
-
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(null)
-        ;
-
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('')
-        ;
-
-        (new MethodProphecy($this->database, 'getEnvironmentByLocation', ['']))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
@@ -82,20 +49,24 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
         $commandTester = new CommandTester($this->getFakeCommand());
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
+        static::assertStringContainsString('[OK] An environment is currently running.', $commandTester->getDisplay());
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    public function testItGracefullyExitsWhenAnExceptionOccurred(): void
+    public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
+        $environment = $this->getFakeEnvironment();
+
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
-            ->willReturn('')
+            ->willReturn($environment)
         ;
 
-        self::assertExceptionIsHandled(
-            $this->getFakeCommand(),
-            'An environment must be given, please consider using the install command instead.'
-        );
+        $commandTester = new CommandTester($this->getFakeCommand());
+        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
+
+        static::assertStringNotContainsString('[OK] An environment is currently running.', $commandTester->getDisplay());
+        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
@@ -103,8 +74,18 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
      */
     private function getFakeCommand(): AbstractBaseCommand
     {
-        return new class($this->database->reveal(), $this->systemManager->reveal(), $this->validator->reveal(), $this->dockerCompose->reveal(), $this->eventDispatcher->reveal(), $this->processProxy->reveal()) extends AbstractBaseCommand {
+        return new class($this->currentContext->reveal()) extends AbstractBaseCommand {
             protected static $defaultName = 'origami:test';
+
+            /** @var CurrentContext */
+            protected $currentContext;
+
+            public function __construct(CurrentContext $currentContext, string $name = null)
+            {
+                parent::__construct($name);
+
+                $this->currentContext = $currentContext;
+            }
 
             /**
              * {@inheritdoc}
@@ -129,7 +110,13 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
                 $io = new SymfonyStyle($input, $output);
 
                 try {
-                    $this->getEnvironment($input);
+                    $environment = $this->currentContext->getEnvironment($input);
+
+                    if ($output->isVerbose()) {
+                        $this->printEnvironmentDetails($environment, $io);
+                    }
+
+                    // ...
                 } catch (OrigamiExceptionInterface $exception) {
                     $io->error($exception->getMessage());
                     $exitCode = CommandExitCode::EXCEPTION;

@@ -114,3 +114,8 @@ services:
         tags:
             - { name: 'console.command', command: 'origami:uninstall' }
             - { name: 'console.command', command: 'uninstall' }
+
+    App\Command\Main\UpdateCommand:
+        tags:
+            - { name: 'console.command', command: 'origami:update' }
+            - { name: 'console.command', command: 'update' }

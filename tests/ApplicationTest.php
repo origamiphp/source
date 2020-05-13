@@ -32,15 +32,20 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\Main\PrepareCommand
  * @uses \App\Command\Main\StartCommand
  * @uses \App\Command\Main\UninstallCommand
+ * @uses \App\Command\Main\UpdateCommand
  * @uses \App\Command\AbstractBaseCommand
  * @uses \App\Command\DefaultCommand
  * @uses \App\Helper\ProcessFactory
+ * @uses \App\Helper\CurrentContext
  * @uses \App\Kernel
  * @uses \App\Middleware\Binary\DockerCompose
  * @uses \App\Middleware\Binary\Mkcert
+ * @uses \App\Middleware\Configuration\AbstractConfiguration
+ * @uses \App\Middleware\Configuration\ConfigurationInstaller
+ * @uses \App\Middleware\Configuration\ConfigurationUninstaller
+ * @uses \App\Middleware\Configuration\ConfigurationUpdater
  * @uses \App\Middleware\Database
  * @uses \App\Middleware\DockerHub
- * @uses \App\Middleware\SystemManager
  */
 final class ApplicationTest extends WebTestCase
 {

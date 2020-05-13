@@ -112,6 +112,7 @@ class Database
                 $this->environments->offsetUnset($key);
             }
         }
+        $this->environments->rewind();
     }
 
     /**

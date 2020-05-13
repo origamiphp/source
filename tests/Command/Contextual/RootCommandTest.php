@@ -7,9 +7,9 @@ namespace App\Tests\Command\Contextual;
 use App\Command\Contextual\RootCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
-use App\Tests\Command\AbstractCommandWebTestCase;
-use App\Tests\TestFakeEnvironmentTrait;
+use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
+use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -21,21 +21,15 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class RootCommandTest extends AbstractCommandWebTestCase
+final class RootCommandTest extends AbstractContextualCommandWebTestCase
 {
-    use TestFakeEnvironmentTrait;
-
     public function testItShowsRootInstructions(): void
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($environment)
-        ;
-
-        (new MethodProphecy($this->dockerCompose, 'setActiveEnvironment', [$environment]))
-            ->shouldBeCalledOnce()
         ;
 
         (new MethodProphecy($this->dockerCompose, 'getRequiredVariables', [$environment]))
@@ -50,7 +44,7 @@ final class RootCommandTest extends AbstractCommandWebTestCase
             )
         ;
 
-        $commandTester = new CommandTester($this->getCommand(RootCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
@@ -65,11 +59,22 @@ final class RootCommandTest extends AbstractCommandWebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
+        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
         ;
 
-        static::assertExceptionIsHandled($this->getCommand(RootCommand::class), '[ERROR] Dummy exception.');
+        static::assertExceptionIsHandled($this->getCommand(), '[ERROR] Dummy exception.');
+    }
+
+    /**
+     * Retrieves the \App\Command\Contextual\RootCommand instance to use within the tests.
+     */
+    private function getCommand(): RootCommand
+    {
+        return new RootCommand(
+            $this->currentContext->reveal(),
+            $this->dockerCompose->reveal()
+        );
     }
 }

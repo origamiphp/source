@@ -8,9 +8,11 @@ use App\Command\Additional\RegistryCommand;
 use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
+use App\Middleware\Database;
 use App\Tests\Command\AbstractCommandWebTestCase;
 use Generator;
 use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -21,6 +23,19 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class RegistryCommandTest extends AbstractCommandWebTestCase
 {
+    /** @var ObjectProphecy */
+    private $database;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->database = $this->prophet->prophesize(Database::class);
+    }
+
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
         (new MethodProphecy($this->database, 'getAllEnvironments', []))
@@ -28,7 +43,7 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
             ->willReturn(new EnvironmentCollection())
         ;
 
-        $commandTester = new CommandTester($this->getCommand(RegistryCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -47,7 +62,7 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
             ->willReturn(new EnvironmentCollection([$environment]))
         ;
 
-        $commandTester = new CommandTester($this->getCommand(RegistryCommand::class));
+        $commandTester = new CommandTester($this->getCommand());
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -81,5 +96,15 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
             true
         );
         yield [$envinonmentWithDomains];
+    }
+
+    /**
+     * Retrieves the \App\Command\Additional\RegistryCommand instance to use within the tests.
+     */
+    private function getCommand(): RegistryCommand
+    {
+        return new RegistryCommand(
+            $this->database->reveal()
+        );
     }
 }
