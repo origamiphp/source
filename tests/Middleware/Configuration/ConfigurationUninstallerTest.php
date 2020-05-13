@@ -57,9 +57,9 @@ final class ConfigurationUninstallerTest extends TestCase
     /**
      * @dataProvider provideMultipleInstallContexts
      */
-    public function testItUninstallsEnvironment(string $type, ?string $domains = null): void
+    public function testItUninstallsEnvironment(string $name, string $type, ?string $domains = null): void
     {
-        $environment = new EnvironmentEntity(basename($this->location), $this->location, $type, $domains);
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
         $destination = sprintf('%s/var/docker', $this->location);
         mkdir($destination, 0777, true);

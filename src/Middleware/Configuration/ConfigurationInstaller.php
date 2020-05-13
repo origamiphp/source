@@ -14,8 +14,13 @@ class ConfigurationInstaller extends AbstractConfiguration
      *
      * @throws FilesystemException
      */
-    public function install(string $location, string $type, ?string $phpVersion = null, ?string $domains = null): EnvironmentEntity
-    {
+    public function install(
+        string $name,
+        string $location,
+        string $type,
+        ?string $phpVersion = null,
+        ?string $domains = null
+    ): EnvironmentEntity {
         if ($type !== EnvironmentEntity::TYPE_CUSTOM) {
             $source = __DIR__.sprintf('/../../Resources/%s', $type);
             $destination = sprintf('%s/var/docker', $location);
@@ -34,6 +39,6 @@ class ConfigurationInstaller extends AbstractConfiguration
             }
         }
 
-        return new EnvironmentEntity(basename($location), $location, $type, $domains);
+        return new EnvironmentEntity($name, $location, $type, $domains);
     }
 }

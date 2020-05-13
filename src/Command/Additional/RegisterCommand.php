@@ -6,37 +6,38 @@ namespace App\Command\Additional;
 
 use App\Command\AbstractBaseCommand;
 use App\Environment\EnvironmentEntity;
+use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
 use App\Middleware\Configuration\ConfigurationInstaller;
-use App\Middleware\Database;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class RegisterCommand extends AbstractBaseCommand
 {
-    /** @var Database */
-    private $database;
+    /** @var ProcessProxy */
+    private $processProxy;
 
     /** @var ConfigurationInstaller */
     private $installer;
 
-    /** @var ProcessProxy */
-    private $processProxy;
+    /** @var EventDispatcherInterface */
+    private $eventDispatcher;
 
     public function __construct(
-        Database $database,
-        ConfigurationInstaller $installer,
         ProcessProxy $processProxy,
+        ConfigurationInstaller $installer,
+        EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->database = $database;
-        $this->installer = $installer;
         $this->processProxy = $processProxy;
+        $this->installer = $installer;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -57,10 +58,12 @@ class RegisterCommand extends AbstractBaseCommand
         try {
             if ($io->confirm('Do you want to register the current directory as a custom environment?', false)) {
                 $location = $this->processProxy->getWorkingDirectory();
+                $name = $this->askEnvironmentName($io, basename($location));
 
-                $environment = $this->installer->install($location, EnvironmentEntity::TYPE_CUSTOM);
-                $this->database->add($environment);
-                $this->database->save();
+                $environment = $this->installer->install($name, $location, EnvironmentEntity::TYPE_CUSTOM);
+
+                $event = new EnvironmentInstalledEvent($environment, $io);
+                $this->eventDispatcher->dispatch($event);
 
                 $io->success('Environment successfully registered.');
             }
@@ -70,5 +73,13 @@ class RegisterCommand extends AbstractBaseCommand
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
+    }
+
+    /**
+     * Asks the question about the environment name.
+     */
+    private function askEnvironmentName(SymfonyStyle $io, string $defaultName): string
+    {
+        return $io->ask('What is the name of the environment you want to install?', $defaultName);
     }
 }
