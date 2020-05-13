@@ -10,6 +10,7 @@ use App\Event\EnvironmentInstalledEvent;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\ProcessProxy;
 use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Middleware\DockerHub;
 use App\Validator\Constraints\LocalDomains;
@@ -28,6 +29,9 @@ class InstallCommand extends AbstractBaseCommand
         EnvironmentEntity::TYPE_SYMFONY,
     ];
 
+    /** @var ProcessProxy */
+    private $processProxy;
+
     /** @var DockerHub */
     private $dockerHub;
 
@@ -41,6 +45,7 @@ class InstallCommand extends AbstractBaseCommand
     private $eventDispatcher;
 
     public function __construct(
+        ProcessProxy $processProxy,
         DockerHub $dockerHub,
         ValidatorInterface $validator,
         ConfigurationInstaller $installer,
@@ -49,6 +54,7 @@ class InstallCommand extends AbstractBaseCommand
     ) {
         parent::__construct($name);
 
+        $this->processProxy = $processProxy;
         $this->dockerHub = $dockerHub;
         $this->validator = $validator;
         $this->installer = $installer;
@@ -72,13 +78,13 @@ class InstallCommand extends AbstractBaseCommand
         $io->note('The environment will be installed in the current directory.');
 
         try {
+            $location = $this->processProxy->getWorkingDirectory();
+            $name = $this->askEnvironmentName($io, basename($location));
             $type = $this->askEnvironmentType($io);
             $phpVersion = $this->askPhpVersion($type, $io);
             $domains = $this->askDomains($type, $io);
 
-            /** @var string $location */
-            $location = realpath('.');
-            $environment = $this->installer->install($location, $type, $phpVersion, $domains);
+            $environment = $this->installer->install($name, $location, $type, $phpVersion, $domains);
 
             $event = new EnvironmentInstalledEvent($environment, $io);
             $this->eventDispatcher->dispatch($event);
@@ -90,6 +96,14 @@ class InstallCommand extends AbstractBaseCommand
         }
 
         return $exitCode ?? CommandExitCode::SUCCESS;
+    }
+
+    /**
+     * Asks the question about the environment name.
+     */
+    private function askEnvironmentName(SymfonyStyle $io, string $defaultName): string
+    {
+        return $io->ask('What is the name of the environment you want to install?', $defaultName);
     }
 
     /**

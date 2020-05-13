@@ -60,7 +60,7 @@ final class ConfigurationInstallerTest extends TestCase
      *
      * @throws FilesystemException
      */
-    public function testItInstallsConfigurationFiles(string $type, ?string $domains = null): void
+    public function testItInstallsConfigurationFiles(string $name, string $type, ?string $domains = null): void
     {
         $phpVersion = 'azerty';
 
@@ -86,7 +86,7 @@ final class ConfigurationInstallerTest extends TestCase
         }
 
         $installer = new ConfigurationInstaller($this->mkcert->reveal());
-        $installer->install($this->location, $type, $phpVersion, $domains);
+        $installer->install($name, $this->location, $type, $phpVersion, $domains);
 
         $this->assertConfigurationIsInstalled($type, $destination, $phpVersion);
     }

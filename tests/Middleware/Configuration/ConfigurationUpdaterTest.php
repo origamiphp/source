@@ -66,9 +66,9 @@ final class ConfigurationUpdaterTest extends TestCase
      * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
-    public function testItUpdatesAnEnvironmentWithPhpImage(string $type, ?string $domains = null): void
+    public function testItUpdatesAnEnvironmentWithPhpImage(string $name, string $type, ?string $domains = null): void
     {
-        $environment = new EnvironmentEntity(basename($this->location), $this->location, $type, $domains);
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
         $destination = "{$this->location}/var/docker";
         mkdir($destination, 0777, true);
@@ -86,9 +86,9 @@ final class ConfigurationUpdaterTest extends TestCase
      * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
-    public function testItUpdatesAnEnvironmentWithoutPhpImage(string $type, ?string $domains = null): void
+    public function testItUpdatesAnEnvironmentWithoutPhpImage(string $name, string $type, ?string $domains = null): void
     {
-        $environment = new EnvironmentEntity(basename($this->location), $this->location, $type, $domains);
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
         $destination = "{$this->location}/var/docker";
         mkdir($destination, 0777, true);
@@ -124,9 +124,9 @@ final class ConfigurationUpdaterTest extends TestCase
      * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
-    public function testItDoesNotUpdateARunningEnvironment(string $type, ?string $domains = null): void
+    public function testItDoesNotUpdateARunningEnvironment(string $name, string $type, ?string $domains = null): void
     {
-        $environment = new EnvironmentEntity(basename($this->location), $this->location, $type, $domains, true);
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains, true);
 
         $destination = "{$this->location}/var/docker";
         mkdir($destination, 0777, true);
