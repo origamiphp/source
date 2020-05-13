@@ -76,26 +76,36 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
         $type = $environment->getType();
         static::assertStringContainsString($type, $display);
 
-        static::assertStringContainsString($environment->getDomains() ?? '', $display);
+        if ($domains = $environment->getDomains()) {
+            static::assertStringContainsString($domains, $display);
+        }
+
+        if ($environment->isActive()) {
+            static::assertStringContainsString('Started', $display);
+        } else {
+            static::assertStringContainsString('Stopped', $display);
+        }
     }
 
     public function provideEnvironmentList(): Generator
     {
-        $envinonmentWithoutDomains = new EnvironmentEntity(
+        $inactiveEnvinonmentWithoutDomains = new EnvironmentEntity(
             'POC',
             '~/Sites/poc-symfony',
-            EnvironmentEntity::TYPE_SYMFONY
+            EnvironmentEntity::TYPE_SYMFONY,
+            null,
+            false
         );
-        yield [$envinonmentWithoutDomains];
+        yield [$inactiveEnvinonmentWithoutDomains];
 
-        $envinonmentWithDomains = new EnvironmentEntity(
+        $activeEnvinonmentWithDomains = new EnvironmentEntity(
             'Origami',
             '~/Sites/origami',
             EnvironmentEntity::TYPE_SYMFONY,
             'origami.localhost',
             true
         );
-        yield [$envinonmentWithDomains];
+        yield [$activeEnvinonmentWithDomains];
     }
 
     /**
