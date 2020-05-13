@@ -70,11 +70,11 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
             ->willReturn(true)
         ;
 
-        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
             ->shouldBeCalledOnce()
         ;
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
             ->shouldBeCalledOnce()
         ;
 
@@ -101,11 +101,11 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
             ->shouldNotBeCalled()
         ;
 
-        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
             ->shouldNotBeCalled()
         ;
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
             ->shouldNotBeCalled()
         ;
 
@@ -132,11 +132,11 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
             ->willReturn(false)
         ;
 
-        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
+        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
             ->shouldNotBeCalled()
         ;
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
+        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
             ->shouldNotBeCalled()
         ;
 

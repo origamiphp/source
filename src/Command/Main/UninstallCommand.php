@@ -85,10 +85,10 @@ class UninstallCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
                 }
 
-                $this->uninstaller->uninstall($environment);
-
                 $event = new EnvironmentUninstalledEvent($environment, $io);
                 $this->eventDispatcher->dispatch($event);
+
+                $this->uninstaller->uninstall($environment);
 
                 $io->success('Environment successfully uninstalled.');
             }
