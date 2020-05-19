@@ -75,10 +75,13 @@ class EnvironmentEntity
         return $this->active;
     }
 
-    public function setActive(bool $active): self
+    public function activate(): void
     {
-        $this->active = $active;
+        $this->active = true;
+    }
 
-        return $this;
+    public function deactivate(): void
+    {
+        $this->active = false;
     }
 }

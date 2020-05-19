@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Middleware\Binary;
 
 use App\Environment\EnvironmentEntity;
+use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Validator\Constraints\ConfigurationFiles;
@@ -94,7 +95,7 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
             ->shouldNotBeCalled()
         ;
 
-        $this->expectException(InvalidEnvironmentException::class);
+        $this->expectException(InvalidConfigurationException::class);
 
         $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);
@@ -124,7 +125,7 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
             ->willReturn($errors)
         ;
 
-        $this->expectException(InvalidEnvironmentException::class);
+        $this->expectException(InvalidConfigurationException::class);
 
         $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);

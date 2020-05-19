@@ -84,7 +84,7 @@ final class StartCommandTest extends AbstractCommandWebTestCase
     public function testItDoesNotStartMultipleEnvironments(): void
     {
         $environment = $this->getFakeEnvironment();
-        $environment->setActive(true);
+        $environment->activate();
 
         (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()

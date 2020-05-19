@@ -93,7 +93,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             }
         }
 
-        $environment->setActive(true);
+        $environment->activate();
         $this->database->save();
     }
 
@@ -118,7 +118,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             }
         }
 
-        $environment->setActive(false);
+        $environment->deactivate();
         $this->database->save();
     }
 

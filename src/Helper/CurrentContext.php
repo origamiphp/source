@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper;
 
 use App\Environment\EnvironmentEntity;
+use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Database;
@@ -31,6 +32,7 @@ class CurrentContext
     /**
      * Attempts to load the environment to manage in different ways and throws an exception if this is not possible.
      *
+     * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
     public function getEnvironment(InputInterface $input): EnvironmentEntity

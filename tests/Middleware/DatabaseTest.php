@@ -6,6 +6,7 @@ namespace App\Tests\Middleware;
 
 use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
+use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
 use App\Tests\TestLocationTrait;
@@ -62,7 +63,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItThrowsAnExceptionIfTheDatabaseIsNotCreated(): void
     {
-        $this->expectException(InvalidEnvironmentException::class);
+        $this->expectException(FilesystemException::class);
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => '/fake/location']);
         new Database($fakeVariables);

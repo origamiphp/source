@@ -100,7 +100,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophet->prophesize(EnvironmentEntity::class);
         $this->prophesizeCommonMethods($environment);
 
-        (new MethodProphecy($environment, 'setActive', [true]))
+        (new MethodProphecy($environment, 'activate', []))
             ->shouldBeCalledOnce()
         ;
 
@@ -149,7 +149,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophet->prophesize(EnvironmentEntity::class);
         $this->prophesizeCommonMethods($environment);
 
-        (new MethodProphecy($environment, 'setActive', [true]))
+        (new MethodProphecy($environment, 'activate', []))
             ->shouldBeCalledOnce()
         ;
 
@@ -193,7 +193,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophet->prophesize(EnvironmentEntity::class);
         $this->prophesizeCommonMethods($environment);
 
-        (new MethodProphecy($environment, 'setActive', [false]))
+        (new MethodProphecy($environment, 'deactivate', []))
             ->shouldBeCalledOnce()
         ;
 
@@ -232,7 +232,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophet->prophesize(EnvironmentEntity::class);
         $this->prophesizeCommonMethods($environment);
 
-        (new MethodProphecy($environment, 'setActive', [false]))
+        (new MethodProphecy($environment, 'deactivate', []))
             ->shouldBeCalledOnce()
         ;
 
