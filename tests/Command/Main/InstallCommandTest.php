@@ -10,6 +10,7 @@ use App\Event\EnvironmentInstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
+use App\Helper\RequirementsChecker;
 use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Middleware\DockerHub;
 use App\Tests\Command\AbstractCommandWebTestCase;
@@ -49,6 +50,9 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
     /** @var ObjectProphecy */
     private $eventDispatcher;
 
+    /** @var ObjectProphecy */
+    private $requirementsChecker;
+
     /**
      * {@inheritdoc}
      */
@@ -61,6 +65,7 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         $this->validator = $this->prophet->prophesize(ValidatorInterface::class);
         $this->installer = $this->prophet->prophesize(ConfigurationInstaller::class);
         $this->eventDispatcher = $this->prophet->prophesize(EventDispatcher::class);
+        $this->requirementsChecker = $this->prophet->prophesize(RequirementsChecker::class);
     }
 
     /**
@@ -83,6 +88,11 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         (new MethodProphecy($this->dockerHub, 'getImageTags', ["{$type}-php"]))
             ->shouldBeCalledOnce()
             ->willReturn(['foo', 'bar', 'latest'])
+        ;
+
+        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
         ;
 
         (new MethodProphecy($this->installer, 'install', ['directory', '/fake/directory', $type, $phpVersion, $domains]))
@@ -128,6 +138,11 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
             ->willReturn(['foo', 'bar', 'latest'])
         ;
 
+        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
         (new MethodProphecy($this->installer, 'install', ['custom-name', '/fake/directory', $type, $phpVersion, $domains]))
             ->shouldBeCalledOnce()
         ;
@@ -168,6 +183,11 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         (new MethodProphecy($this->dockerHub, 'getImageTags', [EnvironmentEntity::TYPE_SYMFONY.'-php']))
             ->shouldBeCalledOnce()
             ->willReturn(['latest'])
+        ;
+
+        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
         ;
 
         $invalidDomains = 'azerty';
@@ -220,6 +240,11 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
             ->willReturn(['latest'])
         ;
 
+        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
         (new MethodProphecy($this->installer, 'install', ['directory', '/fake/directory', EnvironmentEntity::TYPE_SYMFONY, 'latest', null]))
             ->shouldBeCalledOnce()
             ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
@@ -245,6 +270,7 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
             $this->validator->reveal(),
             $this->installer->reveal(),
             $this->eventDispatcher->reveal(),
+            $this->requirementsChecker->reveal()
         );
     }
 }

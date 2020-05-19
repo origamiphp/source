@@ -12,6 +12,7 @@ use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\InvalidEnvironmentException;
+use App\Helper\RequirementsChecker;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
@@ -46,6 +47,9 @@ final class EnvironmentSubscriberTest extends WebTestCase
     /** @var ObjectProphecy */
     private $database;
 
+    /** @var ObjectProphecy */
+    private $requirementsChecker;
+
     /**
      * {@inheritdoc}
      */
@@ -57,6 +61,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
         $this->mutagen = $this->prophet->prophesize(Mutagen::class);
         $this->database = $this->prophet->prophesize(Database::class);
+        $this->requirementsChecker = $this->prophet->prophesize(RequirementsChecker::class);
     }
 
     /**
@@ -79,7 +84,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $event = new EnvironmentInstalledEvent(
@@ -126,7 +132,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -170,7 +177,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -209,7 +217,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -248,7 +257,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -284,7 +294,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -320,7 +331,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -351,7 +363,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -382,7 +395,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $subscriber = new EnvironmentSubscriber(
             $this->dockerCompose->reveal(),
             $this->mutagen->reveal(),
-            $this->database->reveal()
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
         );
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
@@ -414,6 +428,11 @@ final class EnvironmentSubscriberTest extends WebTestCase
         (new MethodProphecy($this->dockerCompose, 'getRequiredVariables', [$environment->reveal()]))
             ->shouldBeCalledOnce()
             ->willReturn([])
+        ;
+
+        (new MethodProphecy($this->requirementsChecker, 'canOptimizeSynchronizationPerformance', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
         ;
     }
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Exception\MissingRequirementException;
-use App\Helper\BinaryChecker;
+use App\Helper\RequirementsChecker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -13,16 +13,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    /** @var array */
-    private $requirements;
+    /** @var RequirementsChecker */
+    private $requirementsChecker;
 
-    /** @var BinaryChecker */
-    private $binaryChecker;
-
-    public function __construct(array $requirements, BinaryChecker $binaryChecker)
+    public function __construct(RequirementsChecker $binaryChecker)
     {
-        $this->requirements = $requirements;
-        $this->binaryChecker = $binaryChecker;
+        $this->requirementsChecker = $binaryChecker;
     }
 
     /**
@@ -52,16 +48,10 @@ class CommandSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $result = [];
-        foreach ($this->requirements as $binary => $description) {
-            $result[] = [
-                'binary' => $binary,
-                'description' => $description,
-                'status' => $this->binaryChecker->isInstalled($binary),
-            ];
-        }
+        $mandatoryRequirements = $this->requirementsChecker->checkMandatoryRequirements();
+        $nonMandatoryRequirements = $this->requirementsChecker->checkNonMandatoryRequirements();
 
-        if (\count($this->requirements) !== \count(array_filter(array_column($result, 'status')))) {
+        if ($event->getOutput()->isVeryVerbose()) {
             $io = new SymfonyStyle($event->getInput(), $event->getOutput());
             $io->title('Origami Requirements Checker');
 
@@ -69,11 +59,13 @@ class CommandSubscriber implements EventSubscriberInterface
                 array_map(static function ($item) {
                     $icon = $item['status'] ? '✅' : '❌';
 
-                    return "{$icon} {$item['binary']} - {$item['description']}";
-                }, $result)
+                    return "{$icon} {$item['name']} - {$item['description']}";
+                }, array_merge($mandatoryRequirements, $nonMandatoryRequirements))
             );
+        }
 
-            throw new MissingRequirementException('At least one binary is missing from your system.');
+        if (\count($mandatoryRequirements) !== \count(array_filter(array_column($mandatoryRequirements, 'status')))) {
+            throw new MissingRequirementException('At least one mandatory binary is missing from your system.');
         }
     }
 }
