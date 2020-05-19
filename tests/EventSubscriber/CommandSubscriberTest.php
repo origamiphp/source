@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EventSubscriber;
 
 use App\EventSubscriber\CommandSubscriber;
-use App\Exception\InvalidConfigurationException;
+use App\Exception\MissingRequirementException;
 use App\Helper\BinaryChecker;
 use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
@@ -49,7 +49,7 @@ final class CommandSubscriberTest extends WebTestCase
     }
 
     /**
-     * @throws InvalidConfigurationException
+     * @throws MissingRequirementException
      */
     public function testItDoesNotCheckRequirementsWithSymfonyCommands(): void
     {
@@ -76,7 +76,7 @@ final class CommandSubscriberTest extends WebTestCase
     }
 
     /**
-     * @throws InvalidConfigurationException
+     * @throws MissingRequirementException
      */
     public function testItDetectsExistingBinaryWithOrigamiCommands(): void
     {
@@ -104,7 +104,7 @@ final class CommandSubscriberTest extends WebTestCase
     }
 
     /**
-     * @throws InvalidConfigurationException
+     * @throws MissingRequirementException
      */
     public function testItDetectsMissingBinaryWithOrigamiCommands(): void
     {
@@ -123,7 +123,7 @@ final class CommandSubscriberTest extends WebTestCase
         ;
 
         $this->expectExceptionObject(
-            new InvalidConfigurationException('At least one binary is missing from your system.')
+            new MissingRequirementException('At least one binary is missing from your system.')
         );
 
         $subscriber = new CommandSubscriber($requirements, $binaryChecker->reveal());

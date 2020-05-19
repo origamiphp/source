@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Middleware\Binary;
 
 use App\Environment\EnvironmentEntity;
+use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
@@ -193,7 +194,7 @@ class DockerCompose
     /**
      * Checks whether the environment has been installed and correctly configured.
      *
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     private function checkEnvironmentConfiguration(EnvironmentEntity $environment): void
     {
@@ -203,13 +204,13 @@ class DockerCompose
             $dotenv = new Dotenv(true);
             $dotenv->overload(sprintf('%s/var/docker/.env', $environment->getLocation()));
         } else {
-            throw new InvalidEnvironmentException($errors[0]->getMessage());
+            throw new InvalidConfigurationException($errors[0]->getMessage());
         }
 
         $filesConstraint = new ConfigurationFiles();
         $errors = $this->validator->validate($environment, $filesConstraint);
         if ($errors->has(0)) {
-            throw new InvalidEnvironmentException($errors[0]->getMessage());
+            throw new InvalidConfigurationException($errors[0]->getMessage());
         }
     }
 }

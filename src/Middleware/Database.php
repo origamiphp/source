@@ -6,6 +6,7 @@ namespace App\Middleware;
 
 use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
+use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use Ergebnis\Environment\Variables;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
@@ -27,6 +28,7 @@ class Database
     private $environments;
 
     /**
+     * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
     public function __construct(Variables $systemVariables)
@@ -37,7 +39,7 @@ class Database
 
         $this->path = $home.\DIRECTORY_SEPARATOR.self::DATABASE_FILENAME;
         if (!@is_file($this->path) && !@touch($this->path)) {
-            throw new InvalidEnvironmentException('Unable to create the database file.'); // @codeCoverageIgnore
+            throw new FilesystemException('Unable to create the database file.'); // @codeCoverageIgnore
         }
 
         $this->serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);

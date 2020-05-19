@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Exception\InvalidConfigurationException;
+use App\Exception\MissingRequirementException;
 use App\Helper\BinaryChecker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -42,7 +42,7 @@ class CommandSubscriber implements EventSubscriberInterface
     /**
      * Checks whether all required environment variables are set before executing any commands.
      *
-     * @throws InvalidConfigurationException
+     * @throws MissingRequirementException
      */
     public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
@@ -73,7 +73,7 @@ class CommandSubscriber implements EventSubscriberInterface
                 }, $result)
             );
 
-            throw new InvalidConfigurationException('At least one binary is missing from your system.');
+            throw new MissingRequirementException('At least one binary is missing from your system.');
         }
     }
 }

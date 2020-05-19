@@ -58,7 +58,7 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
     public function testItUninstallsTheCurrentEnvironment(): void
     {
         $environment = $this->getFakeEnvironment();
-        $environment->setActive(false);
+        $environment->deactivate();
 
         (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
@@ -90,7 +90,7 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
     public function testItDoesNotUninstallARunningEnvironment(): void
     {
         $environment = $this->getFakeEnvironment();
-        $environment->setActive(true);
+        $environment->activate();
 
         (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
             ->shouldBeCalledOnce()
