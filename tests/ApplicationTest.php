@@ -37,6 +37,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\DefaultCommand
  * @uses \App\Helper\ProcessFactory
  * @uses \App\Helper\CurrentContext
+ * @uses \App\Helper\RequirementsChecker
  * @uses \App\Kernel
  * @uses \App\Middleware\Binary\DockerCompose
  * @uses \App\Middleware\Binary\Mkcert

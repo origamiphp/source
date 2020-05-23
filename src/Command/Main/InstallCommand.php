@@ -11,6 +11,7 @@ use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
+use App\Helper\RequirementsChecker;
 use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Middleware\DockerHub;
 use App\Validator\Constraints\LocalDomains;
@@ -44,12 +45,16 @@ class InstallCommand extends AbstractBaseCommand
     /** @var EventDispatcherInterface */
     private $eventDispatcher;
 
+    /** @var RequirementsChecker */
+    private $requirementsChecker;
+
     public function __construct(
         ProcessProxy $processProxy,
         DockerHub $dockerHub,
         ValidatorInterface $validator,
         ConfigurationInstaller $installer,
         EventDispatcherInterface $eventDispatcher,
+        RequirementsChecker $requirementsChecker,
         ?string $name = null
     ) {
         parent::__construct($name);
@@ -59,6 +64,7 @@ class InstallCommand extends AbstractBaseCommand
         $this->validator = $validator;
         $this->installer = $installer;
         $this->eventDispatcher = $eventDispatcher;
+        $this->requirementsChecker = $requirementsChecker;
     }
 
     /**
@@ -82,7 +88,8 @@ class InstallCommand extends AbstractBaseCommand
             $name = $this->askEnvironmentName($io, basename($location));
             $type = $this->askEnvironmentType($io);
             $phpVersion = $this->askPhpVersion($type, $io);
-            $domains = $this->askDomains($type, $io);
+            $domains = $this->requirementsChecker->canMakeLocallyTrustedCertificates()
+                ? $this->askDomains($type, $io) : null;
 
             $environment = $this->installer->install($name, $location, $type, $phpVersion, $domains);
 

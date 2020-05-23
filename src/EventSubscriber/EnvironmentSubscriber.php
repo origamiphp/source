@@ -11,6 +11,7 @@ use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
+use App\Helper\RequirementsChecker;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
@@ -27,11 +28,19 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     /** @var Database */
     private $database;
 
-    public function __construct(DockerCompose $dockerCompose, Mutagen $mutagen, Database $database)
-    {
+    /** @var RequirementsChecker */
+    private $requirementsChecker;
+
+    public function __construct(
+        DockerCompose $dockerCompose,
+        Mutagen $mutagen,
+        Database $database,
+        RequirementsChecker $requirementsChecker
+    ) {
         $this->dockerCompose = $dockerCompose;
         $this->mutagen = $mutagen;
         $this->database = $database;
+        $this->requirementsChecker = $requirementsChecker;
     }
 
     /**
@@ -86,7 +95,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
                 $io->error('An error occurred while trying to fix the permissions on the shared SSH agent.');
             }
 
-            if ($this->mutagen->startDockerSynchronization($environmentVariables)) {
+            if ($this->requirementsChecker->canOptimizeSynchronizationPerformance()
+                && $this->mutagen->startDockerSynchronization($environmentVariables)
+            ) {
                 $io->success('Docker synchronization successfully started.');
             } else {
                 $io->error('An error occurred while starting the Docker synchronization.');
@@ -111,7 +122,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
-            if ($this->mutagen->stopDockerSynchronization($environmentVariables)) {
+            if ($this->requirementsChecker->canOptimizeSynchronizationPerformance()
+                && $this->mutagen->stopDockerSynchronization($environmentVariables)
+            ) {
                 $io->success('Docker synchronization successfully stopped.');
             } else {
                 $io->error('An error occurred while stopping the Docker synchronization.');
@@ -136,7 +149,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
-            if ($this->mutagen->stopDockerSynchronization($environmentVariables)
+            if ($this->requirementsChecker->canOptimizeSynchronizationPerformance()
+                && $this->mutagen->stopDockerSynchronization($environmentVariables)
                 && $this->mutagen->startDockerSynchronization($environmentVariables)
             ) {
                 $io->success('Docker synchronization successfully restarted.');
@@ -160,7 +174,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
             $io = $event->getSymfonyStyle();
 
-            if ($this->mutagen->removeDockerSynchronization($environmentVariables)) {
+            if ($this->requirementsChecker->canOptimizeSynchronizationPerformance()
+                && $this->mutagen->removeDockerSynchronization($environmentVariables)
+            ) {
                 $io->success('Docker synchronization successfully removed.');
             } else {
                 $io->error('An error occurred while removing the Docker synchronization.');
