@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Command\Additional;
 
 use App\Command\AbstractBaseCommand;
+use App\Environment\Configuration\ConfigurationInstaller;
 use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
-use App\Middleware\Configuration\ConfigurationInstaller;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;

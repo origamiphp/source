@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Middleware\Configuration;
+namespace App\Tests\Environment\Configuration;
 
+use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Environment\EnvironmentEntity;
 use App\Middleware\Binary\Mkcert;
-use App\Middleware\Configuration\ConfigurationUninstaller;
 use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use PHPUnit\Framework\TestCase;
@@ -16,8 +16,8 @@ use Prophecy\Prophet;
 /**
  * @internal
  *
- * @covers \App\Middleware\Configuration\AbstractConfiguration
- * @covers \App\Middleware\Configuration\ConfigurationUninstaller
+ * @covers \App\Environment\Configuration\AbstractConfiguration
+ * @covers \App\Environment\Configuration\ConfigurationUninstaller
  */
 final class ConfigurationUninstallerTest extends TestCase
 {

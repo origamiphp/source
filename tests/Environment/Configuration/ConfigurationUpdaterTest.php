@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Middleware\Configuration;
+namespace App\Tests\Environment\Configuration;
 
+use App\Environment\Configuration\ConfigurationUpdater;
 use App\Environment\EnvironmentEntity;
+use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\Mkcert;
-use App\Middleware\Configuration\ConfigurationUpdater;
-use App\Middleware\DockerHub;
 use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use PHPUnit\Framework\TestCase;
@@ -19,8 +19,8 @@ use Prophecy\Prophet;
 /**
  * @internal
  *
- * @covers \App\Middleware\Configuration\AbstractConfiguration
- * @covers \App\Middleware\Configuration\ConfigurationUpdater
+ * @covers \App\Environment\Configuration\AbstractConfiguration
+ * @covers \App\Environment\Configuration\ConfigurationUpdater
  */
 final class ConfigurationUpdaterTest extends TestCase
 {

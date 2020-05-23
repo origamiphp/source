@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Middleware\Configuration;
+namespace App\Tests\Environment\Configuration;
 
+use App\Environment\Configuration\ConfigurationInstaller;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
-use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use PHPUnit\Framework\TestCase;
@@ -17,8 +17,8 @@ use Prophecy\Prophet;
 /**
  * @internal
  *
- * @covers \App\Middleware\Configuration\AbstractConfiguration
- * @covers \App\Middleware\Configuration\ConfigurationInstaller
+ * @covers \App\Environment\Configuration\AbstractConfiguration
+ * @covers \App\Environment\Configuration\ConfigurationInstaller
  */
 final class ConfigurationInstallerTest extends TestCase
 {

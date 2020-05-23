@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
+use App\Environment\Configuration\ConfigurationUpdater;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
-use App\Middleware\Configuration\ConfigurationUpdater;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

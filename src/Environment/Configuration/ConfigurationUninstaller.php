@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Middleware\Configuration;
+namespace App\Environment\Configuration;
 
 use App\Environment\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;

@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Helper;
+namespace App\Environment\EnvironmentMaker;
+
+use App\Helper\ProcessFactory;
 
 class RequirementsChecker
 {

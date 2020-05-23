@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Command\Additional;
 
 use App\Command\Additional\RegisterCommand;
+use App\Environment\Configuration\ConfigurationInstaller;
 use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
-use App\Middleware\Configuration\ConfigurationInstaller;
 use App\Tests\Command\AbstractCommandWebTestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;

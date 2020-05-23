@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Middleware\Configuration;
+namespace App\Environment\Configuration;
 
+use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
-use App\Middleware\DockerHub;
 use Symfony\Component\Filesystem\Filesystem;
 
 class AbstractConfiguration
