@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\UninstallCommand;
+use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Middleware\Configuration\ConfigurationUninstaller;
 use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;

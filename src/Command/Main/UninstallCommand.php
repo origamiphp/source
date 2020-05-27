@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
+use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Middleware\Configuration\ConfigurationUninstaller;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\EventSubscriber;
 
 use App\Environment\EnvironmentEntity;
+use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Event\EnvironmentInstalledEvent;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
@@ -12,7 +13,6 @@ use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\RequirementsChecker;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;

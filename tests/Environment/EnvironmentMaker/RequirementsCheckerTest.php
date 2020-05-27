@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Helper;
+namespace App\Tests\Environment\EnvironmentMaker;
 
+use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Helper\ProcessFactory;
-use App\Helper\RequirementsChecker;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophet;
@@ -14,7 +14,7 @@ use Symfony\Component\Process\Process;
 /**
  * @internal
  *
- * @covers \App\Helper\RequirementsChecker
+ * @covers \App\Environment\EnvironmentMaker\RequirementsChecker
  */
 final class RequirementsCheckerTest extends TestCase
 {

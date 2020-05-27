@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\UpdateCommand;
+use App\Environment\Configuration\ConfigurationUpdater;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
-use App\Middleware\Configuration\ConfigurationUpdater;
 use App\Tests\Command\AbstractCommandWebTestCase;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;

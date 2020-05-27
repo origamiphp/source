@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Middleware;
+namespace App\Environment\EnvironmentMaker;
 
 use App\Exception\DockerHubException;
 use JsonException;

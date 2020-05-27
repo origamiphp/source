@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Middleware;
+namespace App\Tests\Environment\EnvironmentMaker;
 
+use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\DockerHubException;
-use App\Middleware\DockerHub;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -15,7 +15,7 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 /**
  * @internal
  *
- * @covers \App\Middleware\DockerHub
+ * @covers \App\Environment\EnvironmentMaker\DockerHub
  */
 final class DockerHubTest extends TestCase
 {
