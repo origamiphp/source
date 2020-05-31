@@ -89,23 +89,25 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
 
     public function provideEnvironmentList(): Generator
     {
-        $inactiveEnvinonmentWithoutDomains = new EnvironmentEntity(
-            'POC',
-            '~/Sites/poc-symfony',
-            EnvironmentEntity::TYPE_SYMFONY,
-            null,
-            false
-        );
-        yield [$inactiveEnvinonmentWithoutDomains];
+        yield 'inactive environment without domains' => [
+            new EnvironmentEntity(
+                'POC',
+                '~/Sites/poc-symfony',
+                EnvironmentEntity::TYPE_SYMFONY,
+                null,
+                false
+            ),
+        ];
 
-        $activeEnvinonmentWithDomains = new EnvironmentEntity(
-            'Origami',
-            '~/Sites/origami',
-            EnvironmentEntity::TYPE_SYMFONY,
-            'origami.localhost',
-            true
-        );
-        yield [$activeEnvinonmentWithDomains];
+        yield 'active environment with domains' => [
+            new EnvironmentEntity(
+                'Origami',
+                '~/Sites/origami',
+                EnvironmentEntity::TYPE_SYMFONY,
+                'origami.localhost',
+                true
+            ),
+        ];
     }
 
     /**

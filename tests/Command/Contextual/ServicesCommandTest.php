@@ -79,11 +79,11 @@ final class ServicesCommandTest extends AbstractContextualCommandWebTestCase
 
     public function provideServiceDetails(): Generator
     {
-        yield [ElasticsearchCommand::class, 'elasticsearch', ''];
-        yield [MysqlCommand::class, 'mysql', ''];
-        yield [NginxCommand::class, 'nginx', ''];
-        yield [PhpCommand::class, 'php', 'www-data:www-data'];
-        yield [RedisCommand::class, 'redis', ''];
+        yield 'elasticsearch' => [ElasticsearchCommand::class, 'elasticsearch', ''];
+        yield 'mysql' => [MysqlCommand::class, 'mysql', ''];
+        yield 'nginx' => [NginxCommand::class, 'nginx', ''];
+        yield 'php' => [PhpCommand::class, 'php', 'www-data:www-data'];
+        yield 'redis' => [RedisCommand::class, 'redis', ''];
     }
 
     /**

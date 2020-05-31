@@ -12,14 +12,14 @@ trait TestConfigurationTrait
 {
     public function provideMultipleInstallContexts(): Generator
     {
-        yield ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, 'magento.localhost'];
-        yield ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, ''];
+        yield 'Magento environment with domain' => ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, 'magento.localhost'];
+        yield 'Magento environment without domain' => ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, ''];
 
-        yield ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, 'sylius.localhost'];
-        yield ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, ''];
+        yield 'Sylius environment with domain' => ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, 'sylius.localhost'];
+        yield 'Sylius environment without domain' => ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, ''];
 
-        yield ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, 'symfony.localhost'];
-        yield ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, ''];
+        yield 'Symfony environment with domain' => ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, 'symfony.localhost'];
+        yield 'Symfony environment without domain' => ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, ''];
     }
 
     protected function assertConfigurationIsInstalled(string $type, string $destination, string $phpVersion): void

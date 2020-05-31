@@ -78,8 +78,9 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
 
     public function provideEnvironmentTypes(): Generator
     {
-        yield [EnvironmentEntity::TYPE_MAGENTO2];
-        yield [EnvironmentEntity::TYPE_SYMFONY];
+        yield 'Magento type' => [EnvironmentEntity::TYPE_MAGENTO2];
+        yield 'Sylius type' => [EnvironmentEntity::TYPE_SYLIUS];
+        yield 'Symfony type' => [EnvironmentEntity::TYPE_SYMFONY];
     }
 
     protected function createValidator(): ConstraintValidatorInterface

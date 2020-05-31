@@ -83,10 +83,10 @@ final class LogsCommandTest extends AbstractContextualCommandWebTestCase
 
     public function provideCommandModifiers(): Generator
     {
-        yield [null, null];
-        yield [50, null];
-        yield [50, 'php'];
-        yield [null, 'php'];
+        yield 'no modifiers' => [null, null];
+        yield 'tail only' => [50, null];
+        yield 'tail and service' => [50, 'php'];
+        yield 'service only' => [null, 'php'];
     }
 
     /**
