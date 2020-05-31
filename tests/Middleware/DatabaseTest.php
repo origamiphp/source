@@ -87,14 +87,14 @@ final class DatabaseTest extends TestCase
                         'fake-environment-1',
                         '/fake/location/1',
                         'magento',
-                        'magento.localhost www.magento.localhost',
+                        'magento.localhost',
                         false
                     ),
                     new EnvironmentEntity(
                         'fake-environment-2',
                         '/fake/location/2',
                         'symfony',
-                        'symfony.localhost www.symfony.localhost',
+                        'symfony.localhost',
                         true
                     ),
                 ]
@@ -118,7 +118,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-2',
                 '/fake/location/2',
                 'symfony',
-                'symfony.localhost www.symfony.localhost',
+                'symfony.localhost',
                 true
             ),
             $database->getActiveEnvironment()
@@ -146,7 +146,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-1',
                 '/fake/location/1',
                 'magento',
-                'magento.localhost www.magento.localhost',
+                'magento.localhost',
                 false
             ),
             $database->getEnvironmentByName('fake-environment-1')
@@ -170,7 +170,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-1',
                 '/fake/location/1',
                 'magento',
-                'magento.localhost www.magento.localhost',
+                'magento.localhost',
                 false
             ),
             $database->getEnvironmentByLocation('/fake/location/1')
@@ -193,7 +193,7 @@ final class DatabaseTest extends TestCase
             'fake-environment-3',
             '/fake/location/3',
             'sylius',
-            'sylius.localhost www.sylius.localhost',
+            'sylius.localhost',
             false
         );
 
@@ -218,7 +218,7 @@ final class DatabaseTest extends TestCase
             'fake-environment-1',
             '/fake/location/1',
             'magento',
-            'magento.localhost www.magento.localhost',
+            'magento.localhost',
             false
         );
 
@@ -240,14 +240,14 @@ final class DatabaseTest extends TestCase
       "name":"fake-environment-1",
       "location":"\/fake\/location\/1",
       "type":"magento",
-      "domains":"magento.localhost www.magento.localhost",
+      "domains":"magento.localhost",
       "active":false
    },
    {
       "name":"fake-environment-2",
       "location":"\/fake\/location\/2",
       "type":"symfony",
-      "domains":"symfony.localhost www.symfony.localhost",
+      "domains":"symfony.localhost",
       "active":true
    }
 ]
@@ -259,7 +259,7 @@ EOT;
      */
     private function getFakeDatabaseContentAfterAddition(): string
     {
-        return '[{"name":"fake-environment-1","location":"\/fake\/location\/1","type":"magento","domains":"magento.localhost www.magento.localhost","active":false},{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.localhost www.symfony.localhost","active":true},{"name":"fake-environment-3","location":"\/fake\/location\/3","type":"sylius","domains":"sylius.localhost www.sylius.localhost","active":false}]';
+        return '[{"name":"fake-environment-1","location":"\/fake\/location\/1","type":"magento","domains":"magento.localhost","active":false},{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.localhost","active":true},{"name":"fake-environment-3","location":"\/fake\/location\/3","type":"sylius","domains":"sylius.localhost","active":false}]';
     }
 
     /**
@@ -267,6 +267,6 @@ EOT;
      */
     private function getFakeDatabaseContentAfterDeletion(): string
     {
-        return '[{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.localhost www.symfony.localhost","active":true}]';
+        return '[{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.localhost","active":true}]';
     }
 }

@@ -71,7 +71,7 @@ final class UpdateCommandTest extends AbstractCommandWebTestCase
             'origami',
             '~/Sites/origami',
             EnvironmentEntity::TYPE_CUSTOM,
-            'origami.localhost www.origami.localhost',
+            'origami.localhost',
             false
         );
 
@@ -100,7 +100,7 @@ final class UpdateCommandTest extends AbstractCommandWebTestCase
             'origami',
             '~/Sites/origami',
             EnvironmentEntity::TYPE_SYMFONY,
-            'origami.localhost www.origami.localhost',
+            'origami.localhost',
             true
         );
 

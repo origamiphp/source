@@ -8,8 +8,8 @@ use App\Environment\EnvironmentMaker;
 use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
+use App\Exception\InvalidConfigurationException;
 use App\Helper\CommandExitCode;
-use App\Validator\Constraints\LocalDomains;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
@@ -20,6 +20,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\Validator\Constraints\Hostname;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -251,12 +252,12 @@ final class EnvironmentMakerTest extends TestCase
             ->willReturn(true)
         ;
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(LocalDomains::class)]))
+        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(Hostname::class)]))
             ->shouldBeCalledOnce()
             ->willReturn(new ConstraintViolationList())
         ;
 
-        $this->assertCommandOutput($command, ['yes', ''], "Result = symfony.localhost www.symfony.localhost\n");
+        $this->assertCommandOutput($command, ['yes', ''], "Result = symfony.localhost\n");
     }
 
     public function testItAsksAndReturnsCustomDomains(): void
@@ -279,7 +280,7 @@ final class EnvironmentMakerTest extends TestCase
             ->willReturn(true)
         ;
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(LocalDomains::class)]))
+        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(Hostname::class)]))
             ->shouldBeCalledOnce()
             ->willReturn(new ConstraintViolationList())
         ;
@@ -311,6 +312,8 @@ final class EnvironmentMakerTest extends TestCase
             ->willReturn(true)
         ;
 
+        $this->expectException(InvalidConfigurationException::class);
+
         $violation = $this->prophet->prophesize(ConstraintViolation::class);
         (new MethodProphecy($violation, 'getMessage', []))
             ->shouldBeCalledOnce()
@@ -320,21 +323,14 @@ final class EnvironmentMakerTest extends TestCase
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        (new MethodProphecy($this->validator, 'validate', ['@#&!$€*', Argument::type(LocalDomains::class)]))
+        (new MethodProphecy($this->validator, 'validate', ['@#&!$€*', Argument::type(Hostname::class)]))
             ->shouldBeCalledOnce()
             ->willReturn($errors)
         ;
 
-        (new MethodProphecy($this->validator, 'validate', ['custom-domain.localhost', Argument::type(LocalDomains::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
-
-        $this->assertCommandOutput(
-            $command,
-            ['yes', '@#&!$€*', 'custom-domain.localhost'],
-            "Result = custom-domain.localhost\n"
-        );
+        $commandTester = new CommandTester($command);
+        $commandTester->setInputs(['yes', '@#&!$€*']);
+        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
     }
 
     /**
