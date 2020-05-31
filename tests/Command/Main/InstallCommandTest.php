@@ -112,11 +112,14 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
 
     public function provideEnvironmentConfigurations(): Generator
     {
-        yield ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', 'magento.localhost'];
-        yield ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', null];
+        yield 'Magento environment with domain' => ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', 'magento.localhost'];
+        yield 'Magento environment without domain' => ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', null];
 
-        yield ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', 'symfony.localhost'];
-        yield ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', null];
+        yield 'Sylius environment with domain' => ['fake-sylius', EnvironmentEntity::TYPE_SYLIUS, 'latest', 'sylius.localhost'];
+        yield 'Sylius environment without domain' => ['fake-sylius', EnvironmentEntity::TYPE_SYLIUS, 'latest', null];
+
+        yield 'Symfony environment with domain' => ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', 'symfony.localhost'];
+        yield 'Symfony environment without domain' => ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', null];
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
