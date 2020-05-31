@@ -13,9 +13,11 @@ use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\InvalidEnvironmentException;
+use App\Exception\UnsupportedOperatingSystemException;
 use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
+use App\Middleware\Hosts;
 use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -39,6 +41,9 @@ final class EnvironmentSubscriberTest extends WebTestCase
     private $prophet;
 
     /** @var ObjectProphecy */
+    private $hosts;
+
+    /** @var ObjectProphecy */
     private $dockerCompose;
 
     /** @var ObjectProphecy */
@@ -58,6 +63,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         parent::setUp();
 
         $this->prophet = new Prophet();
+        $this->hosts = $this->prophet->prophesize(Hosts::class);
         $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
         $this->mutagen = $this->prophet->prophesize(Mutagen::class);
         $this->database = $this->prophet->prophesize(Database::class);
@@ -76,22 +82,87 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItCreatesTheEnvironmentAfterInstall(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class)->reveal();
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
 
-        (new MethodProphecy($this->database, 'add', [$environment]))->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
         (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $event = new EnvironmentInstalledEvent(
-            $environment,
+            $environment->reveal(),
             $this->prophet->prophesize(SymfonyStyle::class)->reveal()
         );
+        $subscriber->onEnvironmentInstall($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
+    }
+
+    public function testItCreatesTheEnvironmentAfterInstallEvenWithAnException(): void
+    {
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $io = $this->prophet->prophesize(SymfonyStyle::class);
+
+        (new MethodProphecy($environment, 'getDomains', []))->shouldBeCalledOnce()->willReturn('test.localhost');
+        (new MethodProphecy($this->hosts, 'hasDomains', ['test.localhost']))
+            ->shouldBeCalledOnce()
+            ->willThrow(new UnsupportedOperatingSystemException('Dummy exception.'))
+        ;
+        (new MethodProphecy($this->hosts, 'fixHostsFile', ['test.localhost']))->shouldNotBeCalled();
+
+        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+
+        $subscriber = $this->getEnvironmentSubscriberInstance();
+
+        $event = new EnvironmentInstalledEvent($environment->reveal(), $io->reveal());
+        $subscriber->onEnvironmentInstall($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
+    }
+
+    public function testItAnalyzesAndFixesSystemHostsFile(): void
+    {
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $io = $this->prophet->prophesize(SymfonyStyle::class);
+
+        (new MethodProphecy($environment, 'getDomains', []))->shouldBeCalledOnce()->willReturn('test.localhost');
+        (new MethodProphecy($this->hosts, 'hasDomains', ['test.localhost']))->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($io, 'warning', [Argument::type('string')]))->shouldBeCalledOnce();
+        (new MethodProphecy($io, 'confirm', [Argument::type('string'), false]))->shouldBeCalledOnce()->willReturn(true);
+        (new MethodProphecy($this->hosts, 'fixHostsFile', ['test.localhost']))->shouldBeCalledOnce();
+
+        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+
+        $subscriber = $this->getEnvironmentSubscriberInstance();
+
+        $event = new EnvironmentInstalledEvent($environment->reveal(), $io->reveal());
+        $subscriber->onEnvironmentInstall($event);
+
+        // Temporary workaround to avoid the test being marked as risky.
+        static::assertTrue(true);
+    }
+
+    public function testItAnalyzesAndDoesNotFixSystemHostsFile(): void
+    {
+        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
+        $io = $this->prophet->prophesize(SymfonyStyle::class);
+
+        (new MethodProphecy($environment, 'getDomains', []))->shouldBeCalledOnce()->willReturn('test.localhost');
+        (new MethodProphecy($this->hosts, 'hasDomains', ['test.localhost']))->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($io, 'warning', [Argument::type('string')]))->shouldBeCalledOnce();
+        (new MethodProphecy($io, 'confirm', [Argument::type('string'), false]))->shouldBeCalledOnce()->willReturn(false);
+        (new MethodProphecy($this->hosts, 'fixHostsFile', ['test.localhost']))->shouldNotBeCalled();
+
+        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
+        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+
+        $subscriber = $this->getEnvironmentSubscriberInstance();
+
+        $event = new EnvironmentInstalledEvent($environment->reveal(), $io->reveal());
         $subscriber->onEnvironmentInstall($event);
 
         // Temporary workaround to avoid the test being marked as risky.
@@ -129,12 +200,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(true)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
@@ -174,12 +240,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(false)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
@@ -214,12 +275,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(true)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
@@ -254,12 +310,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(false)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
@@ -291,12 +342,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(true)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
@@ -328,12 +374,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(false)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
@@ -360,12 +401,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(true)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'success', [Argument::type('string')]))
@@ -392,12 +428,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->willReturn(false)
         ;
 
-        $subscriber = new EnvironmentSubscriber(
-            $this->dockerCompose->reveal(),
-            $this->mutagen->reveal(),
-            $this->database->reveal(),
-            $this->requirementsChecker->reveal()
-        );
+        $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         (new MethodProphecy($symfonyStyle, 'error', [Argument::type('string')]))
@@ -434,5 +465,19 @@ final class EnvironmentSubscriberTest extends WebTestCase
             ->shouldBeCalledOnce()
             ->willReturn(true)
         ;
+    }
+
+    /**
+     * Retrieves the "EnvironmentSubscriber" instance used within the tests.
+     */
+    private function getEnvironmentSubscriberInstance(): EnvironmentSubscriber
+    {
+        return new EnvironmentSubscriber(
+            $this->hosts->reveal(),
+            $this->dockerCompose->reveal(),
+            $this->mutagen->reveal(),
+            $this->database->reveal(),
+            $this->requirementsChecker->reveal()
+        );
     }
 }
