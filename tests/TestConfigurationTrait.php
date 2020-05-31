@@ -12,13 +12,13 @@ trait TestConfigurationTrait
 {
     public function provideMultipleInstallContexts(): Generator
     {
-        yield ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, 'www.magento.localhost magento.localhost'];
+        yield ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, 'magento.localhost'];
         yield ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, ''];
 
-        yield ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, 'www.sylius.localhost sylius.localhost'];
+        yield ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, 'sylius.localhost'];
         yield ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, ''];
 
-        yield ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, 'www.symfony.localhost symfony.localhost'];
+        yield ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, 'symfony.localhost'];
         yield ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, ''];
     }
 

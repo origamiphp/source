@@ -8,8 +8,8 @@ use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
 use App\Exception\InvalidConfigurationException;
-use App\Validator\Constraints\LocalDomains;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Validator\Constraints\Hostname;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class EnvironmentMaker
@@ -89,7 +89,7 @@ class EnvironmentMaker
         ) {
             $domains = $io->ask(
                 'Which domains does this certificate belong to?',
-                sprintf('%s.localhost www.%s.localhost', $type, $type),
+                "{$type}.localhost",
                 function (string $answer) {
                     return $this->localDomainsCallback($answer);
                 }
@@ -106,7 +106,7 @@ class EnvironmentMaker
      */
     private function localDomainsCallback(string $answer): string
     {
-        $constraint = new LocalDomains();
+        $constraint = new Hostname(['requireTld' => false]);
         $errors = $this->validator->validate($answer, $constraint);
 
         if ($errors->has(0)) {

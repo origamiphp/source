@@ -112,10 +112,10 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
 
     public function provideEnvironmentConfigurations(): Generator
     {
-        yield ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', 'magento.localhost www.magento.localhost'];
+        yield ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', 'magento.localhost'];
         yield ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', null];
 
-        yield ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', 'symfony.localhost www.symfony.localhost'];
+        yield ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', 'symfony.localhost'];
         yield ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', null];
     }
 

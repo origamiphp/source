@@ -17,7 +17,7 @@ trait TestFakeEnvironmentTrait
             'origami',
             '~/Sites/origami',
             EnvironmentEntity::TYPE_SYMFONY,
-            'origami.localhost www.origami.localhost',
+            'origami.localhost',
             false
         );
     }

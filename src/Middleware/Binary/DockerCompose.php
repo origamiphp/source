@@ -201,7 +201,8 @@ class DockerCompose
         $dotEnvConstraint = new DotEnvExists();
         $errors = $this->validator->validate($environment, $dotEnvConstraint);
         if (!$errors->has(0)) {
-            $dotenv = new Dotenv(true);
+            $dotenv = new Dotenv();
+            $dotenv->usePutenv(true);
             $dotenv->overload(sprintf('%s/var/docker/.env', $environment->getLocation()));
         } else {
             throw new InvalidConfigurationException($errors[0]->getMessage());

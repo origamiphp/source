@@ -68,15 +68,7 @@ final class MkcertTest extends TestCase
     public function provideCertificateDomains(): Generator
     {
         yield [['magento2.localhost']];
-        yield [['www.magento2.localhost']];
-        yield [['magento2.localhost', 'www.magento2.localhost']];
-
         yield [['sylius.localhost']];
-        yield [['www.sylius.localhost']];
-        yield [['sylius.localhost', 'www.sylius.localhost']];
-
         yield [['symfony.localhost']];
-        yield [['www.symfony.localhost']];
-        yield [['symfony.localhost', 'www.symfony.localhost']];
     }
 }
