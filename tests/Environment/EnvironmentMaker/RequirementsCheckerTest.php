@@ -84,16 +84,6 @@ final class RequirementsCheckerTest extends TestCase
     {
         $processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
-        $processWithMutagen = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($processWithMutagen, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'mutagen']]))
-            ->shouldBeCalledOnce()
-            ->willReturn($processWithMutagen->reveal())
-        ;
-
         $processWithMkcert = $this->prophet->prophesize(Process::class);
         (new MethodProphecy($processWithMkcert, 'isSuccessful', []))
             ->shouldBeCalledOnce()
@@ -107,52 +97,11 @@ final class RequirementsCheckerTest extends TestCase
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertSame([
             [
-                'name' => 'mutagen',
-                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-                'status' => true,
-            ],
-            [
                 'name' => 'mkcert',
                 'description' => 'A simple zero-config tool to make locally trusted development certificates.',
                 'status' => false,
             ],
         ], $requirementsChecker->checkNonMandatoryRequirements());
-    }
-
-    public function testItDetectsPerformanceBinaryFoundStatus(): void
-    {
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
-
-        $process = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'mutagen']]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $requirementsChecker = new RequirementsChecker($processFactory->reveal());
-        static::assertTrue($requirementsChecker->canOptimizeSynchronizationPerformance());
-    }
-
-    public function testItDetectsPerformanceBinaryNotFoundStatus(): void
-    {
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
-
-        $process = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalled()
-            ->willReturn(false)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'mutagen']]))
-            ->shouldBeCalled()
-            ->willReturn($process->reveal())
-        ;
-
-        $requirementsChecker = new RequirementsChecker($processFactory->reveal());
-        static::assertFalse($requirementsChecker->canOptimizeSynchronizationPerformance());
     }
 
     public function testItDetectsCertificatesBinaryFoundStatus(): void
