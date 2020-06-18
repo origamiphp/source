@@ -8,7 +8,6 @@ use App\Environment\EnvironmentMaker;
 use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
-use App\Exception\InvalidConfigurationException;
 use App\Helper\CommandExitCode;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -312,8 +311,6 @@ final class EnvironmentMakerTest extends TestCase
             ->willReturn(true)
         ;
 
-        $this->expectException(InvalidConfigurationException::class);
-
         $violation = $this->prophet->prophesize(ConstraintViolation::class);
         (new MethodProphecy($violation, 'getMessage', []))
             ->shouldBeCalledOnce()
@@ -328,9 +325,16 @@ final class EnvironmentMakerTest extends TestCase
             ->willReturn($errors)
         ;
 
-        $commandTester = new CommandTester($command);
-        $commandTester->setInputs(['yes', '@#&!$€*']);
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
+        (new MethodProphecy($this->validator, 'validate', ['custom-domain.localhost', Argument::type(Hostname::class)]))
+            ->shouldBeCalledOnce()
+            ->willReturn(new ConstraintViolationList())
+        ;
+
+        $this->assertCommandOutput(
+            $command,
+            ['yes', '@#&!$€*', 'custom-domain.localhost'],
+            "Result = custom-domain.localhost\n"
+        );
     }
 
     /**
