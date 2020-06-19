@@ -51,7 +51,7 @@ class CommandSubscriber implements EventSubscriberInterface
         $mandatoryRequirements = $this->requirementsChecker->checkMandatoryRequirements();
         $nonMandatoryRequirements = $this->requirementsChecker->checkNonMandatoryRequirements();
 
-        if ($event->getOutput()->isVeryVerbose()) {
+        if ($event->getOutput()->isVerbose()) {
             $io = new SymfonyStyle($event->getInput(), $event->getOutput());
             $io->title('Origami Requirements Checker');
 
