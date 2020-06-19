@@ -337,6 +337,33 @@ final class EnvironmentMakerTest extends TestCase
         );
     }
 
+    public function testItDoesNotAskDomainsWithoutMkcert(): void
+    {
+        $command = new class($this->environmentMaker) extends Command {
+            use FakeCommandConstructor;
+            protected static $defaultName = 'origami:test';
+
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $io = new SymfonyStyle($input, $output);
+                $io->writeln('Result = '.$this->environmentMaker->askDomains($io, 'magento'));
+
+                return CommandExitCode::SUCCESS;
+            }
+        };
+
+        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(Hostname::class)]))
+            ->shouldNotBeCalled()
+        ;
+
+        $this->assertCommandOutput($command, [], "Result = \n");
+    }
+
     /**
      * Asserts that the command output will end with the given output for the given inputs.
      */

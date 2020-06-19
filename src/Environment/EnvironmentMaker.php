@@ -84,9 +84,13 @@ class EnvironmentMaker
      */
     public function askDomains(SymfonyStyle $io, string $type): ?string
     {
-        if ($this->requirementsChecker->canMakeLocallyTrustedCertificates()
-            && $io->confirm('Do you want to generate a locally-trusted development certificate?', false)
-        ) {
+        if (!$this->requirementsChecker->canMakeLocallyTrustedCertificates()) {
+            $io->warning('Generation of the locally-trusted development certificate skipped because mkcert is not installed.');
+
+            return null;
+        }
+
+        if ($io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
             $domains = $io->ask(
                 'Which domains does this certificate belong to?',
                 "{$type}.localhost",
