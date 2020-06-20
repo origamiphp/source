@@ -38,7 +38,10 @@ class DockerHub
         $parsedResponse = $this->parseResponse($response);
 
         if (\array_key_exists('results', $parsedResponse) && \is_array($parsedResponse['results'])) {
-            return array_column($parsedResponse['results'], 'name');
+            $tags = array_column($parsedResponse['results'], 'name');
+            sort($tags);
+
+            return $tags;
         }
 
         throw new DockerHubException('Unable to retrieve the image tags.');

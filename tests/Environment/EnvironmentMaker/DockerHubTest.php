@@ -31,7 +31,7 @@ final class DockerHubTest extends TestCase
         $dockerHub = new DockerHub($httpClient);
         $imageTags = $dockerHub->getImageTags('origami');
 
-        static::assertSame(['foo', 'bar', 'latest'], $imageTags);
+        static::assertSame(['bar', 'foo', 'latest'], $imageTags);
     }
 
     /**

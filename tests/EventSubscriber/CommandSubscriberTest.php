@@ -68,7 +68,7 @@ final class CommandSubscriberTest extends WebTestCase
 
         $input = $this->prophet->prophesize(InputInterface::class);
         $output = $this->prophet->prophesize(OutputInterface::class);
-        (new MethodProphecy($output, 'isVeryVerbose', []))
+        (new MethodProphecy($output, 'isVerbose', []))
             ->shouldNotBeCalled()
         ;
 
@@ -112,7 +112,7 @@ final class CommandSubscriberTest extends WebTestCase
 
         $input = new ArgvInput();
         $output = new BufferedOutput();
-        $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
+        $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input, $output));
@@ -147,7 +147,7 @@ final class CommandSubscriberTest extends WebTestCase
 
         $input = new ArgvInput();
         $output = new BufferedOutput();
-        $output->setVerbosity(OutputInterface::VERBOSITY_VERY_VERBOSE);
+        $output->setVerbosity(OutputInterface::VERBOSITY_VERBOSE);
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input, $output));
