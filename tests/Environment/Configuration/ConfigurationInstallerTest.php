@@ -9,6 +9,7 @@ use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
 use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
+use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\MethodProphecy;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -85,9 +86,48 @@ final class ConfigurationInstallerTest extends TestCase
             ;
         }
 
-        $installer = new ConfigurationInstaller($this->mkcert->reveal());
+        $installer = new ConfigurationInstaller($this->mkcert->reveal(), FakeVariables::empty());
         $installer->install($name, $this->location, $type, $phpVersion, $domains);
 
         $this->assertConfigurationIsInstalled($type, $destination, $phpVersion);
+    }
+
+    /**
+     * @dataProvider provideMultipleInstallContexts
+     *
+     * @throws FilesystemException
+     */
+    public function testItInstallsConfigurationFilesWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
+    {
+        $phpVersion = 'azerty';
+
+        $source = __DIR__."/../../../src/Resources/{$type}";
+        $destination = "{$this->location}/var/docker";
+
+        /** @var string $defaultConfiguration */
+        $defaultConfiguration = file_get_contents("{$source}/.env");
+        static::assertStringNotContainsString($phpVersion, $defaultConfiguration);
+
+        if ($domains !== null) {
+            $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
+            $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
+
+            (new MethodProphecy($this->mkcert, 'generateCertificate', [$certificate, $privateKey, explode(' ', $domains)]))
+                ->shouldBeCalledOnce()
+                ->willReturn(true)
+            ;
+        } else {
+            (new MethodProphecy($this->mkcert, 'generateCertificate', []))
+                ->shouldNotBeCalled()
+            ;
+        }
+
+        $credentials = $this->getFakeBlackfireCredentials();
+
+        $installer = new ConfigurationInstaller($this->mkcert->reveal(), FakeVariables::fromArray($credentials));
+        $installer->install($name, $this->location, $type, $phpVersion, $domains);
+
+        $this->assertConfigurationIsInstalled($type, $destination, $phpVersion);
+        $this->assertConfigurationContainsBlackfireCredentials($destination, $credentials);
     }
 }

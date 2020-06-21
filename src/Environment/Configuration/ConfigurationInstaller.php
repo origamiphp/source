@@ -26,10 +26,13 @@ class ConfigurationInstaller extends AbstractConfiguration
             $destination = sprintf('%s/var/docker', $location);
 
             $this->copyEnvironmentFiles($source, $destination);
+            $configuration = sprintf('%s/.env', $destination);
 
             if ($phpVersion !== null) {
-                $this->updatePhpVersion(sprintf('%s/.env', $destination), $phpVersion);
+                $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
             }
+
+            $this->loadBlackfireParameters($destination);
 
             if ($domains !== null) {
                 $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);

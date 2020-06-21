@@ -22,6 +22,16 @@ trait TestConfigurationTrait
         yield 'Symfony environment without domain' => ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, ''];
     }
 
+    protected function getFakeBlackfireCredentials(): array
+    {
+        return [
+            'BLACKFIRE_SERVER_ID' => 'server_foo',
+            'BLACKFIRE_SERVER_TOKEN' => 'server_bar',
+            'BLACKFIRE_CLIENT_ID' => 'client_foo',
+            'BLACKFIRE_CLIENT_TOKEN' => 'client_bar',
+        ];
+    }
+
     protected function assertConfigurationIsInstalled(string $type, string $destination, string $phpVersion): void
     {
         $finder = new Finder();
@@ -37,5 +47,15 @@ trait TestConfigurationTrait
         /** @var string $projectConfiguration */
         $projectConfiguration = file_get_contents(sprintf('%s/.env', $destination));
         static::assertStringContainsString($phpVersion, $projectConfiguration);
+    }
+
+    protected function assertConfigurationContainsBlackfireCredentials(string $destination, array $credentials): void
+    {
+        /** @var string $projectConfiguration */
+        $projectConfiguration = file_get_contents("{$destination}/.env");
+
+        foreach ($credentials as $key => $value) {
+            static::assertStringContainsString("{$key}={$value}\n", $projectConfiguration);
+        }
     }
 }

@@ -29,13 +29,13 @@ class ConfigurationUpdater extends AbstractConfiguration
         $source = __DIR__.sprintf('/../../Resources/%s', $environment->getType());
         $destination = sprintf('%s/var/docker', $environment->getLocation());
 
-        // Retrieve the PHP version currently configured.
-        $phpVersion = $this->getPhpVersion(sprintf('%s/.env', $destination));
-
-        // Copy all the default configuration files.
         $this->copyEnvironmentFiles($source, $destination);
+        $configuration = sprintf('%s/.env', $destination);
 
         // Replace the PHP version that was previously used.
-        $this->updatePhpVersion(sprintf('%s/.env', $destination), $phpVersion);
+        $phpVersion = $this->getPhpVersion($configuration);
+        $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
+
+        $this->loadBlackfireParameters($destination);
     }
 }

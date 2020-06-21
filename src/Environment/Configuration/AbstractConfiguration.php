@@ -7,18 +7,29 @@ namespace App\Environment\Configuration;
 use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
+use Ergebnis\Environment\Variables;
 use Symfony\Component\Filesystem\Filesystem;
 
 class AbstractConfiguration
 {
     protected const PHP_IMAGE_OPTION_NAME = 'DOCKER_PHP_IMAGE';
+    protected const BLACKFIRE_PARAMETERS = [
+        'BLACKFIRE_CLIENT_ID',
+        'BLACKFIRE_CLIENT_TOKEN',
+        'BLACKFIRE_SERVER_ID',
+        'BLACKFIRE_SERVER_TOKEN',
+    ];
 
     /** @var Mkcert */
     protected $mkcert;
 
-    public function __construct(Mkcert $mkcert)
+    /** @var Variables */
+    protected $systemVariables;
+
+    public function __construct(Mkcert $mkcert, Variables $systemVariables)
     {
         $this->mkcert = $mkcert;
+        $this->systemVariables = $systemVariables;
     }
 
     /**
@@ -36,11 +47,26 @@ class AbstractConfiguration
     }
 
     /**
-     * Updates the PHP image version in the environment configuration.
+     * Loads Blackfire credentials from the environment variables and updates the environment dotenv file.
      *
      * @throws FilesystemException
      */
-    protected function updatePhpVersion(string $filename, string $phpVersion): void
+    protected function loadBlackfireParameters(string $destination): void
+    {
+        $filename = "{$destination}/.env";
+        foreach (self::BLACKFIRE_PARAMETERS as $parameter) {
+            if ($this->systemVariables->has($parameter)) {
+                $this->updateEnvironment($filename, $parameter, $this->systemVariables->get($parameter));
+            }
+        }
+    }
+
+    /**
+     * Updates the environment dotenv file with the given parameter/value pair.
+     *
+     * @throws FilesystemException
+     */
+    protected function updateEnvironment(string $filename, string $parameter, string $value): void
     {
         if (!$configuration = file_get_contents($filename)) {
             // @codeCoverageIgnoreStart
@@ -50,10 +76,7 @@ class AbstractConfiguration
             // @codeCoverageIgnoreEnd
         }
 
-        $pattern = sprintf('/%s=.*/', self::PHP_IMAGE_OPTION_NAME);
-        $replacement = sprintf('%s=%s', self::PHP_IMAGE_OPTION_NAME, $phpVersion);
-
-        if (!$updates = preg_replace($pattern, $replacement, $configuration)) {
+        if (!$updates = preg_replace("/{$parameter}=.*/", "{$parameter}={$value}", $configuration)) {
             // @codeCoverageIgnoreStart
             throw new FilesystemException(
                 sprintf("Unable to parse the environment configuration.\n%s", $filename)
