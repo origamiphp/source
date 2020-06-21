@@ -12,6 +12,7 @@ use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\Mkcert;
 use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
+use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophet;
@@ -74,7 +75,7 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal());
+        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
 
         $this->assertConfigurationIsInstalled($type, $destination, $this->fakePhpVersion);
@@ -94,10 +95,35 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=');
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal());
+        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
 
         $this->assertConfigurationIsInstalled($type, $destination, DockerHub::DEFAULT_IMAGE_VERSION);
+    }
+
+    /**
+     * @dataProvider provideMultipleInstallContexts
+     *
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
+    public function testItUpdatesAnEnvironmentWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
+    {
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+
+        $source = __DIR__."/../../../src/Resources/{$type}";
+        $destination = "{$this->location}/var/docker";
+
+        mkdir($destination, 0777, true);
+        copy("{$source}/.env", "{$destination}/.env");
+
+        $credentials = $this->getFakeBlackfireCredentials();
+
+        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::fromArray($credentials));
+        $updater->update($environment);
+
+        $this->assertConfigurationIsInstalled($type, $destination, DockerHub::DEFAULT_IMAGE_VERSION);
+        $this->assertConfigurationContainsBlackfireCredentials($destination, $credentials);
     }
 
     /**
@@ -114,7 +140,7 @@ final class ConfigurationUpdaterTest extends TestCase
 
         $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a custom environment.'));
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal());
+        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
     }
 
@@ -134,7 +160,7 @@ final class ConfigurationUpdaterTest extends TestCase
 
         $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a running environment.'));
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal());
+        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
     }
 }

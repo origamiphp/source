@@ -9,6 +9,7 @@ use App\Environment\EnvironmentEntity;
 use App\Middleware\Binary\Mkcert;
 use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
+use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Prophecy\ObjectProphecy;
 use Prophecy\Prophet;
@@ -65,7 +66,7 @@ final class ConfigurationUninstallerTest extends TestCase
         mkdir($destination, 0777, true);
         static::assertDirectoryExists($destination);
 
-        $uninstaller = new ConfigurationUninstaller($this->mkcert->reveal());
+        $uninstaller = new ConfigurationUninstaller($this->mkcert->reveal(), FakeVariables::empty());
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);
