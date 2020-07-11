@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\RootCommand;
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use Prophecy\Argument;
@@ -36,8 +37,8 @@ final class RootCommandTest extends AbstractContextualCommandWebTestCase
             ->shouldBeCalledOnce()
             ->willReturn(
                 [
-                    'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $environment->getLocation()),
-                    'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
+                    'COMPOSE_FILE' => $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
+                    'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
                     'DOCKER_PHP_IMAGE' => 'default',
                     'PROJECT_LOCATION' => $environment->getLocation(),
                 ]
@@ -50,7 +51,7 @@ final class RootCommandTest extends AbstractContextualCommandWebTestCase
         $display = $commandTester->getDisplay();
 
         static::assertDisplayIsVerbose($environment, $display);
-        static::assertStringContainsString('export COMPOSE_FILE="~/Sites/origami/var/docker/docker-compose.yml"', $display);
+        static::assertStringContainsString('export COMPOSE_FILE="~/Sites/origami'.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml"', $display);
         static::assertStringContainsString('export COMPOSE_PROJECT_NAME="symfony_origami"', $display);
         static::assertStringContainsString('export DOCKER_PHP_IMAGE="default"', $display);
         static::assertStringContainsString('export PROJECT_LOCATION="~/Sites/origami"', $display);

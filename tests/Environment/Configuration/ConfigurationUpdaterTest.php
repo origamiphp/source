@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Environment\Configuration;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationUpdater;
 use App\Environment\EnvironmentEntity;
 use App\Environment\EnvironmentMaker\DockerHub;
@@ -71,7 +72,7 @@ final class ConfigurationUpdaterTest extends TestCase
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 
@@ -91,7 +92,7 @@ final class ConfigurationUpdaterTest extends TestCase
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=');
 
@@ -112,7 +113,7 @@ final class ConfigurationUpdaterTest extends TestCase
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
         $source = __DIR__."/../../../src/Resources/{$type}";
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
 
         mkdir($destination, 0777, true);
         copy("{$source}/.env", "{$destination}/.env");
@@ -134,7 +135,7 @@ final class ConfigurationUpdaterTest extends TestCase
     {
         $environment = new EnvironmentEntity(basename($this->location), $this->location, EnvironmentEntity::TYPE_CUSTOM, null);
 
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 
@@ -154,7 +155,7 @@ final class ConfigurationUpdaterTest extends TestCase
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains, true);
 
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Validator\Constraints;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Tests\TestFakeEnvironmentTrait;
 use App\Tests\TestLocationTrait;
@@ -34,7 +35,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
         parent::setUp();
 
         $this->createLocation();
-        mkdir($this->location.'/var/docker', 0777, true);
+        mkdir($this->location.AbstractConfiguration::INSTALLATION_DIRECTORY, 0777, true);
     }
 
     /**
@@ -58,7 +59,10 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
     public function testItValidatesConfiguration(string $type): void
     {
         $filesystem = new Filesystem();
-        $filesystem->mirror(__DIR__.'/../../../src/Resources/'.$type, $this->location.'/var/docker');
+        $filesystem->mirror(
+            __DIR__."/../../../src/Resources/{$type}",
+            $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY
+        );
 
         $this->validator->validate(new EnvironmentEntity($type, $this->location, $type), new ConfigurationFiles());
         $this->assertNoViolation();

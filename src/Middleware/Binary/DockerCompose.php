@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middleware\Binary;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
@@ -50,15 +51,15 @@ class DockerCompose
     {
         if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $result = [
-                'COMPOSE_FILE' => sprintf('%s/var/docker/docker-compose.yml', $environment->getLocation()),
-                'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
+                'COMPOSE_FILE' => $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
+                'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
                 'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
                 'PROJECT_LOCATION' => $environment->getLocation(),
             ];
         } else {
             $result = [
-                'COMPOSE_FILE' => sprintf('%s/docker-compose.yml', $environment->getLocation()),
-                'COMPOSE_PROJECT_NAME' => $environment->getType().'_'.$environment->getName(),
+                'COMPOSE_FILE' => "{$environment->getLocation()}/docker-compose.yml",
+                'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
                 'PROJECT_LOCATION' => $environment->getLocation(),
             ];
         }
@@ -203,7 +204,7 @@ class DockerCompose
         if (!$errors->has(0)) {
             $dotenv = new Dotenv();
             $dotenv->usePutenv(true);
-            $dotenv->overload(sprintf('%s/var/docker/.env', $environment->getLocation()));
+            $dotenv->overload($environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'.env');
         } else {
             throw new InvalidConfigurationException($errors[0]->getMessage());
         }

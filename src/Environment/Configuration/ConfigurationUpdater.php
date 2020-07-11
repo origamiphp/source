@@ -26,11 +26,11 @@ class ConfigurationUpdater extends AbstractConfiguration
             throw new InvalidEnvironmentException('Unable to update a running environment.');
         }
 
-        $source = __DIR__.sprintf('/../../Resources/%s', $environment->getType());
-        $destination = sprintf('%s/var/docker', $environment->getLocation());
+        $source = __DIR__."/../../Resources/{$environment->getType()}";
+        $destination = $environment->getLocation().self::INSTALLATION_DIRECTORY;
 
         $this->copyEnvironmentFiles($source, $destination);
-        $configuration = sprintf('%s/.env', $destination);
+        $configuration = "{$destination}/.env";
 
         // Replace the PHP version that was previously used.
         $phpVersion = $this->getPhpVersion($configuration);
