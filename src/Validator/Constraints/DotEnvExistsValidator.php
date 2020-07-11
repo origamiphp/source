@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Constraints;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraint;
@@ -26,7 +27,7 @@ class DotEnvExistsValidator extends ConstraintValidator
 
         $filesystem = new Filesystem();
 
-        $configuration = sprintf('%s/var/docker/.env', $environment->getLocation());
+        $configuration = $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'.env';
         if (!$filesystem->exists($configuration)) {
             $this->context->buildViolation($constraint->message)->addViolation();
         }

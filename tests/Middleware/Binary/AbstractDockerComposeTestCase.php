@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Helper\ProcessFactory;
 use App\Tests\TestLocationTrait;
@@ -51,11 +52,14 @@ abstract class AbstractDockerComposeTestCase extends TestCase
         $this->processFactory = $this->prophet->prophesize(ProcessFactory::class);
 
         $this->createLocation();
-        mkdir($this->location.'/var/docker', 0777, true);
+        mkdir($this->location.AbstractConfiguration::INSTALLATION_DIRECTORY, 0777, true);
         $this->environment = new EnvironmentEntity('foo', $this->location, EnvironmentEntity::TYPE_SYMFONY, null, true);
 
         $filesystem = new Filesystem();
-        $filesystem->mirror(__DIR__.'/../../../src/Resources/symfony/', $this->location.'/var/docker');
+        $filesystem->mirror(
+            __DIR__.'/../../../src/Resources/symfony/',
+            $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY
+        );
     }
 
     /**
@@ -91,7 +95,7 @@ abstract class AbstractDockerComposeTestCase extends TestCase
     public function getFakeEnvironmentVariables(): array
     {
         return [
-            'COMPOSE_FILE' => $this->location.'/var/docker/docker-compose.yml',
+            'COMPOSE_FILE' => $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
             'COMPOSE_PROJECT_NAME' => $this->environment->getType().'_'.$this->environment->getName(),
             'DOCKER_PHP_IMAGE' => '',
             'PROJECT_LOCATION' => $this->location,

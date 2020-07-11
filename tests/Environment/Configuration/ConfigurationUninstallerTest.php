@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Environment\Configuration;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Environment\EnvironmentEntity;
 use App\Middleware\Binary\Mkcert;
@@ -62,7 +63,7 @@ final class ConfigurationUninstallerTest extends TestCase
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
-        $destination = sprintf('%s/var/docker', $this->location);
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         mkdir($destination, 0777, true);
         static::assertDirectoryExists($destination);
 

@@ -16,7 +16,7 @@ class ConfigurationUninstaller extends AbstractConfiguration
     {
         if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
             $filesystem = new Filesystem();
-            $filesystem->remove(sprintf('%s/var/docker', $environment->getLocation()));
+            $filesystem->remove($environment->getLocation().self::INSTALLATION_DIRECTORY);
         }
     }
 }

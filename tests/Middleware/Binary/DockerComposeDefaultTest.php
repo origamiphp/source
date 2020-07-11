@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
@@ -37,7 +38,7 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
         $variables = $dockerCompose->getRequiredVariables($this->environment);
 
         static::assertArrayHasKey('COMPOSE_FILE', $variables);
-        static::assertSame($this->location.'/var/docker/docker-compose.yml', $variables['COMPOSE_FILE']);
+        static::assertSame($this->location.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml', $variables['COMPOSE_FILE']);
 
         static::assertArrayHasKey('COMPOSE_PROJECT_NAME', $variables);
         static::assertSame('symfony_foo', $variables['COMPOSE_PROJECT_NAME']);
@@ -61,7 +62,7 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
         $variables = $dockerCompose->getRequiredVariables($environment);
 
         static::assertArrayHasKey('COMPOSE_FILE', $variables);
-        static::assertSame($this->location.'/docker-compose.yml', $variables['COMPOSE_FILE']);
+        static::assertSame("{$this->location}/docker-compose.yml", $variables['COMPOSE_FILE']);
 
         static::assertArrayHasKey('COMPOSE_PROJECT_NAME', $variables);
         static::assertSame('custom_bar', $variables['COMPOSE_PROJECT_NAME']);

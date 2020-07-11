@@ -19,7 +19,8 @@ trait TestLocationTrait
     {
         $this->location = sys_get_temp_dir()
             .\DIRECTORY_SEPARATOR.'origami'
-            .\DIRECTORY_SEPARATOR.(new ReflectionClass(static::class))->getShortName();
+            .\DIRECTORY_SEPARATOR.(new ReflectionClass(static::class))->getShortName()
+        ;
 
         mkdir($this->location, 0777, true);
     }

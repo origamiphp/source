@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Environment\Configuration;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationInstaller;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
@@ -66,7 +67,7 @@ final class ConfigurationInstallerTest extends TestCase
         $phpVersion = 'azerty';
 
         $source = __DIR__."/../../../src/Resources/{$type}";
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
 
         /** @var string $defaultConfiguration */
         $defaultConfiguration = file_get_contents("{$source}/.env");
@@ -102,7 +103,7 @@ final class ConfigurationInstallerTest extends TestCase
         $phpVersion = 'azerty';
 
         $source = __DIR__."/../../../src/Resources/{$type}";
-        $destination = "{$this->location}/var/docker";
+        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
 
         /** @var string $defaultConfiguration */
         $defaultConfiguration = file_get_contents("{$source}/.env");

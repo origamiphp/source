@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Validator\Constraints;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
@@ -28,13 +29,13 @@ class ConfigurationFilesValidator extends ConstraintValidator
         $filesystem = new Filesystem();
 
         $finder = new Finder();
-        $finder->files()->in(__DIR__.'/../../Resources/'.$environment->getType())->depth(0);
+        $finder->files()->in(__DIR__."/../../Resources/{$environment->getType()}")->depth(0);
 
         foreach ($finder as $file) {
             $filename = str_replace(
                 'custom-',
                 '',
-                sprintf('%s/var/docker/%s', $environment->getLocation(), $file->getFilename())
+                $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.$file->getFilename(),
             );
 
             if (!$filesystem->exists($filename)) {

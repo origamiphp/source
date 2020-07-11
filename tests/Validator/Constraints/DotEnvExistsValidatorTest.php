@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Validator\Constraints;
 
+use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Tests\TestFakeEnvironmentTrait;
 use App\Tests\TestLocationTrait;
@@ -35,9 +36,9 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
         parent::setUp();
 
         $this->createLocation();
-        mkdir($this->location.'/var/docker', 0777, true);
+        mkdir($this->location.AbstractConfiguration::INSTALLATION_DIRECTORY, 0777, true);
 
-        $this->filePath = $this->location.'/var/docker/.env';
+        $this->filePath = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY.'.env';
         touch($this->filePath);
     }
 

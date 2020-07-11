@@ -12,6 +12,8 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class AbstractConfiguration
 {
+    public const INSTALLATION_DIRECTORY = '/var/docker/';
+
     protected const PHP_IMAGE_OPTION_NAME = 'DOCKER_PHP_IMAGE';
     protected const BLACKFIRE_PARAMETERS = [
         'BLACKFIRE_CLIENT_ID',

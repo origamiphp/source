@@ -22,11 +22,11 @@ class ConfigurationInstaller extends AbstractConfiguration
         ?string $domains = null
     ): EnvironmentEntity {
         if ($type !== EnvironmentEntity::TYPE_CUSTOM) {
-            $source = __DIR__.sprintf('/../../Resources/%s', $type);
-            $destination = sprintf('%s/var/docker', $location);
+            $source = __DIR__."/../../Resources/{$type}";
+            $destination = $location.self::INSTALLATION_DIRECTORY;
 
             $this->copyEnvironmentFiles($source, $destination);
-            $configuration = sprintf('%s/.env', $destination);
+            $configuration = "{$destination}/.env";
 
             if ($phpVersion !== null) {
                 $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
@@ -35,8 +35,8 @@ class ConfigurationInstaller extends AbstractConfiguration
             $this->loadBlackfireParameters($destination);
 
             if ($domains !== null) {
-                $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
-                $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
+                $certificate = "{$destination}/nginx/certs/custom.pem";
+                $privateKey = "{$destination}/nginx/certs/custom.key";
 
                 $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
             }
