@@ -8,7 +8,6 @@ use App\Command\Contextual\RestartCommand;
 use App\Helper\CommandExitCode;
 use Prophecy\Argument;
 use Prophecy\Prophecy\MethodProphecy;
-use stdClass;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -18,8 +17,6 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Contextual\RestartCommand
- *
- * @uses \App\Event\AbstractEnvironmentEvent::__construct()
  */
 final class RestartCommandTest extends AbstractContextualCommandWebTestCase
 {
@@ -35,10 +32,6 @@ final class RestartCommandTest extends AbstractContextualCommandWebTestCase
         (new MethodProphecy($this->dockerCompose, 'restartServices', []))
             ->shouldBeCalledOnce()
             ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
-            ->willReturn(new stdClass())
         ;
 
         $commandTester = new CommandTester($this->getCommand());
@@ -73,10 +66,6 @@ final class RestartCommandTest extends AbstractContextualCommandWebTestCase
      */
     private function getCommand(): RestartCommand
     {
-        return new RestartCommand(
-            $this->currentContext->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->eventDispatcher->reveal()
-        );
+        return new RestartCommand($this->currentContext->reveal(), $this->dockerCompose->reveal());
     }
 }

@@ -1,4 +1,4 @@
-<h1 align="center">Welcome to Origami 👋</h1>
+<h1 align="center">Welcome to Origami! 👋</h1>
 <p align="center">
   <a href="https://codecov.io/gh/ajardin/origami-source" target="_blank">
     <img src="https://img.shields.io/codecov/c/github/ajardin/origami-source?style=for-the-badge" alt="Codecov"/>
@@ -15,20 +15,18 @@
 
 `origami` is designed to help you manage local Docker environments for PHP applications.
 
-It allows among other things to: install and manage a complete environment in a project, visualize the services logs,
-display the services status, go inside a service, etc. It also offers the ability to have a global overview of all
-installed environments and to perform the actions mentioned above without having to be in the project directory.
+It allows among other things to: install and manage a complete environment in a project, visualize status and logs of
+the services, go inside a service, etc. It also offers the ability to have a global overview of all installed
+environments and to perform the actions mentioned above without having to be in the project directory.
 
-Basically, `origami` is an abstraction of:
- * [Docker][1] and [Docker Compose][2]
- * [Mutagen][4] to improve performance because Docker can be [painfully slow on macOS][3] with some projects
- * [mkcert][5] to make locally trusted development certificates because the HTTPS has become the norm
+Basically, `origami` is an abstraction written in PHP of [Docker Compose][1] and [mkcert][2].
 
 ✨ Live Demo
 ------------
+Because a picture is worth a thousand words...
+
 <p align="center">
-  <img src="https://gist.githubusercontent.com/ajardin/ec3d9487fc86bdc25a7dac74bf8a1d34/raw/c6c3b5792472fa4edd05a49d9bc9338d590ecf3a/origami.gif"
-    width="700" alt="demo"/>
+  <img src="https://gist.githubusercontent.com/ajardin/ec3d9487fc86bdc25a7dac74bf8a1d34/raw/c6c3b5792472fa4edd05a49d9bc9338d590ecf3a/origami.gif" alt="demo"/>
 </p>
 
 📦 Installing
@@ -77,9 +75,9 @@ update                         Executes a Composer update within a PHP 7.3 envir
 
 🔍 Architecture
 ---------------
-`origami` is built on top of [Symfony][6], a popular PHP framework.
+`origami` is built on top of [Symfony][3], a popular PHP framework.
 
-Unlike common Symfony projects, we use [Box][7] to package the tool into a single binary file. So that it's possible
+Unlike common Symfony projects, we use [Box][4] to package the tool into a single binary file. So that it's possible
 to easily share it without installing all its dependencies, as it could potentially bring conflicts if other projects
 with outdated dependencies are already globally installed on the local machine.
 
@@ -88,22 +86,18 @@ like to facilitate the contribution process by using something well-known by our
 
 🤝 Contributing
 ---------------
-Contributions, issues and feature requests are welcome! Feel free to check [issues page][8].  
+Contributions, issues and feature requests are welcome! Feel free to check [issues page][5].  
 By the way, don't forget you can give a ⭐️ if this project helped you!
 
 📝 License
 ----------
-Copyright © [Alexandre Jardin][9]. This project is licensed under the [MIT][10] license.
+Copyright © [Alexandre Jardin][6]. This project is licensed under the [MIT][7] license.
 
 <!-- Resources -->
-[1]: https://docs.docker.com/
-[2]: https://docs.docker.com/compose/
-[3]: https://github.com/docker/for-mac/issues/1592
-[4]: https://mutagen.io/
-[5]: https://github.com/FiloSottile/mkcert
-[6]: https://symfony.com/
-[7]: https://github.com/humbug/box/
-[8]: https://github.com/ajardin/origami-source/issues
-[9]: https://github.com/ajardin
-[9]: https://github.com/ajardin
-[10]: https://github.com/ajardin/origami-source/blob/master/LICENSE
+[1]: https://docs.docker.com/compose/
+[2]: https://github.com/FiloSottile/mkcert
+[3]: https://symfony.com/
+[4]: https://github.com/humbug/box/
+[5]: https://github.com/ajardin/origami-source/issues
+[6]: https://github.com/ajardin
+[7]: https://github.com/ajardin/origami-source/blob/master/LICENSE

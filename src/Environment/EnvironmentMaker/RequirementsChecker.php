@@ -18,18 +18,13 @@ class RequirementsChecker
         'description' => 'Define and run multi-container applications with Docker.',
     ];
 
-    private const PERFORMANCE = [
-        'name' => 'mutagen',
-        'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-    ];
-
     private const CERTIFICATES = [
         'name' => 'mkcert',
         'description' => 'A simple zero-config tool to make locally trusted development certificates.',
     ];
 
     private const MANDATORY_REQUIREMENTS = [self::CONTAINERIZATION, self::ORCHESTRATION];
-    private const NON_MANDATORY_REQUIREMENTS = [self::PERFORMANCE, self::CERTIFICATES];
+    private const NON_MANDATORY_REQUIREMENTS = [self::CERTIFICATES];
 
     /** @var ProcessFactory */
     private $processFactory;
@@ -67,14 +62,6 @@ class RequirementsChecker
         }
 
         return $result;
-    }
-
-    /**
-     * Checks whether the application can optimize the synchronization performance with a third-party tool.
-     */
-    public function canOptimizeSynchronizationPerformance(): bool
-    {
-        return $this->processFactory->runBackgroundProcess(['which', self::PERFORMANCE['name']])->isSuccessful();
     }
 
     /**

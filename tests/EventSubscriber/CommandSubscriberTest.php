@@ -95,7 +95,6 @@ final class CommandSubscriberTest extends WebTestCase
         (new MethodProphecy($requirementsChecker, 'checkNonMandatoryRequirements', []))
             ->shouldBeCalled()
             ->willReturn([
-                ['name' => 'mutagen', 'description' => '', 'status' => true],
                 ['name' => 'mkcert', 'description' => '', 'status' => true],
             ])
         ;
@@ -134,7 +133,6 @@ final class CommandSubscriberTest extends WebTestCase
         (new MethodProphecy($requirementsChecker, 'checkNonMandatoryRequirements', []))
             ->shouldBeCalled()
             ->willReturn([
-                ['name' => 'mutagen', 'description' => '', 'status' => true],
                 ['name' => 'mkcert', 'description' => '', 'status' => false],
             ])
         ;

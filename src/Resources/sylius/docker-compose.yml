@@ -22,7 +22,7 @@ services:
       - 443:443
     volumes:
       # Project files
-      - code_sync:/var/www/html:nocopy
+      - ${PROJECT_LOCATION}:/var/www/html:delegated
       # SSL certificates
       - ${PROJECT_LOCATION}/var/docker/nginx/certs:/etc/nginx/ssl:cached
       # Custom configuration
@@ -38,7 +38,7 @@ services:
 #      - 35729:35729
 #    volumes:
 #      # Project files
-#      - code_sync:/var/www/html:nocopy
+#      - code_sync:/var/www/html
 #      # SSH socket
 #      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
 
@@ -49,7 +49,7 @@ services:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
     volumes:
       # Project files
-      - code_sync:/var/www/html:nocopy
+      - ${PROJECT_LOCATION}:/var/www/html:delegated
       # Custom configuration
       - ${PROJECT_LOCATION}/var/docker/php/php-cli.ini:/usr/local/etc/php/php-cli.ini:ro
       - ${PROJECT_LOCATION}/var/docker/php/php-fpm-fcgi.ini:/usr/local/etc/php/php-fpm-fcgi.ini:ro
@@ -66,12 +66,5 @@ services:
       - percona:/var/lib/mysql
     tty: true
 
-  synchro:
-    image: ajardin/synchro:latest
-    container_name: ${COMPOSE_PROJECT_NAME}_synchro
-    volumes:
-      - code_sync:/var/www/html:nocopy
-
 volumes:
-  code_sync: {}
   percona: {}
