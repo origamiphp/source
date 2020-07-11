@@ -6,10 +6,16 @@ namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\RootCommand;
 use App\Environment\Configuration\AbstractConfiguration;
+use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
+use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestCommandTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -22,30 +28,34 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class RootCommandTest extends AbstractContextualCommandWebTestCase
+final class RootCommandTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestCommandTrait;
+    use TestFakeEnvironmentTrait;
+
+    /**
+     * @throws InvalidEnvironmentException
+     * @throws FilesystemException
+     */
     public function testItShowsRootInstructions(): void
     {
         $environment = $this->getFakeEnvironment();
+        $environmentVariables = [
+            'COMPOSE_FILE' => $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
+            'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
+            'DOCKER_PHP_IMAGE' => 'default',
+            'PROJECT_LOCATION' => $environment->getLocation(),
+        ];
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        (new MethodProphecy($this->dockerCompose, 'getRequiredVariables', [$environment]))
-            ->shouldBeCalledOnce()
-            ->willReturn(
-                [
-                    'COMPOSE_FILE' => $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
-                    'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
-                    'DOCKER_PHP_IMAGE' => 'default',
-                    'PROJECT_LOCATION' => $environment->getLocation(),
-                ]
-            )
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->getRequiredVariables($environment)->willReturn($environmentVariables);
 
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RootCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
@@ -58,24 +68,19 @@ final class RootCommandTest extends AbstractContextualCommandWebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws InvalidEnvironmentException
+     * @throws FilesystemException
+     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willThrow(new InvalidEnvironmentException('Dummy exception.'))
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        static::assertExceptionIsHandled($this->getCommand(), '[ERROR] Dummy exception.');
-    }
+        $exception = new InvalidEnvironmentException('Dummy exception.');
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willThrow($exception);
 
-    /**
-     * Retrieves the \App\Command\Contextual\RootCommand instance to use within the tests.
-     */
-    private function getCommand(): RootCommand
-    {
-        return new RootCommand(
-            $this->currentContext->reveal(),
-            $this->dockerCompose->reveal()
-        );
+        $command = new RootCommand($currentContext->reveal(), $dockerCompose->reveal());
+        static::assertExceptionIsHandled($command, '[ERROR] Dummy exception.');
     }
 }

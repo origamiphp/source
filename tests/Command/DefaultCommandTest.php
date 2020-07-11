@@ -16,7 +16,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class DefaultCommandTest extends WebTestCase
 {
-    public function testItNotPrintsDefaultCommandInList(): void
+    public function testItDoesNotPrintDefaultCommandInList(): void
     {
         $application = new Application();
 
@@ -31,7 +31,7 @@ final class DefaultCommandTest extends WebTestCase
     {
         $application = new Application();
         $application->add(new DefaultCommand());
-        $application->add($this->getFakeCommand());
+        $application->add($this->createFakeOrigamiCommand());
 
         $commandTesterWithNativeCommand = new CommandTester($application->get('list'));
         $commandTesterWithNativeCommand->execute(['namespace' => 'origami']);
@@ -43,9 +43,9 @@ final class DefaultCommandTest extends WebTestCase
     }
 
     /**
-     * Retrieves a fake command based on AbstractBaseCommand with previously defined prophecies.
+     * Creates a fake Origami command to display in listing.
      */
-    private function getFakeCommand(): Command
+    private function createFakeOrigamiCommand(): Command
     {
         return new class() extends Command {
             protected static $defaultName = 'origami:test';

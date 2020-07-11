@@ -10,11 +10,18 @@ use App\Command\Contextual\Services\MysqlCommand;
 use App\Command\Contextual\Services\NginxCommand;
 use App\Command\Contextual\Services\PhpCommand;
 use App\Command\Contextual\Services\RedisCommand;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
+use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestCommandTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Generator;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
 use RuntimeException;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -32,26 +39,34 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class ServicesCommandTest extends AbstractContextualCommandWebTestCase
+final class ServicesCommandTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestCommandTrait;
+    use TestFakeEnvironmentTrait;
+
     /**
      * @dataProvider provideServiceDetails
+     *
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
      */
     public function testItOpensTerminalOnService(string $classname, string $service, string $user): void
     {
+        if (!is_subclass_of($classname, AbstractServiceCommand::class)) {
+            throw new RuntimeException("{$classname} is not a subclass of AbstractServiceCommand.");
+        }
+
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        (new MethodProphecy($this->dockerCompose, 'openTerminal', [$service, $user]))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
 
-        $commandTester = new CommandTester($this->getCommand($classname));
+        $command = new $classname($currentContext->reveal(), $dockerCompose->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
@@ -59,22 +74,26 @@ final class ServicesCommandTest extends AbstractContextualCommandWebTestCase
 
     /**
      * @dataProvider provideServiceDetails
+     *
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(string $classname, string $service, string $user): void
     {
+        if (!is_subclass_of($classname, AbstractServiceCommand::class)) {
+            throw new RuntimeException("{$classname} is not a subclass of AbstractServiceCommand.");
+        }
+
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        (new MethodProphecy($this->dockerCompose, 'openTerminal', [$service, $user]))
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
 
-        self::assertExceptionIsHandled($this->getCommand($classname), 'An error occurred while opening a terminal.');
+        $command = new $classname($currentContext->reveal(), $dockerCompose->reveal());
+        self::assertExceptionIsHandled($command, 'An error occurred while opening a terminal.');
     }
 
     public function provideServiceDetails(): Generator
@@ -84,17 +103,5 @@ final class ServicesCommandTest extends AbstractContextualCommandWebTestCase
         yield 'nginx' => [NginxCommand::class, 'nginx', ''];
         yield 'php' => [PhpCommand::class, 'php', 'www-data:www-data'];
         yield 'redis' => [RedisCommand::class, 'redis', ''];
-    }
-
-    /**
-     * Retrieves the \App\Command\Contextual\Services\AbstractServiceCommand child instance to use within the tests.
-     */
-    private function getCommand(string $classname): AbstractServiceCommand
-    {
-        if (!is_subclass_of($classname, AbstractServiceCommand::class)) {
-            throw new RuntimeException("{$classname} is not a subclass of AbstractServiceCommand.");
-        }
-
-        return new $classname($this->currentContext->reveal(), $this->dockerCompose->reveal());
     }
 }

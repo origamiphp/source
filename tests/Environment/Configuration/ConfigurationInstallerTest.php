@@ -12,9 +12,9 @@ use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
 
 /**
  * @internal
@@ -24,11 +24,9 @@ use Prophecy\Prophet;
  */
 final class ConfigurationInstallerTest extends TestCase
 {
+    use ProphecyTrait;
     use TestConfigurationTrait;
     use TestLocationTrait;
-
-    /** @var Prophet */
-    private $prophet;
 
     /** @var ObjectProphecy */
     private $mkcert;
@@ -40,9 +38,7 @@ final class ConfigurationInstallerTest extends TestCase
     {
         parent::setUp();
 
-        $this->prophet = new Prophet();
-        $this->mkcert = $this->prophet->prophesize(Mkcert::class);
-
+        $this->mkcert = $this->prophesize(Mkcert::class);
         $this->createLocation();
     }
 
@@ -53,7 +49,6 @@ final class ConfigurationInstallerTest extends TestCase
     {
         parent::tearDown();
 
-        $this->prophet->checkPredictions();
         $this->removeLocation();
     }
 
@@ -77,14 +72,9 @@ final class ConfigurationInstallerTest extends TestCase
             $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
             $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
-            (new MethodProphecy($this->mkcert, 'generateCertificate', [$certificate, $privateKey, explode(' ', $domains)]))
-                ->shouldBeCalledOnce()
-                ->willReturn(true)
-            ;
+            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))->shouldBeCalledOnce()->willReturn(true);
         } else {
-            (new MethodProphecy($this->mkcert, 'generateCertificate', []))
-                ->shouldNotBeCalled()
-            ;
+            $this->mkcert->generateCertificate(Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
         }
 
         $credentials = $this->getFakeBlackfireCredentials();

@@ -6,14 +6,16 @@ namespace App\Tests\Command\Main;
 
 use App\Command\Main\UninstallCommand;
 use App\Environment\Configuration\ConfigurationUninstaller;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\Command\AbstractCommandWebTestCase;
+use App\Tests\TestCommandTrait;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -26,59 +28,33 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class UninstallCommandTest extends AbstractCommandWebTestCase
+final class UninstallCommandTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestCommandTrait;
     use TestFakeEnvironmentTrait;
 
-    /** @var ObjectProphecy */
-    private $currentContext;
-
-    /** @var ObjectProphecy */
-    private $dockerCompose;
-
-    /** @var ObjectProphecy */
-    private $uninstaller;
-
-    /** @var ObjectProphecy */
-    private $eventDispatcher;
-
     /**
-     * {@inheritdoc}
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
      */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->currentContext = $this->prophet->prophesize(CurrentContext::class);
-        $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
-        $this->uninstaller = $this->prophet->prophesize(ConfigurationUninstaller::class);
-        $this->eventDispatcher = $this->prophet->prophesize(EventDispatcher::class);
-    }
-
     public function testItUninstallsTheCurrentEnvironment(): void
     {
         $environment = $this->getFakeEnvironment();
         $environment->deactivate();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
+        $uninstaller = $this->prophesize(ConfigurationUninstaller::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->dockerCompose, 'removeServices', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(true);
+        $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
+        $uninstaller->uninstall($environment)->shouldBeCalledOnce();
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
-            ->shouldBeCalledOnce()
-        ;
-
-        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
-            ->shouldBeCalledOnce()
-        ;
-
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new UninstallCommand($currentContext->reveal(), $dockerCompose->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
 
@@ -87,29 +63,27 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
     public function testItDoesNotUninstallARunningEnvironment(): void
     {
         $environment = $this->getFakeEnvironment();
         $environment->activate();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
+        $uninstaller = $this->prophesize(ConfigurationUninstaller::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->dockerCompose, 'removeServices', []))
-            ->shouldNotBeCalled()
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->removeServices()->shouldNotBeCalled();
+        $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
+        $uninstaller->uninstall($environment)->shouldNotBeCalled();
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
-            ->shouldNotBeCalled()
-        ;
-
-        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
-            ->shouldNotBeCalled()
-        ;
-
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new UninstallCommand($currentContext->reveal(), $dockerCompose->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
 
@@ -118,47 +92,31 @@ final class UninstallCommandTest extends AbstractCommandWebTestCase
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
+        $uninstaller = $this->prophesize(ConfigurationUninstaller::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->dockerCompose, 'removeServices', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(false);
+        $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
+        $uninstaller->uninstall($environment)->shouldNotBeCalled();
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
-            ->shouldNotBeCalled()
-        ;
-
-        (new MethodProphecy($this->uninstaller, 'uninstall', [$environment]))
-            ->shouldNotBeCalled()
-        ;
-
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new UninstallCommand($currentContext->reveal(), $dockerCompose->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] An error occurred while removing the Docker services.', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
-    }
-
-    /**
-     * Retrieves the \App\Command\Contextual\UninstallCommand instance to use within the tests.
-     */
-    private function getCommand(): UninstallCommand
-    {
-        return new UninstallCommand(
-            $this->currentContext->reveal(),
-            $this->dockerCompose->reveal(),
-            $this->uninstaller->reveal(),
-            $this->eventDispatcher->reveal()
-        );
     }
 }

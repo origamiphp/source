@@ -8,8 +8,7 @@ use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Mkcert;
 use Generator;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
 /**
@@ -19,47 +18,19 @@ use Symfony\Component\Process\Process;
  */
 final class MkcertTest extends TestCase
 {
-    /** @var Prophet */
-    private $prophet;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->prophet = new Prophet();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
-    }
+    use ProphecyTrait;
 
     /**
      * @dataProvider provideCertificateDomains
      */
     public function testItGeneratesCertificate(array $domains): void
     {
-        $process = $this->prophet->prophesize(Process::class);
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
+        $process = $this->prophesize(Process::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
         $command = array_merge(['mkcert', '-cert-file', './custom.pem', '-key-file', './custom.key'], $domains);
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [$command]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
+
+        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory->runBackgroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
 
         $mkcert = new Mkcert($processFactory->reveal());
         static::assertTrue($mkcert->generateCertificate('./custom.pem', './custom.key', $domains));

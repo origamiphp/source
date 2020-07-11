@@ -9,10 +9,10 @@ use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
-use App\Tests\Command\AbstractCommandWebTestCase;
+use App\Tests\TestCommandTrait;
 use Generator;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -21,29 +21,18 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Additional\RegistryCommand
  */
-final class RegistryCommandTest extends AbstractCommandWebTestCase
+final class RegistryCommandTest extends WebTestCase
 {
-    /** @var ObjectProphecy */
-    private $database;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->database = $this->prophet->prophesize(Database::class);
-    }
+    use ProphecyTrait;
+    use TestCommandTrait;
 
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
-        (new MethodProphecy($this->database, 'getAllEnvironments', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(new EnvironmentCollection())
-        ;
+        $database = $this->prophesize(Database::class);
+        $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection());
 
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RegistryCommand($database->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -57,12 +46,11 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
      */
     public function testItPrintsEnvironmentDetailsInTable(EnvironmentEntity $environment): void
     {
-        (new MethodProphecy($this->database, 'getAllEnvironments', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(new EnvironmentCollection([$environment]))
-        ;
+        $database = $this->prophesize(Database::class);
+        $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection([$environment]));
 
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RegistryCommand($database->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -108,15 +96,5 @@ final class RegistryCommandTest extends AbstractCommandWebTestCase
                 true
             ),
         ];
-    }
-
-    /**
-     * Retrieves the \App\Command\Additional\RegistryCommand instance to use within the tests.
-     */
-    private function getCommand(): RegistryCommand
-    {
-        return new RegistryCommand(
-            $this->database->reveal()
-        );
     }
 }

@@ -4,89 +4,75 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
-use App\Exception\InvalidEnvironmentException;
-use App\Middleware\Binary\DockerCompose;
-use Prophecy\Prophecy\MethodProphecy;
-use Symfony\Component\Process\Process;
+use App\Environment\EnvironmentEntity;
+use App\Exception\InvalidConfigurationException;
+use App\Tests\TestDockerComposeTrait;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * @internal
  *
  * @covers \App\Middleware\Binary\DockerCompose
  */
-final class DockerComposeTerminalTest extends AbstractDockerComposeTestCase
+final class DockerComposeTerminalTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestDockerComposeTrait;
+
+    /** @var EnvironmentEntity */
+    protected $environment;
+
     /**
-     * @throws InvalidEnvironmentException
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->createLocation();
+        $this->prepareLocation();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeLocation();
+    }
+
+    /**
+     * @throws InvalidConfigurationException
      */
     public function testItFixesPermissionsOnSharedSSHAgent(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->fixPermissionsOnSharedSSHAgent());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItOpensTerminalOnGivenServiceWithSpecificUser(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->openTerminal('php', 'www-data:www-data'));
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItOpensTerminalOnGivenServiceWithoutSpecificUser(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'exec', 'php', 'sh', '-l'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'exec', 'php', 'sh', '-l'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->openTerminal('php'));
     }

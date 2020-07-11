@@ -7,7 +7,6 @@ namespace App\Middleware\Binary;
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidConfigurationException;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\ProcessFactory;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
@@ -34,7 +33,7 @@ class DockerCompose
     /**
      * Defines the currently active environment.
      *
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function setActiveEnvironment(EnvironmentEntity $environment): void
     {

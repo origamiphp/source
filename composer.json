@@ -45,7 +45,8 @@
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
-        "phpspec/prophecy": "^1.10",
+        "phpspec/prophecy": "^1.11.1",
+        "phpspec/prophecy-phpunit": "^2.0",
         "roave/security-advisories": "dev-master",
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "5.1.*",

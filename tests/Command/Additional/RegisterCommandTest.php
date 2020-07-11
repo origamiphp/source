@@ -8,13 +8,14 @@ use App\Command\Additional\RegisterCommand;
 use App\Environment\Configuration\ConfigurationInstaller;
 use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentInstalledEvent;
+use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
-use App\Tests\Command\AbstractCommandWebTestCase;
+use App\Tests\TestCommandTrait;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -26,45 +27,29 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class RegisterCommandTest extends AbstractCommandWebTestCase
+final class RegisterCommandTest extends WebTestCase
 {
-    /** @var ObjectProphecy */
-    private $processProxy;
-
-    /** @var ObjectProphecy */
-    private $installer;
-
-    /** @var ObjectProphecy */
-    private $eventDispatcher;
+    use ProphecyTrait;
+    use TestCommandTrait;
 
     /**
-     * {@inheritdoc}
+     * @throws FilesystemException
      */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->processProxy = $this->prophet->prophesize(ProcessProxy::class);
-        $this->installer = $this->prophet->prophesize(ConfigurationInstaller::class);
-        $this->eventDispatcher = $this->prophet->prophesize(EventDispatcher::class);
-    }
-
     public function testItRegistersAnExternalEnvironmentWithDefaultName(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('/fake/directory')
-        ;
+        $environmentDetails = ['directory', '/fake/directory', EnvironmentEntity::TYPE_CUSTOM];
 
-        (new MethodProphecy($this->installer, 'install', ['directory', '/fake/directory', EnvironmentEntity::TYPE_CUSTOM, null]))
-            ->shouldBeCalledOnce()
-        ;
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $installer = $this->prophesize(ConfigurationInstaller::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::type(EnvironmentInstalledEvent::class)]))
-            ->shouldBeCalledOnce()
-        ;
+        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('/fake/directory');
+        $installer->install(...$environmentDetails)->shouldBeCalledOnce()->willReturn($environment->reveal());
+        $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldBeCalledOnce();
 
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RegisterCommand($processProxy->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes', '']);
         $commandTester->execute([]);
 
@@ -73,22 +58,24 @@ final class RegisterCommandTest extends AbstractCommandWebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function testItRegistersAnExternalEnvironmentWithCustomName(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('/fake/directory')
-        ;
+        $environmentDetails = ['custom-name', '/fake/directory', EnvironmentEntity::TYPE_CUSTOM];
 
-        (new MethodProphecy($this->installer, 'install', ['custom-name', '/fake/directory', EnvironmentEntity::TYPE_CUSTOM, null]))
-            ->shouldBeCalledOnce()
-        ;
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $installer = $this->prophesize(ConfigurationInstaller::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::type(EnvironmentInstalledEvent::class)]))
-            ->shouldBeCalledOnce()
-        ;
+        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('/fake/directory');
+        $installer->install(...$environmentDetails)->shouldBeCalledOnce()->willReturn($environment->reveal());
+        $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldBeCalledOnce();
 
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RegisterCommand($processProxy->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes', 'custom-name']);
         $commandTester->execute([]);
 
@@ -97,21 +84,21 @@ final class RegisterCommandTest extends AbstractCommandWebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function testItAbortsTheRegistrationAfterDisapproval(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldNotBeCalled()
-        ;
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $installer = $this->prophesize(ConfigurationInstaller::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->installer, 'install', []))
-            ->shouldNotBeCalled()
-        ;
+        $processProxy->getWorkingDirectory()->shouldNotBeCalled();
+        $installer->install(Argument::any(), Argument::any(), Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
+        $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldNotBeCalled();
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::type(EnvironmentInstalledEvent::class)]))
-            ->shouldNotBeCalled()
-        ;
-
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RegisterCommand($processProxy->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['no']);
         $commandTester->execute([]);
 
@@ -120,39 +107,28 @@ final class RegisterCommandTest extends AbstractCommandWebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalled()
-            ->willThrow(new InvalidEnvironmentException('Unable to determine the current working directory.'))
-        ;
+        $exception = new InvalidEnvironmentException('Unable to determine the current working directory.');
 
-        (new MethodProphecy($this->installer, 'install', []))
-            ->shouldNotBeCalled()
-        ;
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $installer = $this->prophesize(ConfigurationInstaller::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::type(EnvironmentInstalledEvent::class)]))
-            ->shouldNotBeCalled()
-        ;
+        $processProxy->getWorkingDirectory()->shouldBeCalled()->willThrow($exception);
+        $installer->install(Argument::any(), Argument::any(), Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
+        $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldNotBeCalled();
 
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new RegisterCommand($processProxy->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes', '']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] Unable to determine the current working directory.', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
-    }
-
-    /**
-     * Retrieves the \App\Command\Additional\RegisterCommand instance to use within the tests.
-     */
-    private function getCommand(): RegisterCommand
-    {
-        return new RegisterCommand(
-            $this->processProxy->reveal(),
-            $this->installer->reveal(),
-            $this->eventDispatcher->reveal(),
-        );
     }
 }

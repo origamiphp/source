@@ -15,8 +15,7 @@ use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -26,14 +25,9 @@ use Prophecy\Prophet;
  */
 final class ConfigurationUpdaterTest extends TestCase
 {
+    use ProphecyTrait;
     use TestConfigurationTrait;
     use TestLocationTrait;
-
-    /** @var Prophet */
-    private $prophet;
-
-    /** @var ObjectProphecy */
-    private $mkcert;
 
     /** @var string */
     private $fakePhpVersion = 'azerty';
@@ -45,9 +39,6 @@ final class ConfigurationUpdaterTest extends TestCase
     {
         parent::setUp();
 
-        $this->prophet = new Prophet();
-        $this->mkcert = $this->prophet->prophesize(Mkcert::class);
-
         $this->createLocation();
     }
 
@@ -58,7 +49,6 @@ final class ConfigurationUpdaterTest extends TestCase
     {
         parent::tearDown();
 
-        $this->prophet->checkPredictions();
         $this->removeLocation();
     }
 
@@ -76,7 +66,9 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
+        $mkcert = $this->prophesize(Mkcert::class);
+
+        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
 
         $this->assertConfigurationIsInstalled($type, $destination, $this->fakePhpVersion);
@@ -96,7 +88,9 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=');
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
+        $mkcert = $this->prophesize(Mkcert::class);
+
+        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
 
         $this->assertConfigurationIsInstalled($type, $destination, DockerHub::DEFAULT_IMAGE_VERSION);
@@ -111,6 +105,7 @@ final class ConfigurationUpdaterTest extends TestCase
     public function testItUpdatesAnEnvironmentWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $credentials = $this->getFakeBlackfireCredentials();
 
         $source = __DIR__."/../../../src/Resources/{$type}";
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
@@ -118,9 +113,9 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         copy("{$source}/.env", "{$destination}/.env");
 
-        $credentials = $this->getFakeBlackfireCredentials();
+        $mkcert = $this->prophesize(Mkcert::class);
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::fromArray($credentials));
+        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::fromArray($credentials));
         $updater->update($environment);
 
         $this->assertConfigurationIsInstalled($type, $destination, DockerHub::DEFAULT_IMAGE_VERSION);
@@ -139,9 +134,10 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 
+        $mkcert = $this->prophesize(Mkcert::class);
         $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a custom environment.'));
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
+        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
     }
 
@@ -159,9 +155,10 @@ final class ConfigurationUpdaterTest extends TestCase
         mkdir($destination, 0777, true);
         file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
 
+        $mkcert = $this->prophesize(Mkcert::class);
         $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a running environment.'));
 
-        $updater = new ConfigurationUpdater($this->mkcert->reveal(), FakeVariables::empty());
+        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
     }
 }

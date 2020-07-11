@@ -11,9 +11,7 @@ use App\Environment\EnvironmentMaker\TechnologyIdentifier;
 use App\Helper\CommandExitCode;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -31,259 +29,160 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class EnvironmentMakerTest extends TestCase
 {
-    /** @var Prophet */
-    private $prophet;
-
-    /** @var ObjectProphecy */
-    private $technologyIdentifier;
-
-    /** @var ObjectProphecy */
-    private $dockerHub;
-
-    /** @var ObjectProphecy */
-    private $requirementsChecker;
-
-    /** @var ObjectProphecy */
-    private $validator;
-
-    /** @var EnvironmentMaker */
-    private $environmentMaker;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->prophet = new Prophet();
-        $this->technologyIdentifier = $this->prophet->prophesize(TechnologyIdentifier::class);
-        $this->dockerHub = $this->prophet->prophesize(DockerHub::class);
-        $this->requirementsChecker = $this->prophet->prophesize(RequirementsChecker::class);
-        $this->validator = $this->prophet->prophesize(ValidatorInterface::class);
-
-        $this->environmentMaker = new EnvironmentMaker(
-            $this->technologyIdentifier->reveal(),
-            $this->dockerHub->reveal(),
-            $this->requirementsChecker->reveal(),
-            $this->validator->reveal()
-        );
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
-    }
+    use ProphecyTrait;
 
     public function testItAsksAndReturnsDefaultEnvironmentName(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askEnvironmentName($io, 'default-name'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
-
+        $command = $this->createEnvironmentNameCommand($environmentMaker);
         $this->assertCommandOutput($command, [''], "Result = default-name\n");
     }
 
     public function testItAsksAndReturnsCustomEnvironmentName(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askEnvironmentName($io, 'default-name'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
-
+        $command = $this->createEnvironmentNameCommand($environmentMaker);
         $this->assertCommandOutput($command, ['custom-name'], "Result = custom-name\n");
     }
 
     public function testItAsksAndReturnsDefaultEnvironmentType(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askEnvironmentType($io, '.'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $technologyIdentifier->identify(Argument::type('string'))->shouldBeCalledOnce()->willReturn('symfony');
 
-        (new MethodProphecy($this->technologyIdentifier, 'identify', [Argument::type('string')]))
-            ->shouldBeCalledOnce()
-            ->willReturn('symfony')
-        ;
-
+        $command = $this->createEnvironmentTypeCommand($environmentMaker);
         $this->assertCommandOutput($command, [''], "Result = symfony\n");
     }
 
     public function testItAsksAndReturnsCustomEnvironmentType(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askEnvironmentType($io, '.'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $technologyIdentifier->identify(Argument::type('string'))->shouldBeCalledOnce()->willReturn('symfony');
 
-        (new MethodProphecy($this->technologyIdentifier, 'identify', [Argument::type('string')]))
-            ->shouldBeCalledOnce()
-            ->willReturn('symfony')
-        ;
-
+        $command = $this->createEnvironmentTypeCommand($environmentMaker);
         $this->assertCommandOutput($command, ['sylius'], "Result = sylius\n");
     }
 
     public function testItAsksAndReturnsDefaultPhpVersion(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io, 'symfony'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $dockerHub->getImageTags(Argument::type('string'))->shouldBeCalledOnce()->willReturn(['7.3', '7.4', 'latest']);
 
-        (new MethodProphecy($this->dockerHub, 'getImageTags', [Argument::type('string')]))
-            ->shouldBeCalledOnce()
-            ->willReturn(['7.3', '7.4', 'latest'])
-        ;
-
+        $command = $this->createEnvironmentPhpVersionCommand($environmentMaker);
         $this->assertCommandOutput($command, [''], "Result = latest\n");
     }
 
     public function testItAsksAndReturnsCustomPhpVersion(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io, 'symfony'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $dockerHub->getImageTags(Argument::type('string'))->shouldBeCalledOnce()->willReturn(['7.3', '7.4', 'latest']);
 
-        (new MethodProphecy($this->dockerHub, 'getImageTags', [Argument::type('string')]))
-            ->shouldBeCalledOnce()
-            ->willReturn(['7.3', '7.4', 'latest'])
-        ;
-
+        $command = $this->createEnvironmentPhpVersionCommand($environmentMaker);
         $this->assertCommandOutput($command, ['7.4'], "Result = 7.4\n");
     }
 
     public function testItAsksAndReturnsNoDomains(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'symfony') ?? 'N/A'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
 
-        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
+        $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput($command, [''], "Result = N/A\n");
     }
 
     public function testItAsksAndReturnsDefaultDomains(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'symfony') ?? 'N/A'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $violations = new ConstraintViolationList();
 
-        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
+        $validator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($violations);
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(Hostname::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
-
+        $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput($command, ['yes', ''], "Result = symfony.localhost\n");
     }
 
     public function testItAsksAndReturnsCustomDomains(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'sylius') ?? 'N/A'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
+        $noErrors = new ConstraintViolationList();
 
-        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
+        $validator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($noErrors);
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(Hostname::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
-
+        $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput(
             $command,
             ['yes', 'custom-domain.localhost'],
@@ -293,43 +192,27 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndRejectsInvalidCustomDomains(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
-            use FakeCommandConstructor;
-            protected static $defaultName = 'origami:test';
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
 
-            protected function execute(InputInterface $input, OutputInterface $output): int
-            {
-                $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'magento') ?? 'N/A'));
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
 
-                return CommandExitCode::SUCCESS;
-            }
-        };
-
-        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        $violation = $this->prophet->prophesize(ConstraintViolation::class);
-        (new MethodProphecy($violation, 'getMessage', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('Dummy exception.')
-        ;
-
+        $violation = $this->prophesize(ConstraintViolation::class);
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        (new MethodProphecy($this->validator, 'validate', ['@#&!$€*', Argument::type(Hostname::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($errors)
-        ;
+        $noErrors = new ConstraintViolationList();
 
-        (new MethodProphecy($this->validator, 'validate', ['custom-domain.localhost', Argument::type(Hostname::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
+        $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
+        $violation->getMessage()->shouldBeCalledOnce()->willReturn('Dummy exception.');
+        $validator->validate('@#&!$€*', Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($errors);
+        $validator->validate('custom-domain.localhost', Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($noErrors);
 
+        $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput(
             $command,
             ['yes', '@#&!$€*', 'custom-domain.localhost'],
@@ -339,29 +222,109 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItDoesNotAskDomainsWithoutMkcert(): void
     {
-        $command = new class($this->environmentMaker) extends Command {
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
+
+        $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(false);
+        $validator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldNotBeCalled();
+
+        $command = $this->createEnvironmentDomainsCommand($environmentMaker);
+        $this->assertCommandOutput($command, [], "Result = N/A\n");
+    }
+
+    /**
+     * Prophesizes arguments needed by the \App\Environment\EnvironmentMaker class.
+     */
+    private function getEnvironmentMakerArguments(): array
+    {
+        return [
+            $this->prophesize(TechnologyIdentifier::class),
+            $this->prophesize(DockerHub::class),
+            $this->prophesize(RequirementsChecker::class),
+            $this->prophesize(ValidatorInterface::class),
+        ];
+    }
+
+    /**
+     * Creates a fake PHP class to simulate the question about the environment name.
+     */
+    private function createEnvironmentNameCommand(EnvironmentMaker $environmentMaker): Command
+    {
+        return new class($environmentMaker) extends Command {
             use FakeCommandConstructor;
             protected static $defaultName = 'origami:test';
 
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'magento') ?? 'N/A'));
+                $io->writeln('Result = '.$this->environmentMaker->askEnvironmentName($io, 'default-name'));
 
                 return CommandExitCode::SUCCESS;
             }
         };
+    }
 
-        (new MethodProphecy($this->requirementsChecker, 'canMakeLocallyTrustedCertificates', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
+    /**
+     * Creates a fake PHP class to simulate the question about the environment type.
+     */
+    private function createEnvironmentTypeCommand(EnvironmentMaker $environmentMaker): Command
+    {
+        return new class($environmentMaker) extends Command {
+            use FakeCommandConstructor;
+            protected static $defaultName = 'origami:test';
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::type('string'), Argument::type(Hostname::class)]))
-            ->shouldNotBeCalled()
-        ;
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $io = new SymfonyStyle($input, $output);
+                $io->writeln('Result = '.$this->environmentMaker->askEnvironmentType($io, '.'));
 
-        $this->assertCommandOutput($command, [], "Result = N/A\n");
+                return CommandExitCode::SUCCESS;
+            }
+        };
+    }
+
+    /**
+     * Creates a fake PHP class to simulate the question about the environment PHP version.
+     */
+    private function createEnvironmentPhpVersionCommand(EnvironmentMaker $environmentMaker): Command
+    {
+        return new class($environmentMaker) extends Command {
+            use FakeCommandConstructor;
+            protected static $defaultName = 'origami:test';
+
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $io = new SymfonyStyle($input, $output);
+                $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io, 'symfony'));
+
+                return CommandExitCode::SUCCESS;
+            }
+        };
+    }
+
+    /**
+     * Creates a fake PHP class to simulate the question about the environment domains.
+     */
+    private function createEnvironmentDomainsCommand(EnvironmentMaker $environmentMaker): Command
+    {
+        return new class($environmentMaker) extends Command {
+            use FakeCommandConstructor;
+            protected static $defaultName = 'origami:test';
+
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $io = new SymfonyStyle($input, $output);
+                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'symfony') ?? 'N/A'));
+
+                return CommandExitCode::SUCCESS;
+            }
+        };
     }
 
     /**

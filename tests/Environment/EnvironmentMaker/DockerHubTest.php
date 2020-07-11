@@ -6,6 +6,7 @@ namespace App\Tests\Environment\EnvironmentMaker;
 
 use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\DockerHubException;
+use JsonException;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -21,6 +22,7 @@ final class DockerHubTest extends TestCase
 {
     /**
      * @throws DockerHubException
+     * @throws JsonException
      * @throws TransportExceptionInterface
      */
     public function testItRetrievesImageTags(): void
@@ -36,6 +38,7 @@ final class DockerHubTest extends TestCase
 
     /**
      * @throws DockerHubException
+     * @throws JsonException
      * @throws TransportExceptionInterface
      */
     public function testItManagesResultsException(): void
@@ -51,7 +54,7 @@ final class DockerHubTest extends TestCase
 
     /**
      * @throws DockerHubException
-     * @throws TransportExceptionInterface
+     * @throws JsonException|TransportExceptionInterface
      */
     public function testItManagesParseException(): void
     {

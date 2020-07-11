@@ -5,10 +5,16 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\PsCommand;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
+use App\Helper\CurrentContext;
+use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestCommandTrait;
+use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use stdClass;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -19,58 +25,49 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\Contextual\PsCommand
  */
-final class PsCommandTest extends AbstractContextualCommandWebTestCase
+final class PsCommandTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestCommandTrait;
+    use TestFakeEnvironmentTrait;
+
+    /**
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
     public function testItExecutesProcessSuccessfully(): void
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        (new MethodProphecy($this->dockerCompose, 'showServicesStatus', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->showServicesStatus()->shouldBeCalledOnce()->willReturn(true);
 
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::any()]))
-            ->willReturn(new stdClass())
-        ;
-
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new PsCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         static::assertDisplayIsVerbose($environment, $commandTester->getDisplay());
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->getFakeEnvironment();
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        (new MethodProphecy($this->dockerCompose, 'showServicesStatus', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $dockerCompose->showServicesStatus()->shouldBeCalledOnce()->willReturn(false);
 
-        static::assertExceptionIsHandled($this->getCommand(), '[ERROR] An error occurred while checking the services status.');
-    }
-
-    /**
-     * Retrieves the \App\Command\Contextual\PsCommand instance to use within the tests.
-     */
-    private function getCommand(): PsCommand
-    {
-        return new PsCommand(
-            $this->currentContext->reveal(),
-            $this->dockerCompose->reveal()
-        );
+        $command = new PsCommand($currentContext->reveal(), $dockerCompose->reveal());
+        static::assertExceptionIsHandled($command, '[ERROR] An error occurred while checking the services status.');
     }
 }
