@@ -62,42 +62,6 @@ final class ConfigurationInstallerTest extends TestCase
      *
      * @throws FilesystemException
      */
-    public function testItInstallsConfigurationFiles(string $name, string $type, ?string $domains = null): void
-    {
-        $phpVersion = 'azerty';
-
-        $source = __DIR__."/../../../src/Resources/{$type}";
-        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-
-        /** @var string $defaultConfiguration */
-        $defaultConfiguration = file_get_contents("{$source}/.env");
-        static::assertStringNotContainsString($phpVersion, $defaultConfiguration);
-
-        if ($domains !== null) {
-            $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
-            $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
-
-            (new MethodProphecy($this->mkcert, 'generateCertificate', [$certificate, $privateKey, explode(' ', $domains)]))
-                ->shouldBeCalledOnce()
-                ->willReturn(true)
-            ;
-        } else {
-            (new MethodProphecy($this->mkcert, 'generateCertificate', []))
-                ->shouldNotBeCalled()
-            ;
-        }
-
-        $installer = new ConfigurationInstaller($this->mkcert->reveal(), FakeVariables::empty());
-        $installer->install($name, $this->location, $type, $phpVersion, $domains);
-
-        $this->assertConfigurationIsInstalled($type, $destination, $phpVersion);
-    }
-
-    /**
-     * @dataProvider provideMultipleInstallContexts
-     *
-     * @throws FilesystemException
-     */
     public function testItInstallsConfigurationFilesWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
     {
         $phpVersion = 'azerty';

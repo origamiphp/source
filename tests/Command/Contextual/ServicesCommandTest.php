@@ -91,17 +91,10 @@ final class ServicesCommandTest extends AbstractContextualCommandWebTestCase
      */
     private function getCommand(string $classname): AbstractServiceCommand
     {
-        if (is_subclass_of($classname, 'ServiceCommandInterface')) {
-            throw new RuntimeException("{$classname} is not a subclass of ServiceCommandInterface.");
+        if (!is_subclass_of($classname, AbstractServiceCommand::class)) {
+            throw new RuntimeException("{$classname} is not a subclass of AbstractServiceCommand.");
         }
 
-        /** @var AbstractServiceCommand $instance */
-        $instance = new $classname($this->currentContext->reveal(), $this->dockerCompose->reveal());
-
-        if (is_subclass_of($instance, 'ServiceCommandInterface')) {
-            throw new RuntimeException("{$classname} is not an subclass of AbstractServiceCommand.");
-        }
-
-        return $instance;
+        return new $classname($this->currentContext->reveal(), $this->dockerCompose->reveal());
     }
 }

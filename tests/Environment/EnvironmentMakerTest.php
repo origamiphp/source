@@ -217,7 +217,7 @@ final class EnvironmentMakerTest extends TestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askDomains($io, 'symfony'));
+                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'symfony') ?? 'N/A'));
 
                 return CommandExitCode::SUCCESS;
             }
@@ -228,7 +228,7 @@ final class EnvironmentMakerTest extends TestCase
             ->willReturn(true)
         ;
 
-        $this->assertCommandOutput($command, [''], "Result = \n");
+        $this->assertCommandOutput($command, [''], "Result = N/A\n");
     }
 
     public function testItAsksAndReturnsDefaultDomains(): void
@@ -240,7 +240,7 @@ final class EnvironmentMakerTest extends TestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askDomains($io, 'symfony'));
+                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'symfony') ?? 'N/A'));
 
                 return CommandExitCode::SUCCESS;
             }
@@ -268,7 +268,7 @@ final class EnvironmentMakerTest extends TestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askDomains($io, 'sylius'));
+                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'sylius') ?? 'N/A'));
 
                 return CommandExitCode::SUCCESS;
             }
@@ -300,7 +300,7 @@ final class EnvironmentMakerTest extends TestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askDomains($io, 'magento'));
+                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'magento') ?? 'N/A'));
 
                 return CommandExitCode::SUCCESS;
             }
@@ -346,7 +346,7 @@ final class EnvironmentMakerTest extends TestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askDomains($io, 'magento'));
+                $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'magento') ?? 'N/A'));
 
                 return CommandExitCode::SUCCESS;
             }
@@ -361,7 +361,7 @@ final class EnvironmentMakerTest extends TestCase
             ->shouldNotBeCalled()
         ;
 
-        $this->assertCommandOutput($command, [], "Result = \n");
+        $this->assertCommandOutput($command, [], "Result = N/A\n");
     }
 
     /**
