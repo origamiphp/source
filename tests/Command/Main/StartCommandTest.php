@@ -56,7 +56,8 @@ final class StartCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[OK] Docker services successfully started.', $display);
+        static::assertStringContainsString('[OK] ', $display);
+        static::assertStringContainsString('[INFO] ', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 

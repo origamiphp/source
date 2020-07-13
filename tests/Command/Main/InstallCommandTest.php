@@ -67,7 +67,8 @@ final class InstallCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[OK] Environment successfully installed.', $display);
+        static::assertStringContainsString('[OK] ', $display);
+        static::assertStringContainsString('[INFO] ', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 

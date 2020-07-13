@@ -10,10 +10,10 @@ use App\Environment\EnvironmentMaker;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
+use App\Helper\OrigamiStyle;
 use App\Helper\ProcessProxy;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class InstallCommand extends AbstractBaseCommand
@@ -58,7 +58,7 @@ class InstallCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = new OrigamiStyle($input, $output);
         $io->note('The environment will be installed in the current directory.');
 
         try {
@@ -75,6 +75,11 @@ class InstallCommand extends AbstractBaseCommand
             $this->eventDispatcher->dispatch($event);
 
             $io->success('Environment successfully installed.');
+            $io->info(
+                "You can now use the following commands to start the environment.\n"
+                ."  * \"origami start {$name}\" from any location.\n"
+                ."  * \"origami start\" from this location ({$location})."
+            );
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
             $exitCode = CommandExitCode::EXCEPTION;
