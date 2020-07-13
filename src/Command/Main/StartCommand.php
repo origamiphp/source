@@ -10,12 +10,12 @@ use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
+use App\Helper\OrigamiStyle;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class StartCommand extends AbstractBaseCommand
@@ -66,7 +66,7 @@ class StartCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = new OrigamiStyle($input, $output);
 
         try {
             $environment = $this->currentContext->getEnvironment($input);
@@ -76,7 +76,13 @@ class StartCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
                 }
 
+                $domains = $environment->getDomains();
+
                 $io->success('Docker services successfully started.');
+                $io->info(sprintf(
+                    'Please visit %s to access your environment.',
+                    ($domains !== null ? "https://{$environment->getDomains()}" : 'https://127.0.0.1')
+                ));
 
                 $event = new EnvironmentStartedEvent($environment, $io);
                 $this->eventDispatcher->dispatch($event);
