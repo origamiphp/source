@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
+use App\Tests\TestCommandTrait;
 use App\Tests\TestFakeEnvironmentTrait;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -23,46 +27,42 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @covers \App\Command\AbstractBaseCommand
  */
-final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
+final class AbstractBaseCommandTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestCommandTrait;
     use TestFakeEnvironmentTrait;
 
-    /** @var ObjectProphecy */
-    protected $currentContext;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->currentContext = $this->prophet->prophesize(CurrentContext::class);
-    }
-
+    /**
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
     public function testItDoesPrintDetailsWhenVerbose(): void
     {
         $environment = $this->getFakeEnvironment();
+        $currentContext = $this->prophesize(CurrentContext::class);
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
 
-        $commandTester = new CommandTester($this->getFakeCommand());
+        $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         static::assertStringContainsString('[OK] An environment is currently running.', $commandTester->getDisplay());
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
+    /**
+     * @throws FilesystemException
+     * @throws InvalidEnvironmentException
+     */
     public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
         $environment = $this->getFakeEnvironment();
+        $currentContext = $this->prophesize(CurrentContext::class);
 
-        (new MethodProphecy($this->currentContext, 'getEnvironment', [Argument::type(InputInterface::class)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
 
-        $commandTester = new CommandTester($this->getFakeCommand());
+        $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
 
         static::assertStringNotContainsString('[OK] An environment is currently running.', $commandTester->getDisplay());
@@ -70,11 +70,11 @@ final class AbstractBaseCommandTest extends AbstractCommandWebTestCase
     }
 
     /**
-     * Retrieves a fake command based on AbstractBaseCommand with previously defined prophecies.
+     * Creates a fake Origami command based on AbstractBaseCommand with previously defined prophecies.
      */
-    private function getFakeCommand(): AbstractBaseCommand
+    private function createFakeOrigamiCommand(ObjectProphecy $currentContext): AbstractBaseCommand
     {
-        return new class($this->currentContext->reveal()) extends AbstractBaseCommand {
+        return new class($currentContext->reveal()) extends AbstractBaseCommand {
             protected static $defaultName = 'origami:test';
 
             /** @var CurrentContext */

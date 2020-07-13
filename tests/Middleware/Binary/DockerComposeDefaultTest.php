@@ -7,32 +7,65 @@ namespace App\Tests\Middleware\Binary;
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidConfigurationException;
-use App\Exception\InvalidEnvironmentException;
+use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
+use App\Tests\TestDockerComposeTrait;
 use App\Validator\Constraints\ConfigurationFiles;
 use App\Validator\Constraints\DotEnvExists;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
  *
  * @covers \App\Middleware\Binary\DockerCompose
  */
-final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
+final class DockerComposeDefaultTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestDockerComposeTrait;
+
+    /** @var EnvironmentEntity */
+    protected $environment;
+
     /**
-     * @throws InvalidEnvironmentException
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->createLocation();
+        $this->prepareLocation();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeLocation();
+    }
+
+    /**
+     * @throws InvalidConfigurationException
      */
     public function testItDefinesTheActiveEnvironmentWithInternals(): void
     {
-        $this->prophesizeSuccessfulValidations();
+        $validator = $this->prophesize(ValidatorInterface::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $validator->validate(Argument::any(), new DotEnvExists())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+        $validator->validate(Argument::any(), new ConfigurationFiles())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+
+        $dockerCompose = new DockerCompose($validator->reveal(), $processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);
 
         $variables = $dockerCompose->getRequiredVariables($this->environment);
@@ -51,14 +84,21 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItDefinesTheActiveEnvironmentWithExternals(): void
     {
         $environment = new EnvironmentEntity('bar', $this->location, EnvironmentEntity::TYPE_CUSTOM, null, true);
 
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $validator = $this->prophesize(ValidatorInterface::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
+        $validator->validate(Argument::any(), new DotEnvExists())->shouldNotBeCalled();
+        $validator->validate(Argument::any(), new ConfigurationFiles())->shouldNotBeCalled();
+
+        $dockerCompose = new DockerCompose($validator->reveal(), $processFactory->reveal());
         $dockerCompose->setActiveEnvironment($environment);
+
         $variables = $dockerCompose->getRequiredVariables($environment);
 
         static::assertArrayHasKey('COMPOSE_FILE', $variables);
@@ -74,227 +114,139 @@ final class DockerComposeDefaultTest extends AbstractDockerComposeTestCase
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItThrowsAnExceptionWithMissingDotEnvFile(): void
     {
-        $violation = $this->prophet->prophesize(ConstraintViolation::class);
-        (new MethodProphecy($violation, 'getMessage', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('Dummy exception.')
-        ;
+        $validator = $this->prophesize(ValidatorInterface::class);
 
+        $violation = $this->prophesize(ConstraintViolation::class);
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::any(), new DotEnvExists()]))
-            ->shouldBeCalledOnce()
-            ->willReturn($errors)
-        ;
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::any(), new ConfigurationFiles()]))
-            ->shouldNotBeCalled()
-        ;
-
+        $violation->getMessage()->shouldBeCalledOnce()->willReturn('Dummy exception.');
+        $validator->validate(Argument::any(), new DotEnvExists())->shouldBeCalledOnce()->willReturn($errors);
+        $validator->validate(Argument::any(), new ConfigurationFiles())->shouldNotBeCalled();
         $this->expectException(InvalidConfigurationException::class);
 
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $dockerCompose = new DockerCompose($validator->reveal(), $processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItThrowsAnExceptionWithMissingConfigurationFiles(): void
     {
-        $violation = $this->prophet->prophesize(ConstraintViolation::class);
-        (new MethodProphecy($violation, 'getMessage', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('Dummy exception.')
-        ;
+        $validator = $this->prophesize(ValidatorInterface::class);
 
+        $violation = $this->prophesize(ConstraintViolation::class);
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::any(), new DotEnvExists()]))
-            ->shouldBeCalledOnce()
-            ->willReturn(new ConstraintViolationList())
-        ;
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        (new MethodProphecy($this->validator, 'validate', [Argument::any(), new ConfigurationFiles()]))
-            ->shouldBeCalledOnce()
-            ->willReturn($errors)
-        ;
-
+        $violation->getMessage()->shouldBeCalledOnce()->willReturn('Dummy exception.');
+        $validator->validate(Argument::any(), new DotEnvExists())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+        $validator->validate(Argument::any(), new ConfigurationFiles())->shouldBeCalledOnce()->willReturn($errors);
         $this->expectException(InvalidConfigurationException::class);
 
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $dockerCompose = new DockerCompose($validator->reveal(), $processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItPreparesTheEnvironmentServices(): void
     {
-        $this->prophesizeSuccessfulValidations();
-
-        $process = $this->prophet->prophesize(Process::class);
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledTimes(2)
-            ->willReturn(true)
-        ;
-
+        $commands = [
+            ['docker-compose', 'pull'],
+            ['docker-compose', 'build', '--pull', '--parallel'],
+        ];
         $environmentVariables = $this->getFakeEnvironmentVariables();
 
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'pull'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
+        $validator = $this->prophesize(ValidatorInterface::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $process = $this->prophesize(Process::class);
 
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'build', '--pull', '--parallel'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
+        $validator->validate(Argument::any(), new DotEnvExists())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+        $validator->validate(Argument::any(), new ConfigurationFiles())->shouldBeCalledOnce()->willReturn(new ConstraintViolationList());
+        $process->isSuccessful()->shouldBeCalledTimes(2)->willReturn(true);
+        $processFactory->runForegroundProcess($commands[0], $environmentVariables)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory->runForegroundProcess($commands[1], $environmentVariables)->shouldBeCalledOnce()->willReturn($process->reveal());
 
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
+        $dockerCompose = new DockerCompose($validator->reveal(), $processFactory->reveal());
         $dockerCompose->setActiveEnvironment($this->environment);
 
         static::assertTrue($dockerCompose->prepareServices());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItShowsResourcesUsage(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->initializeSuccessfullProcess();
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcessFromShellCommandLine', ['docker-compose ps -q | xargs docker stats', $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = 'docker-compose ps -q | xargs docker stats';
+        $dockerCompose = $this->prepareForegroundFromShellCommand($command);
 
         static::assertTrue($dockerCompose->showResourcesUsage());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItShowsServicesStatus(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->initializeSuccessfullProcess();
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'ps'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'ps'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesStatus());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItRestartsServicesStatus(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->initializeSuccessfullProcess();
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'restart'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'restart'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->restartServices());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItStartsServicesStatus(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->initializeSuccessfullProcess();
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'up', '--build', '--detach', '--remove-orphans'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->startServices());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItStopsServicesStatus(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->initializeSuccessfullProcess();
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'stop'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'stop'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->stopServices());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItRemovesServicesStatus(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->initializeSuccessfullProcess();
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->removeServices());
-    }
-
-    /**
-     * Initializes the prophecy on the successfull process.
-     */
-    private function initializeSuccessfullProcess(): ObjectProphecy
-    {
-        $process = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        return $process;
     }
 }

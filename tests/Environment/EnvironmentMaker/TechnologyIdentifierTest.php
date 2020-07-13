@@ -24,6 +24,7 @@ final class TechnologyIdentifierTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->createLocation();
     }
 
@@ -33,6 +34,7 @@ final class TechnologyIdentifierTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
         $this->removeLocation();
     }
 

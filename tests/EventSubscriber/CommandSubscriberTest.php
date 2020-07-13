@@ -7,8 +7,7 @@ namespace App\Tests\EventSubscriber;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\EventSubscriber\CommandSubscriber;
 use App\Exception\MissingRequirementException;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -24,53 +23,21 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 final class CommandSubscriberTest extends WebTestCase
 {
-    /** @var Prophet */
-    private $prophet;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->prophet = new Prophet();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
-    }
+    use ProphecyTrait;
 
     /**
      * @throws MissingRequirementException
      */
     public function testItDoesNotCheckRequirementsWithSymfonyCommands(): void
     {
-        $requirementsChecker = $this->prophet->prophesize(RequirementsChecker::class);
-        (new MethodProphecy($requirementsChecker, 'checkMandatoryRequirements', []))
-            ->shouldNotBeCalled()
-        ;
-        (new MethodProphecy($requirementsChecker, 'checkNonMandatoryRequirements', []))
-            ->shouldNotBeCalled()
-        ;
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
+        $command = $this->prophesize(Command::class);
+        $input = $this->prophesize(InputInterface::class);
+        $output = $this->prophesize(OutputInterface::class);
 
-        $command = $this->prophet->prophesize(Command::class);
-        (new MethodProphecy($command, 'getName', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('app:fake-command')
-        ;
-
-        $input = $this->prophet->prophesize(InputInterface::class);
-        $output = $this->prophet->prophesize(OutputInterface::class);
-        (new MethodProphecy($output, 'isVerbose', []))
-            ->shouldNotBeCalled()
-        ;
+        $requirementsChecker->checkMandatoryRequirements()->shouldNotBeCalled();
+        $requirementsChecker->checkNonMandatoryRequirements()->shouldNotBeCalled();
+        $command->getName()->shouldBeCalledOnce()->willReturn('app:fake-command');
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input->reveal(), $output->reveal()));
@@ -84,30 +51,19 @@ final class CommandSubscriberTest extends WebTestCase
      */
     public function testItDetectsMissingMandatoryBinaryWithOrigamiCommands(): void
     {
-        $requirementsChecker = $this->prophet->prophesize(RequirementsChecker::class);
-        (new MethodProphecy($requirementsChecker, 'checkMandatoryRequirements', []))
-            ->shouldBeCalled()
-            ->willReturn([
-                ['name' => 'docker', 'description' => '', 'status' => true],
-                ['name' => 'docker-compose', 'description' => '', 'status' => false],
-            ])
-        ;
-        (new MethodProphecy($requirementsChecker, 'checkNonMandatoryRequirements', []))
-            ->shouldBeCalled()
-            ->willReturn([
-                ['name' => 'mkcert', 'description' => '', 'status' => true],
-            ])
-        ;
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
+        $mandatoryRequirementsStatus = [
+            ['name' => 'docker', 'description' => '', 'status' => true],
+            ['name' => 'docker-compose', 'description' => '', 'status' => false],
+        ];
+        $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => true]];
+        $command = $this->prophesize(Command::class);
+        $exception = new MissingRequirementException('At least one mandatory binary is missing from your system.');
 
-        $command = $this->prophet->prophesize(Command::class);
-        (new MethodProphecy($command, 'getName', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('origami:fake-command')
-        ;
-
-        $this->expectExceptionObject(
-            new MissingRequirementException('At least one mandatory binary is missing from your system.')
-        );
+        $requirementsChecker->checkMandatoryRequirements()->shouldBeCalledOnce()->willReturn($mandatoryRequirementsStatus);
+        $requirementsChecker->checkNonMandatoryRequirements()->shouldBeCalledOnce()->willReturn($nonMandatoryRequirementsStatus);
+        $command->getName()->shouldBeCalledOnce()->willReturn('origami:fake-command');
+        $this->expectExceptionObject($exception);
 
         $input = new ArgvInput();
         $output = new BufferedOutput();
@@ -122,26 +78,17 @@ final class CommandSubscriberTest extends WebTestCase
      */
     public function testItDetectsMissingNonMandatoryBinaryWithOrigamiCommands(): void
     {
-        $requirementsChecker = $this->prophet->prophesize(RequirementsChecker::class);
-        (new MethodProphecy($requirementsChecker, 'checkMandatoryRequirements', []))
-            ->shouldBeCalled()
-            ->willReturn([
-                ['name' => 'docker', 'description' => '', 'status' => true],
-                ['name' => 'docker-compose', 'description' => '', 'status' => true],
-            ])
-        ;
-        (new MethodProphecy($requirementsChecker, 'checkNonMandatoryRequirements', []))
-            ->shouldBeCalled()
-            ->willReturn([
-                ['name' => 'mkcert', 'description' => '', 'status' => false],
-            ])
-        ;
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
+        $mandatoryRequirementsStatus = [
+            ['name' => 'docker', 'description' => '', 'status' => true],
+            ['name' => 'docker-compose', 'description' => '', 'status' => true],
+        ];
+        $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => false]];
+        $command = $this->prophesize(Command::class);
 
-        $command = $this->prophet->prophesize(Command::class);
-        (new MethodProphecy($command, 'getName', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('origami:fake-command')
-        ;
+        $requirementsChecker->checkMandatoryRequirements()->shouldBeCalledOnce()->willReturn($mandatoryRequirementsStatus);
+        $requirementsChecker->checkNonMandatoryRequirements()->shouldBeCalledOnce()->willReturn($nonMandatoryRequirementsStatus);
+        $command->getName()->shouldBeCalledOnce()->willReturn('origami:fake-command');
 
         $input = new ArgvInput();
         $output = new BufferedOutput();

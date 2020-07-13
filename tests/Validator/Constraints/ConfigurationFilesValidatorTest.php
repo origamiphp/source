@@ -44,6 +44,7 @@ final class ConfigurationFilesValidatorTest extends ConstraintValidatorTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
         $this->removeLocation();
     }
 

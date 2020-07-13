@@ -7,8 +7,7 @@ namespace App\Tests\Environment\EnvironmentMaker;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Helper\ProcessFactory;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
 /**
@@ -18,52 +17,19 @@ use Symfony\Component\Process\Process;
  */
 final class RequirementsCheckerTest extends TestCase
 {
-    /** @var Prophet */
-    private $prophet;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->prophet = new Prophet();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
-    }
+    use ProphecyTrait;
 
     public function testItDetectsMandatoryBinaryStatus(): void
     {
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
+        $processWithDocker = $this->prophesize(Process::class);
+        $processWithDockerCompose = $this->prophesize(Process::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $processWithDocker = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($processWithDocker, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'docker']]))
-            ->shouldBeCalledOnce()
-            ->willReturn($processWithDocker->reveal())
-        ;
+        $processWithDocker->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory->runBackgroundProcess(['which', 'docker'])->shouldBeCalledOnce()->willReturn($processWithDocker->reveal());
 
-        $processWithDockerCompose = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($processWithDockerCompose, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'docker-compose']]))
-            ->shouldBeCalledOnce()
-            ->willReturn($processWithDockerCompose->reveal())
-        ;
+        $processWithDockerCompose->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory->runBackgroundProcess(['which', 'docker-compose'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertSame([
@@ -82,17 +48,11 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsNonMandatoryBinaryStatus(): void
     {
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
+        $processWithMkcert = $this->prophesize(Process::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $processWithMkcert = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($processWithMkcert, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'mkcert']]))
-            ->shouldBeCalledOnce()
-            ->willReturn($processWithMkcert->reveal())
-        ;
+        $processWithMkcert->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
+        $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertSame([
@@ -106,17 +66,11 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsCertificatesBinaryFoundStatus(): void
     {
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
+        $processWithMkcert = $this->prophesize(Process::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $process = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'mkcert']]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
+        $processWithMkcert->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertTrue($requirementsChecker->canMakeLocallyTrustedCertificates());
@@ -124,17 +78,11 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsCertificatesBinaryNotFoundStatus(): void
     {
-        $processFactory = $this->prophet->prophesize(ProcessFactory::class);
+        $processWithMkcert = $this->prophesize(Process::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $process = $this->prophet->prophesize(Process::class);
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalled()
-            ->willReturn(false)
-        ;
-        (new MethodProphecy($processFactory, 'runBackgroundProcess', [['which', 'mkcert']]))
-            ->shouldBeCalled()
-            ->willReturn($process->reveal())
-        ;
+        $processWithMkcert->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
+        $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertFalse($requirementsChecker->canMakeLocallyTrustedCertificates());

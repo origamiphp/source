@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Helper;
 
+use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
@@ -11,9 +12,7 @@ use App\Middleware\Binary\DockerCompose;
 use App\Middleware\Database;
 use App\Tests\TestFakeEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
@@ -23,171 +22,88 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 final class CurrentContextTest extends TestCase
 {
+    use ProphecyTrait;
     use TestFakeEnvironmentTrait;
 
-    /** @var Prophet */
-    private $prophet;
-
-    /** @var ObjectProphecy */
-    private $database;
-
-    /** @var ObjectProphecy */
-    private $processProxy;
-
-    /** @var ObjectProphecy */
-    private $dockerCompose;
-
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->prophet = new Prophet();
-        $this->database = $this->prophet->prophesize(Database::class);
-        $this->processProxy = $this->prophet->prophesize(ProcessProxy::class);
-        $this->dockerCompose = $this->prophet->prophesize(DockerCompose::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
-    }
-
-    /**
+     * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
     public function testItRetrieveTheActiveEnvironment(): void
     {
         $environment = $this->getFakeEnvironment();
-        $input = $this->prophet->prophesize(InputInterface::class);
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
+        $input = $this->prophesize(InputInterface::class);
 
-        $currentContext = new CurrentContext(
-            $this->database->reveal(),
-            $this->processProxy->reveal(),
-            $this->dockerCompose->reveal()
-        );
+        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal());
         static::assertSame($environment, $currentContext->getEnvironment($input->reveal()));
     }
 
     /**
+     * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
     public function testItRetrieveTheEnvironmentFromInput(): void
     {
         $environment = $this->getFakeEnvironment();
-        $input = $this->prophet->prophesize(InputInterface::class);
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(null)
-        ;
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
+        $input = $this->prophesize(InputInterface::class);
 
-        (new MethodProphecy($input, 'hasArgument', ['environment']))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
+        $input->hasArgument('environment')->shouldBeCalledOnce()->willReturn(true);
+        $input->getArgument('environment')->shouldBeCalledOnce()->willReturn('origami');
+        $database->getEnvironmentByName('origami')->shouldBeCalledOnce()->willReturn($environment);
 
-        (new MethodProphecy($input, 'getArgument', ['environment']))
-            ->shouldBeCalledOnce()
-            ->willReturn('origami')
-        ;
-
-        (new MethodProphecy($this->database, 'getEnvironmentByName', ['origami']))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
-
-        $currentContext = new CurrentContext(
-            $this->database->reveal(),
-            $this->processProxy->reveal(),
-            $this->dockerCompose->reveal()
-        );
-
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal());
         static::assertSame($environment, $currentContext->getEnvironment($input->reveal()));
     }
 
     /**
+     * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
     public function testItRetrieveTheEnvironmentFromLocation(): void
     {
         $environment = $this->getFakeEnvironment();
-        $input = $this->prophet->prophesize(InputInterface::class);
 
-        (new MethodProphecy($this->database, 'getActiveEnvironment', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(null)
-        ;
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
+        $input = $this->prophesize(InputInterface::class);
 
-        (new MethodProphecy($input, 'hasArgument', ['environment']))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
+        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
+        $input->hasArgument('environment')->shouldBeCalledOnce()->willReturn(true);
+        $input->getArgument('environment')->shouldBeCalledOnce()->willReturn('origami');
+        $database->getEnvironmentByName('origami')->shouldBeCalledOnce()->willReturn(null);
+        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('.');
+        $database->getEnvironmentByLocation('.')->shouldBeCalledOnce()->willReturn($environment);
 
-        (new MethodProphecy($input, 'getArgument', ['environment']))
-            ->shouldBeCalledOnce()
-            ->willReturn('origami')
-        ;
-
-        (new MethodProphecy($this->database, 'getEnvironmentByName', ['origami']))
-            ->shouldBeCalledOnce()
-            ->willReturn(null)
-        ;
-
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('.')
-        ;
-
-        (new MethodProphecy($this->database, 'getEnvironmentByLocation', ['.']))
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
-
-        $currentContext = new CurrentContext(
-            $this->database->reveal(),
-            $this->processProxy->reveal(),
-            $this->dockerCompose->reveal()
-        );
-
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal());
         static::assertSame($environment, $currentContext->getEnvironment($input->reveal()));
     }
 
     /**
+     * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
     public function testItThrowsAnExceptionWithoutEnvironment(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willReturn('.')
-        ;
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $dockerCompose = $this->prophesize(DockerCompose::class);
 
-        $currentContext = new CurrentContext(
-            $this->database->reveal(),
-            $this->processProxy->reveal(),
-            $this->dockerCompose->reveal()
-        );
+        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('.');
 
-        $this->expectExceptionObject(
-            new InvalidEnvironmentException(
-                'An environment must be given, please consider using the install command instead.'
-            )
-        );
-
-        $currentContext->getEnvironment($this->prophet->prophesize(InputInterface::class)->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal());
+        $this->expectException(InvalidEnvironmentException::class);
+        $currentContext->getEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
 }

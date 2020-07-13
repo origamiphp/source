@@ -4,114 +4,86 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
-use App\Exception\InvalidEnvironmentException;
-use App\Middleware\Binary\DockerCompose;
-use Prophecy\Prophecy\MethodProphecy;
-use Symfony\Component\Process\Process;
+use App\Environment\EnvironmentEntity;
+use App\Exception\InvalidConfigurationException;
+use App\Tests\TestDockerComposeTrait;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * @internal
  *
  * @covers \App\Middleware\Binary\DockerCompose
  */
-final class DockerComposeLogsTest extends AbstractDockerComposeTestCase
+final class DockerComposeLogsTest extends WebTestCase
 {
+    use ProphecyTrait;
+    use TestDockerComposeTrait;
+
+    /** @var EnvironmentEntity */
+    protected $environment;
+
     /**
-     * @throws InvalidEnvironmentException
+     * {@inheritdoc}
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->createLocation();
+        $this->prepareLocation();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        $this->removeLocation();
+    }
+
+    /**
+     * @throws InvalidConfigurationException
      */
     public function testItShowServicesLogsWithDefaultArguments(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'logs', '--follow', '--tail=0'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'logs', '--follow', '--tail=0'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs());
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItShowServicesLogsWithSpecificService(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'logs', '--follow', '--tail=0', 'php'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'logs', '--follow', '--tail=0', 'php'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs(0, 'php'));
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItShowServicesLogsWithSpecificTail(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'logs', '--follow', '--tail=42'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'logs', '--follow', '--tail=42'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs(42));
     }
 
     /**
-     * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItShowServicesLogsWithSpecificServiceAndTail(): void
     {
-        $this->prophesizeSuccessfulValidations();
-        $process = $this->prophet->prophesize(Process::class);
-        $environmentVariables = $this->getFakeEnvironmentVariables();
-
-        (new MethodProphecy($process, 'isSuccessful', []))
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        (new MethodProphecy($this->processFactory, 'runForegroundProcess', [['docker-compose', 'logs', '--follow', '--tail=42', 'php'], $environmentVariables]))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $dockerCompose = new DockerCompose($this->validator->reveal(), $this->processFactory->reveal());
-        $dockerCompose->setActiveEnvironment($this->environment);
+        $command = ['docker-compose', 'logs', '--follow', '--tail=42', 'php'];
+        $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs(42, 'php'));
     }

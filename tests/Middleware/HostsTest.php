@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware;
 
+use App\Exception\UnsupportedOperatingSystemException;
 use App\Helper\ProcessFactory;
 use App\Middleware\Hosts;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
+use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -18,61 +18,39 @@ use Prophecy\Prophet;
  */
 final class HostsTest extends TestCase
 {
-    /** @var Prophet */
-    private $prophet;
-
-    /** @var ObjectProphecy */
-    private $processFactory;
+    use ProphecyTrait;
 
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->prophet = new Prophet();
-        $this->processFactory = $this->prophet->prophesize(ProcessFactory::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
-    }
-
-    /**
-     * @throws \App\Exception\UnsupportedOperatingSystemException
+     * @throws UnsupportedOperatingSystemException
      */
     public function testItFindsExistingDomains(): void
     {
-        $hosts = new Hosts($this->processFactory->reveal());
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $hosts = new Hosts($processFactory->reveal());
+
         static::assertTrue($hosts->hasDomains('localhost'));
     }
 
     /**
-     * @throws \App\Exception\UnsupportedOperatingSystemException
+     * @throws UnsupportedOperatingSystemException
      */
     public function testItDoesNotFindExistingDomains(): void
     {
-        $hosts = new Hosts($this->processFactory->reveal());
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $hosts = new Hosts($processFactory->reveal());
+
         static::assertFalse($hosts->hasDomains('azertyuiopqsdfghjklmwxcvbn'));
     }
 
     /**
-     * @throws \App\Exception\UnsupportedOperatingSystemException
+     * @throws UnsupportedOperatingSystemException
      */
     public function testItTriggersTheFixingProcess(): void
     {
-        (new MethodProphecy($this->processFactory, 'runForegroundProcessFromShellCommandLine', ["echo '127.0.0.1 origami.localhost' | sudo tee -a /etc/hosts > /dev/null"]))
-            ->shouldBeCalledOnce()
-        ;
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $processFactory->runForegroundProcessFromShellCommandLine(Argument::type('string'))->shouldBeCalledOnce();
 
-        $hosts = new Hosts($this->processFactory->reveal());
+        $hosts = new Hosts($processFactory->reveal());
         $hosts->fixHostsFile('origami.localhost');
 
         // Temporary workaround to avoid the test being marked as risky.

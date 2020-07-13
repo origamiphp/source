@@ -12,8 +12,7 @@ use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -23,14 +22,9 @@ use Prophecy\Prophet;
  */
 final class ConfigurationUninstallerTest extends TestCase
 {
+    use ProphecyTrait;
     use TestConfigurationTrait;
     use TestLocationTrait;
-
-    /** @var Prophet */
-    private $prophet;
-
-    /** @var ObjectProphecy */
-    private $mkcert;
 
     /**
      * {@inheritdoc}
@@ -38,9 +32,6 @@ final class ConfigurationUninstallerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->prophet = new Prophet();
-        $this->mkcert = $this->prophet->prophesize(Mkcert::class);
 
         $this->createLocation();
     }
@@ -52,7 +43,6 @@ final class ConfigurationUninstallerTest extends TestCase
     {
         parent::tearDown();
 
-        $this->prophet->checkPredictions();
         $this->removeLocation();
     }
 
@@ -67,7 +57,9 @@ final class ConfigurationUninstallerTest extends TestCase
         mkdir($destination, 0777, true);
         static::assertDirectoryExists($destination);
 
-        $uninstaller = new ConfigurationUninstaller($this->mkcert->reveal(), FakeVariables::empty());
+        $mkcert = $this->prophesize(Mkcert::class);
+
+        $uninstaller = new ConfigurationUninstaller($mkcert->reveal(), FakeVariables::empty());
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);

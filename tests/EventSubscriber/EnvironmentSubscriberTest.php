@@ -14,9 +14,8 @@ use App\Exception\UnsupportedOperatingSystemException;
 use App\Middleware\Database;
 use App\Middleware\Hosts;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use Prophecy\Prophet;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -31,8 +30,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 final class EnvironmentSubscriberTest extends WebTestCase
 {
-    /** @var Prophet */
-    private $prophet;
+    use ProphecyTrait;
 
     /** @var ObjectProphecy */
     private $hosts;
@@ -47,29 +45,19 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         parent::setUp();
 
-        $this->prophet = new Prophet();
-        $this->hosts = $this->prophet->prophesize(Hosts::class);
-        $this->database = $this->prophet->prophesize(Database::class);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->prophet->checkPredictions();
+        $this->hosts = $this->prophesize(Hosts::class);
+        $this->database = $this->prophesize(Database::class);
     }
 
     public function testItCreatesTheEnvironmentAfterInstall(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
 
-        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
-        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+
+        $this->database->add($environment->reveal())->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
         $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentInstall($event);
@@ -78,21 +66,24 @@ final class EnvironmentSubscriberTest extends WebTestCase
         static::assertTrue(true);
     }
 
+    /**
+     * @throws UnsupportedOperatingSystemException
+     */
     public function testItCreatesTheEnvironmentAfterInstallEvenWithAnException(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
+        $domains = 'test.localhost';
+        $exception = new UnsupportedOperatingSystemException('Dummy exception.');
 
-        (new MethodProphecy($environment, 'getDomains', []))->shouldBeCalledOnce()->willReturn('test.localhost');
-        (new MethodProphecy($this->hosts, 'hasDomains', ['test.localhost']))
-            ->shouldBeCalledOnce()
-            ->willThrow(new UnsupportedOperatingSystemException('Dummy exception.'))
-        ;
-        (new MethodProphecy($this->hosts, 'fixHostsFile', ['test.localhost']))->shouldNotBeCalled();
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
-        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+        $environment->getDomains()->shouldBeCalledOnce()->willReturn($domains);
+        $this->hosts->hasDomains($domains)->shouldBeCalledOnce()->willThrow($exception);
+        $this->hosts->fixHostsFile($domains)->shouldNotBeCalled();
+
+        $this->database->add($environment->reveal())->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
         $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentInstall($event);
@@ -101,20 +92,25 @@ final class EnvironmentSubscriberTest extends WebTestCase
         static::assertTrue(true);
     }
 
+    /**
+     * @throws UnsupportedOperatingSystemException
+     */
     public function testItAnalyzesAndFixesSystemHostsFile(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
+        $domains = 'test.localhost';
 
-        (new MethodProphecy($environment, 'getDomains', []))->shouldBeCalledOnce()->willReturn('test.localhost');
-        (new MethodProphecy($this->hosts, 'hasDomains', ['test.localhost']))->shouldBeCalledOnce()->willReturn(false);
-        (new MethodProphecy($symfonyStyle, 'warning', [Argument::type('string')]))->shouldBeCalledOnce();
-        (new MethodProphecy($symfonyStyle, 'confirm', [Argument::type('string'), false]))->shouldBeCalledOnce()->willReturn(true);
-        (new MethodProphecy($this->hosts, 'fixHostsFile', ['test.localhost']))->shouldBeCalledOnce();
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
-        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+        $environment->getDomains()->shouldBeCalledOnce()->willReturn($domains);
+        $this->hosts->hasDomains($domains)->shouldBeCalledOnce()->willReturn(false);
+        $symfonyStyle->warning(Argument::type('string'))->shouldBeCalledOnce();
+        $symfonyStyle->confirm(Argument::type('string'), false)->shouldBeCalledOnce()->willReturn(true);
+        $this->hosts->fixHostsFile($domains)->shouldBeCalledOnce();
+
+        $this->database->add($environment->reveal())->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
         $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentInstall($event);
@@ -123,20 +119,25 @@ final class EnvironmentSubscriberTest extends WebTestCase
         static::assertTrue(true);
     }
 
+    /**
+     * @throws UnsupportedOperatingSystemException
+     */
     public function testItAnalyzesAndDoesNotFixSystemHostsFile(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
+        $domains = 'test.localhost';
 
-        (new MethodProphecy($environment, 'getDomains', []))->shouldBeCalledOnce()->willReturn('test.localhost');
-        (new MethodProphecy($this->hosts, 'hasDomains', ['test.localhost']))->shouldBeCalledOnce()->willReturn(false);
-        (new MethodProphecy($symfonyStyle, 'warning', [Argument::type('string')]))->shouldBeCalledOnce();
-        (new MethodProphecy($symfonyStyle, 'confirm', [Argument::type('string'), false]))->shouldBeCalledOnce()->willReturn(false);
-        (new MethodProphecy($this->hosts, 'fixHostsFile', ['test.localhost']))->shouldNotBeCalled();
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        (new MethodProphecy($this->database, 'add', [$environment->reveal()]))->shouldBeCalledOnce();
-        (new MethodProphecy($this->database, 'save', []))->shouldBeCalledOnce();
+        $environment->getDomains()->shouldBeCalledOnce()->willReturn($domains);
+        $this->hosts->hasDomains($domains)->shouldBeCalledOnce()->willReturn(false);
+        $symfonyStyle->warning(Argument::type('string'))->shouldBeCalledOnce();
+        $symfonyStyle->confirm(Argument::type('string'), false)->shouldBeCalledOnce()->willReturn(false);
+        $this->hosts->fixHostsFile($domains)->shouldNotBeCalled();
+
+        $this->database->add($environment->reveal())->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
         $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentInstall($event);
@@ -147,17 +148,13 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStartsTheEnvironment(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
 
-        (new MethodProphecy($environment, 'activate', []))
-            ->shouldBeCalledOnce()
-        ;
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        (new MethodProphecy($this->database, 'save', []))
-            ->shouldBeCalledOnce()
-        ;
+        $environment->activate()->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
         $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentStart($event);
@@ -168,17 +165,13 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStopsTheEnvironment(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
 
-        (new MethodProphecy($environment, 'deactivate', []))
-            ->shouldBeCalledOnce()
-        ;
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        (new MethodProphecy($this->database, 'save', []))
-            ->shouldBeCalledOnce()
-        ;
+        $environment->deactivate()->shouldBeCalledOnce();
+        $this->database->save()->shouldBeCalledOnce();
 
         $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentStop($event);
@@ -189,8 +182,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItUninstallsTheEnvironment(): void
     {
-        $environment = $this->prophet->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophet->prophesize(SymfonyStyle::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
         $subscriber = $this->getEnvironmentSubscriberInstance();
 
         $event = new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal());

@@ -42,11 +42,13 @@ final class DatabaseTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
+
         $this->removeLocation();
     }
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItCreatesTheDatabaseFile(): void
     {
@@ -71,6 +73,7 @@ final class DatabaseTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItRetrievesTheEnvironmentList(): void
     {
@@ -106,6 +109,7 @@ final class DatabaseTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItRetrievesTheActiveEnvironment(): void
     {
@@ -133,6 +137,7 @@ final class DatabaseTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItRetrievesAnEnvironmentByName(): void
     {
@@ -157,6 +162,7 @@ final class DatabaseTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItRetrievesAnEnvironmentByLocation(): void
     {
@@ -181,6 +187,7 @@ final class DatabaseTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItAddsAnEnvironment(): void
     {
@@ -206,6 +213,7 @@ final class DatabaseTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
+     * @throws FilesystemException
      */
     public function testItRemovesAnEnvironment(): void
     {

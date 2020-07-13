@@ -12,11 +12,11 @@ use App\Event\EnvironmentInstalledEvent;
 use App\Exception\FilesystemException;
 use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
-use App\Tests\Command\AbstractCommandWebTestCase;
+use App\Tests\TestCommandTrait;
 use Generator;
 use Prophecy\Argument;
-use Prophecy\Prophecy\MethodProphecy;
-use Prophecy\Prophecy\ObjectProphecy;
+use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -29,75 +29,36 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class InstallCommandTest extends AbstractCommandWebTestCase
+final class InstallCommandTest extends WebTestCase
 {
-    /** @var ObjectProphecy */
-    private $processProxy;
-
-    /** @var ObjectProphecy */
-    private $configurator;
-
-    /** @var ObjectProphecy */
-    private $installer;
-
-    /** @var ObjectProphecy */
-    private $eventDispatcher;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->processProxy = $this->prophet->prophesize(ProcessProxy::class);
-        $this->configurator = $this->prophet->prophesize(EnvironmentMaker::class);
-        $this->installer = $this->prophet->prophesize(ConfigurationInstaller::class);
-        $this->eventDispatcher = $this->prophet->prophesize(EventDispatcher::class);
-    }
+    use ProphecyTrait;
+    use TestCommandTrait;
 
     /**
      * @dataProvider provideEnvironmentConfigurations
+     *
+     * @throws FilesystemException
      */
     public function testItInstallTheRequestedEnvironment(string $name, string $type, string $phpVersion, ?string $domains): void
     {
         $fakeLocation = '/fake/directory';
 
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willReturn($fakeLocation)
-        ;
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $configurator = $this->prophesize(EnvironmentMaker::class);
+        $installer = $this->prophesize(ConfigurationInstaller::class);
+        $environment = $this->prophesize(EnvironmentEntity::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        (new MethodProphecy($this->configurator, 'askEnvironmentName', [Argument::type(SymfonyStyle::class), basename($fakeLocation)]))
-            ->shouldBeCalledOnce()
-            ->willReturn($name)
-        ;
+        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn($fakeLocation);
+        $configurator->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
+        $configurator->askEnvironmentType(Argument::type(SymfonyStyle::class), $fakeLocation)->shouldBeCalledOnce()->willReturn($type);
+        $configurator->askPhpVersion(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($phpVersion);
+        $configurator->askDomains(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($domains ?? null);
+        $installer->install($name, $fakeLocation, $type, $phpVersion, $domains)->shouldBeCalledOnce()->willReturn($environment->reveal());
+        $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldBeCalledOnce();
 
-        (new MethodProphecy($this->configurator, 'askEnvironmentType', [Argument::type(SymfonyStyle::class), $fakeLocation]))
-            ->shouldBeCalledOnce()
-            ->willReturn($type)
-        ;
-
-        (new MethodProphecy($this->configurator, 'askPhpVersion', [Argument::type(SymfonyStyle::class), $type]))
-            ->shouldBeCalledOnce()
-            ->willReturn($phpVersion)
-        ;
-
-        (new MethodProphecy($this->configurator, 'askDomains', [Argument::type(SymfonyStyle::class), $type]))
-            ->shouldBeCalledOnce()
-            ->willReturn($domains ?? null)
-        ;
-
-        (new MethodProphecy($this->installer, 'install', [$name, $fakeLocation, $type, $phpVersion, $domains]))
-            ->shouldBeCalledOnce()
-            ->willReturn($this->prophet->prophesize(EnvironmentEntity::class)->reveal())
-        ;
-
-        (new MethodProphecy($this->eventDispatcher, 'dispatch', [Argument::type(EnvironmentInstalledEvent::class)]))
-            ->shouldBeCalledOnce()
-        ;
-
-        $commandTester = new CommandTester($this->getCommand());
+        $command = new InstallCommand($processProxy->reveal(), $configurator->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         if ($domains) {
             $commandTester->setInputs([$name, $type, $phpVersion, 'yes', $domains]);
         } else {
@@ -122,32 +83,27 @@ final class InstallCommandTest extends AbstractCommandWebTestCase
         yield 'Symfony environment without domain' => ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', null];
     }
 
+    /**
+     * @throws FilesystemException
+     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        (new MethodProphecy($this->processProxy, 'getWorkingDirectory', []))
-            ->shouldBeCalledOnce()
-            ->willThrow(new FilesystemException('Dummy exception.'))
-        ;
+        $exception = new FilesystemException('Dummy exception.');
 
-        $commandTester = new CommandTester($this->getCommand());
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $configurator = $this->prophesize(EnvironmentMaker::class);
+        $installer = $this->prophesize(ConfigurationInstaller::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+
+        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willThrow($exception);
+
+        $command = new InstallCommand($processProxy->reveal(), $configurator->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $commandTester = new CommandTester($command);
         $commandTester->setInputs(['', EnvironmentEntity::TYPE_SYMFONY, 'no']);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] Dummy exception.', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
-    }
-
-    /**
-     * Retrieves the \App\Command\Additional\InstallCommand instance to use within the tests.
-     */
-    private function getCommand(): InstallCommand
-    {
-        return new InstallCommand(
-            $this->processProxy->reveal(),
-            $this->configurator->reveal(),
-            $this->installer->reveal(),
-            $this->eventDispatcher->reveal()
-        );
     }
 }

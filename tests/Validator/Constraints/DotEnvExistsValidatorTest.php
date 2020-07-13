@@ -77,6 +77,9 @@ final class DotEnvExistsValidatorTest extends ConstraintValidatorTestCase
         $this->expectNoValidate();
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function createValidator(): ConstraintValidatorInterface
     {
         return new DotEnvExistsValidator();
