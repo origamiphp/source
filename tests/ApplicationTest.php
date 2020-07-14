@@ -37,6 +37,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\DefaultCommand
  * @uses \App\Helper\ProcessFactory
  * @uses \App\Helper\CurrentContext
+ * @uses \App\Helper\Validator
  * @uses \App\Environment\EnvironmentMaker\DockerHub
  * @uses \App\Environment\EnvironmentMaker\RequirementsChecker
  * @uses \App\Environment\EnvironmentMaker\TechnologyIdentifier

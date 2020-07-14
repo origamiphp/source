@@ -8,7 +8,6 @@ use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Environment\EnvironmentEntity;
 use App\Middleware\Binary\Mkcert;
-use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
@@ -27,34 +26,14 @@ final class ConfigurationUninstallerTest extends TestCase
     use TestLocationTrait;
 
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->createLocation();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->removeLocation();
-    }
-
-    /**
      * @dataProvider provideMultipleInstallContexts
      */
     public function testItUninstallsEnvironment(string $name, string $type, ?string $domains = null): void
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $this->installEnvironmentConfiguration($environment);
 
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-        mkdir($destination, 0777, true);
         static::assertDirectoryExists($destination);
 
         $mkcert = $this->prophesize(Mkcert::class);

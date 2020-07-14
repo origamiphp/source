@@ -57,6 +57,7 @@ class PrepareCommand extends AbstractBaseCommand
 
         try {
             $environment = $this->currentContext->getEnvironment($input);
+            $this->currentContext->setActiveEnvironment($environment);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);

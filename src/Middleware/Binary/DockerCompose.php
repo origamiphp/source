@@ -6,40 +6,26 @@ namespace App\Middleware\Binary;
 
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
-use App\Exception\InvalidConfigurationException;
 use App\Helper\ProcessFactory;
-use App\Validator\Constraints\ConfigurationFiles;
-use App\Validator\Constraints\DotEnvExists;
-use Symfony\Component\Dotenv\Dotenv;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class DockerCompose
 {
-    /** @var ValidatorInterface */
-    private $validator;
-
     /** @var ProcessFactory */
     private $processFactory;
 
     /** @var array */
     private $environmentVariables = [];
 
-    public function __construct(ValidatorInterface $validator, ProcessFactory $processFactory)
+    public function __construct(ProcessFactory $processFactory)
     {
-        $this->validator = $validator;
         $this->processFactory = $processFactory;
     }
 
     /**
-     * Defines the currently active environment.
-     *
-     * @throws InvalidConfigurationException
+     * Loads the environment variables associated to the given environment.
      */
-    public function setActiveEnvironment(EnvironmentEntity $environment): void
+    public function refreshEnvironmentVariables(EnvironmentEntity $environment): void
     {
-        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $this->checkEnvironmentConfiguration($environment);
-        }
         $this->environmentVariables = $this->getRequiredVariables($environment);
     }
 
@@ -189,29 +175,5 @@ class DockerCompose
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
-    }
-
-    /**
-     * Checks whether the environment has been installed and correctly configured.
-     *
-     * @throws InvalidConfigurationException
-     */
-    private function checkEnvironmentConfiguration(EnvironmentEntity $environment): void
-    {
-        $dotEnvConstraint = new DotEnvExists();
-        $errors = $this->validator->validate($environment, $dotEnvConstraint);
-        if (!$errors->has(0)) {
-            $dotenv = new Dotenv();
-            $dotenv->usePutenv(true);
-            $dotenv->overload($environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'.env');
-        } else {
-            throw new InvalidConfigurationException($errors[0]->getMessage());
-        }
-
-        $filesConstraint = new ConfigurationFiles();
-        $errors = $this->validator->validate($environment, $filesConstraint);
-        if ($errors->has(0)) {
-            throw new InvalidConfigurationException($errors[0]->getMessage());
-        }
     }
 }

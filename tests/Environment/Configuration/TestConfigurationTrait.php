@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests;
+namespace App\Tests\Environment\Configuration;
 
 use App\Environment\EnvironmentEntity;
 use Generator;
@@ -35,7 +35,7 @@ trait TestConfigurationTrait
     protected function assertConfigurationIsInstalled(string $type, string $destination, string $phpVersion): void
     {
         $finder = new Finder();
-        $finder->files()->in(__DIR__."/../src/Resources/{$type}");
+        $finder->files()->in(__DIR__."/../../../src/Resources/{$type}");
 
         foreach ($finder as $file) {
             $pathname = $file->getPathname();

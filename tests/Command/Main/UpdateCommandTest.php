@@ -7,12 +7,12 @@ namespace App\Tests\Command\Main;
 use App\Command\Main\UpdateCommand;
 use App\Environment\Configuration\ConfigurationUpdater;
 use App\Environment\EnvironmentEntity;
-use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\Command\TestCommandTrait;
+use App\Tests\TestLocationTrait;
+use Generator;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -31,20 +31,16 @@ final class UpdateCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItSuccessfullyUpdateTheCurrentEnvironment(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $updater = $this->prophesize(ConfigurationUpdater::class);
+        [$currentContext, $updater] = $this->prophesizeUpdateCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
         $command = new UpdateCommand($currentContext->reveal(), $updater->reveal());
         $commandTester = new CommandTester($command);
@@ -52,30 +48,20 @@ final class UpdateCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[OK] Environment successfully updated.', $display);
+        static::assertStringContainsString('[OK] ', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
+     * @dataProvider provideInvalidEnvironments
      */
-    public function testItAbortWhenTryingToUpdateACustomEnvironment(): void
+    public function testItAbortGracefullyTheUpdate(EnvironmentEntity $environment): void
     {
-        $environment = new EnvironmentEntity(
-            'origami',
-            '~/Sites/origami',
-            EnvironmentEntity::TYPE_CUSTOM,
-            'origami.localhost',
-            false
-        );
-        $exception = new InvalidEnvironmentException('Unable to update a custom environment.');
-
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $updater = $this->prophesize(ConfigurationUpdater::class);
+        [$currentContext, $updater] = $this->prophesizeUpdateCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $updater->update($environment)->shouldBeCalledOnce()->willThrow($exception);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $updater->update($environment)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
 
         $command = new UpdateCommand($currentContext->reveal(), $updater->reveal());
         $commandTester = new CommandTester($command);
@@ -83,38 +69,29 @@ final class UpdateCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Unable to update a custom environment.', $display);
+        static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
-    public function testItAbortWhenTryingToUpdateARunningEnvironment(): void
+    public function provideInvalidEnvironments(): Generator
     {
-        $environment = new EnvironmentEntity(
-            'origami',
-            '~/Sites/origami',
-            EnvironmentEntity::TYPE_SYMFONY,
-            'origami.localhost',
-            true
-        );
-        $exception = new InvalidEnvironmentException('Unable to update a running environment.');
+        yield 'A custom environment' => [
+            new EnvironmentEntity('foo', '~/Sites/foo', EnvironmentEntity::TYPE_CUSTOM, 'foo.localhost', false),
+        ];
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $updater = $this->prophesize(ConfigurationUpdater::class);
+        yield 'A running environment' => [
+            new EnvironmentEntity('bar', '~/Sites/bar', EnvironmentEntity::TYPE_SYMFONY, 'bar.localhost', true),
+        ];
+    }
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $updater->update($environment)->shouldBeCalledOnce()->willThrow($exception);
-
-        $command = new UpdateCommand($currentContext->reveal(), $updater->reveal());
-        $commandTester = new CommandTester($command);
-        $commandTester->setInputs(['yes']);
-        $commandTester->execute([]);
-
-        $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Unable to update a running environment.', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+    /**
+     * Prophesizes arguments needed by the \App\Command\Main\UpdateCommand class.
+     */
+    private function prophesizeUpdateCommandArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+            $this->prophesize(ConfigurationUpdater::class),
+        ];
     }
 }

@@ -8,13 +8,11 @@ use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationInstaller;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
-use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Prophecy\Prophecy\ObjectProphecy;
 
 /**
  * @internal
@@ -28,30 +26,6 @@ final class ConfigurationInstallerTest extends TestCase
     use TestConfigurationTrait;
     use TestLocationTrait;
 
-    /** @var ObjectProphecy */
-    private $mkcert;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->mkcert = $this->prophesize(Mkcert::class);
-        $this->createLocation();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->removeLocation();
-    }
-
     /**
      * @dataProvider provideMultipleInstallContexts
      *
@@ -59,7 +33,9 @@ final class ConfigurationInstallerTest extends TestCase
      */
     public function testItInstallsConfigurationFilesWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
     {
-        $phpVersion = 'azerty';
+        $phpVersion = '7.4';
+
+        $mkcert = $this->prophesize(Mkcert::class);
 
         $source = __DIR__."/../../../src/Resources/{$type}";
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
@@ -72,14 +48,14 @@ final class ConfigurationInstallerTest extends TestCase
             $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
             $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
-            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))->shouldBeCalledOnce()->willReturn(true);
+            $mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))->shouldBeCalledOnce()->willReturn(true);
         } else {
-            $this->mkcert->generateCertificate(Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
+            $mkcert->generateCertificate(Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
         }
 
         $credentials = $this->getFakeBlackfireCredentials();
 
-        $installer = new ConfigurationInstaller($this->mkcert->reveal(), FakeVariables::fromArray($credentials));
+        $installer = new ConfigurationInstaller($mkcert->reveal(), FakeVariables::fromArray($credentials));
         $installer->install($name, $this->location, $type, $phpVersion, $domains);
 
         $this->assertConfigurationIsInstalled($type, $destination, $phpVersion);

@@ -81,14 +81,19 @@ class UninstallCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('Unable to uninstall a running environment.');
                 }
 
-                if (!$this->dockerCompose->removeServices()) {
-                    throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
+                try {
+                    $this->currentContext->setActiveEnvironment($environment);
+                    if (!$this->dockerCompose->removeServices()) {
+                        throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
+                    }
+                } catch (OrigamiExceptionInterface $exception) {
+                    $io->warning($exception->getMessage());
                 }
+
+                $this->uninstaller->uninstall($environment);
 
                 $event = new EnvironmentUninstalledEvent($environment, $io);
                 $this->eventDispatcher->dispatch($event);
-
-                $this->uninstaller->uninstall($environment);
 
                 $io->success('Environment successfully uninstalled.');
             }

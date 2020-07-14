@@ -56,6 +56,7 @@ class UpdateCommand extends AbstractBaseCommand
 
         try {
             $environment = $this->currentContext->getEnvironment($input);
+            $this->currentContext->setActiveEnvironment($environment);
 
             $question = sprintf(
                 'Are you sure you want to update the "%s" environment?',

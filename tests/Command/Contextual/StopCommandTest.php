@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\StopCommand;
-use App\Exception\FilesystemException;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\Command\TestCommandTrait;
+use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
@@ -33,21 +31,16 @@ final class StopCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItExecutesProcessSuccessfully(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
-        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        [$currentContext, $dockerCompose, $eventDispatcher] = $this->prophesizeStopCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->stopServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->willReturn(new stdClass());
 
@@ -58,26 +51,33 @@ final class StopCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
 
         static::assertDisplayIsVerbose($environment, $display);
-        static::assertStringContainsString('[OK] Docker services successfully stopped.', $display);
+        static::assertStringContainsString('[OK] ', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
-        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        [$currentContext, $dockerCompose, $eventDispatcher] = $this->prophesizeStopCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->stopServices()->shouldBeCalledOnce()->willReturn(false);
 
         $command = new StopCommand($currentContext->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
-        static::assertExceptionIsHandled($command, '[ERROR] An error occurred while stopping the Docker services.');
+        static::assertExceptionIsHandled($command, '[ERROR] ');
+    }
+
+    /**
+     * Prophesizes arguments needed by the \App\Command\Contextual\StopCommand class.
+     */
+    private function prophesizeStopCommandArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+            $this->prophesize(DockerCompose::class),
+            $this->prophesize(EventDispatcherInterface::class),
+        ];
     }
 }
