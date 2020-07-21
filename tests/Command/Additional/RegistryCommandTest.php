@@ -9,7 +9,7 @@ use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
-use App\Tests\TestCommandTrait;
+use App\Tests\Command\TestCommandTrait;
 use Generator;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -36,7 +36,7 @@ final class RegistryCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[NOTE] There is no registered environment at the moment.', $display);
+        static::assertStringContainsString('[NOTE] ', $display);
     }
 
     /**

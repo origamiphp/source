@@ -21,7 +21,7 @@ phpcsfixer-fix: ## Fixes code style in all PHP files
 .PHONY: phpcsfixer
 
 phpcpd: ## Executes a copy/paste analysis
-	docker run --interactive --volume="$$(pwd):/app:delegated" ajardin/phpcpd --fuzzy --min-lines=15 src tests
+	docker run --interactive --volume="$$(pwd):/app:delegated" ajardin/phpcpd --fuzzy src tests
 .PHONY: phpcpd
 
 psalm: ## Executes a static analysis on all PHP files

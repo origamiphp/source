@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\StartCommand;
-use App\Exception\FilesystemException;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\Command\TestCommandTrait;
+use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -32,22 +30,16 @@ final class StartCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItStartsTheEnvironment(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $processProxy = $this->prophesize(ProcessProxy::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
-        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeStartCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
 
@@ -61,21 +53,15 @@ final class StartCommandTest extends WebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItDoesNotStartMultipleEnvironments(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
         $environment->activate();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $processProxy = $this->prophesize(ProcessProxy::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
-        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeStartCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $processProxy->getWorkingDirectory()->willReturn('');
         $dockerCompose->startServices()->shouldNotBeCalled();
         $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
@@ -85,24 +71,18 @@ final class StartCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Unable to start an environment when there is already a running one.', $display);
+        static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(CommandExitCode::INVALID, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $processProxy = $this->prophesize(ProcessProxy::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
-        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeStartCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(false);
         $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
 
@@ -111,7 +91,20 @@ final class StartCommandTest extends WebTestCase
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] An error occurred while starting the Docker services.', $display);
+        static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+    }
+
+    /**
+     * Prophesizes arguments needed by the \App\Command\Main\StartCommand class.
+     */
+    private function prophesizeStartCommandArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+            $this->prophesize(ProcessProxy::class),
+            $this->prophesize(DockerCompose::class),
+            $this->prophesize(EventDispatcher::class),
+        ];
     }
 }

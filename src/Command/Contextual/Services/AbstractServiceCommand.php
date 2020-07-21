@@ -56,6 +56,7 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
 
         try {
             $environment = $this->currentContext->getEnvironment($input);
+            $this->currentContext->setActiveEnvironment($environment);
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);

@@ -6,12 +6,12 @@ namespace App\Tests\Command;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\FilesystemException;
+use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
@@ -31,41 +31,45 @@ final class AbstractBaseCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
     /**
      * @throws FilesystemException
      * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItDoesPrintDetailsWhenVerbose(): void
     {
-        $environment = $this->getFakeEnvironment();
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $environment = $this->createEnvironment();
 
+        $currentContext = $this->prophesize(CurrentContext::class);
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
         $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
-        static::assertStringContainsString('[OK] An environment is currently running.', $commandTester->getDisplay());
+        static::assertStringContainsString('[OK] ', $commandTester->getDisplay());
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
      * @throws FilesystemException
      * @throws InvalidEnvironmentException
+     * @throws InvalidConfigurationException
      */
     public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
-        $environment = $this->getFakeEnvironment();
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $environment = $this->createEnvironment();
 
+        $currentContext = $this->prophesize(CurrentContext::class);
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
         $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
 
-        static::assertStringNotContainsString('[OK] An environment is currently running.', $commandTester->getDisplay());
+        static::assertStringNotContainsString('[OK] ', $commandTester->getDisplay());
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
@@ -111,6 +115,7 @@ final class AbstractBaseCommandTest extends WebTestCase
 
                 try {
                     $environment = $this->currentContext->getEnvironment($input);
+                    $this->currentContext->setActiveEnvironment($environment);
 
                     if ($output->isVerbose()) {
                         $this->printEnvironmentDetails($environment, $io);

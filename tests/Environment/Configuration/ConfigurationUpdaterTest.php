@@ -11,7 +11,6 @@ use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\Mkcert;
-use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
@@ -29,29 +28,6 @@ final class ConfigurationUpdaterTest extends TestCase
     use TestConfigurationTrait;
     use TestLocationTrait;
 
-    /** @var string */
-    private $fakePhpVersion = 'azerty';
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->createLocation();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->removeLocation();
-    }
-
     /**
      * @dataProvider provideMultipleInstallContexts
      *
@@ -61,17 +37,17 @@ final class ConfigurationUpdaterTest extends TestCase
     public function testItUpdatesAnEnvironmentWithPhpImage(string $name, string $type, ?string $domains = null): void
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $this->installEnvironmentConfiguration($environment);
 
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-        mkdir($destination, 0777, true);
-        file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
+        file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=7.4');
 
         $mkcert = $this->prophesize(Mkcert::class);
 
         $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::empty());
         $updater->update($environment);
 
-        $this->assertConfigurationIsInstalled($type, $destination, $this->fakePhpVersion);
+        $this->assertConfigurationIsInstalled($type, $destination, '7.4');
     }
 
     /**
@@ -83,10 +59,9 @@ final class ConfigurationUpdaterTest extends TestCase
     public function testItUpdatesAnEnvironmentWithoutPhpImage(string $name, string $type, ?string $domains = null): void
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $this->installEnvironmentConfiguration($environment);
 
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-        mkdir($destination, 0777, true);
-        file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=');
 
         $mkcert = $this->prophesize(Mkcert::class);
 
@@ -105,13 +80,10 @@ final class ConfigurationUpdaterTest extends TestCase
     public function testItUpdatesAnEnvironmentWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
-        $credentials = $this->getFakeBlackfireCredentials();
+        $this->installEnvironmentConfiguration($environment);
 
-        $source = __DIR__."/../../../src/Resources/{$type}";
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-
-        mkdir($destination, 0777, true);
-        copy("{$source}/.env", "{$destination}/.env");
+        $credentials = $this->getFakeBlackfireCredentials();
 
         $mkcert = $this->prophesize(Mkcert::class);
 
@@ -131,8 +103,7 @@ final class ConfigurationUpdaterTest extends TestCase
         $environment = new EnvironmentEntity(basename($this->location), $this->location, EnvironmentEntity::TYPE_CUSTOM, null);
 
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-        mkdir($destination, 0777, true);
-        file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
+        file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=7.4');
 
         $mkcert = $this->prophesize(Mkcert::class);
         $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a custom environment.'));
@@ -150,10 +121,7 @@ final class ConfigurationUpdaterTest extends TestCase
     public function testItDoesNotUpdateARunningEnvironment(string $name, string $type, ?string $domains = null): void
     {
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains, true);
-
-        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-        mkdir($destination, 0777, true);
-        file_put_contents("{$destination}/.env", "DOCKER_PHP_IMAGE={$this->fakePhpVersion}");
+        $this->installEnvironmentConfiguration($environment);
 
         $mkcert = $this->prophesize(Mkcert::class);
         $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a running environment.'));

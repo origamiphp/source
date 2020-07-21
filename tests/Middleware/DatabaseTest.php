@@ -22,42 +22,18 @@ final class DatabaseTest extends TestCase
 {
     use TestLocationTrait;
 
-    /** @var string */
-    private $databasePath;
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->createLocation();
-        $this->databasePath = $this->location.\DIRECTORY_SEPARATOR.Database::DATABASE_FILENAME;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->removeLocation();
-    }
-
     /**
      * @throws InvalidEnvironmentException
      * @throws FilesystemException
      */
     public function testItCreatesTheDatabaseFile(): void
     {
-        static::assertFileDoesNotExist($this->databasePath);
+        static::assertFileDoesNotExist($this->getDatabasePath());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         new Database($fakeVariables);
 
-        static::assertFileExists($this->databasePath);
+        static::assertFileExists($this->getDatabasePath());
     }
 
     /**
@@ -77,7 +53,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesTheEnvironmentList(): void
     {
-        file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
+        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
@@ -113,7 +89,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesTheActiveEnvironment(): void
     {
-        file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
+        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -128,7 +104,7 @@ final class DatabaseTest extends TestCase
             $database->getActiveEnvironment()
         );
 
-        file_put_contents($this->databasePath, '[]');
+        file_put_contents($this->getDatabasePath(), '[]');
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -141,7 +117,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesAnEnvironmentByName(): void
     {
-        file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
+        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
@@ -166,7 +142,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesAnEnvironmentByLocation(): void
     {
-        file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
+        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
@@ -191,7 +167,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItAddsAnEnvironment(): void
     {
-        file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
+        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
@@ -205,10 +181,10 @@ final class DatabaseTest extends TestCase
         );
 
         $database->add($environment);
-        static::assertStringEqualsFile($this->databasePath, $this->getFakeDatabaseContent());
+        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $database->save();
-        static::assertStringEqualsFile($this->databasePath, $this->getFakeDatabaseContentAfterAddition());
+        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContentAfterAddition());
     }
 
     /**
@@ -217,7 +193,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRemovesAnEnvironment(): void
     {
-        file_put_contents($this->databasePath, $this->getFakeDatabaseContent());
+        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
@@ -231,10 +207,18 @@ final class DatabaseTest extends TestCase
         );
 
         $database->remove($environment);
-        static::assertStringEqualsFile($this->databasePath, $this->getFakeDatabaseContent());
+        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContent());
 
         $database->save();
-        static::assertStringEqualsFile($this->databasePath, $this->getFakeDatabaseContentAfterDeletion());
+        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContentAfterDeletion());
+    }
+
+    /**
+     * Retrieves the path to the test database.
+     */
+    private function getDatabasePath(): string
+    {
+        return $this->location.\DIRECTORY_SEPARATOR.Database::DATABASE_FILENAME;
     }
 
     /**

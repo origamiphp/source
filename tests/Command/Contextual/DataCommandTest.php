@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\DataCommand;
-use App\Exception\FilesystemException;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\Command\TestCommandTrait;
+use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -29,20 +27,16 @@ final class DataCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItExecutesProcessSuccessfully(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
+        [$currentContext, $dockerCompose] = $this->prophesizeDataCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->showResourcesUsage()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new DataCommand($currentContext->reveal(), $dockerCompose->reveal());
@@ -53,21 +47,28 @@ final class DataCommandTest extends WebTestCase
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
+        [$currentContext, $dockerCompose] = $this->prophesizeDataCommandArguments();
 
         $command = new DataCommand($currentContext->reveal(), $dockerCompose->reveal());
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->showResourcesUsage()->shouldBeCalledOnce()->willReturn(false);
 
-        static::assertExceptionIsHandled($command, '[ERROR] An error occurred while checking the resources usage.');
+        static::assertExceptionIsHandled($command, '[ERROR] ');
+    }
+
+    /**
+     * Prophesizes arguments needed by the \App\Command\Contextual\DataCommand class.
+     */
+    private function prophesizeDataCommandArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+            $this->prophesize(DockerCompose::class),
+        ];
     }
 }

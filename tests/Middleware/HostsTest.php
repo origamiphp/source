@@ -52,8 +52,5 @@ final class HostsTest extends TestCase
 
         $hosts = new Hosts($processFactory->reveal());
         $hosts->fixHostsFile('origami.localhost');
-
-        // Temporary workaround to avoid the test being marked as risky.
-        static::assertTrue(true);
     }
 }

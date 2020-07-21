@@ -70,6 +70,7 @@ class StartCommand extends AbstractBaseCommand
 
         try {
             $environment = $this->currentContext->getEnvironment($input);
+            $this->currentContext->setActiveEnvironment($environment);
 
             if (!$environment->isActive() || $environment->getLocation() === $this->processProxy->getWorkingDirectory()) {
                 if (!$this->dockerCompose->startServices()) {

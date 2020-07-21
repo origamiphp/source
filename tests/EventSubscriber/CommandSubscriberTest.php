@@ -41,9 +41,6 @@ final class CommandSubscriberTest extends WebTestCase
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input->reveal(), $output->reveal()));
-
-        // Temporary workaround to avoid the test being marked as risky.
-        static::assertTrue(true);
     }
 
     /**
@@ -96,8 +93,5 @@ final class CommandSubscriberTest extends WebTestCase
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input, $output));
-
-        // Temporary workaround to avoid the test being marked as risky.
-        static::assertTrue(true);
     }
 }

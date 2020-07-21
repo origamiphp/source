@@ -5,13 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\RestartCommand;
-use App\Exception\FilesystemException;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\Command\TestCommandTrait;
+use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -29,20 +27,16 @@ final class RestartCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItExecutesProcessSuccessfully(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
+        [$currentContext, $dockerCompose] = $this->prophesizeRestartCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new RestartCommand($currentContext->reveal(), $dockerCompose->reveal());
@@ -52,25 +46,32 @@ final class RestartCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
 
         static::assertDisplayIsVerbose($environment, $display);
-        static::assertStringContainsString('[OK] Docker services successfully restarted.', $display);
+        static::assertStringContainsString('[OK] ', $display);
         static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
+        [$currentContext, $dockerCompose] = $this->prophesizeRestartCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(false);
 
         $command = new RestartCommand($currentContext->reveal(), $dockerCompose->reveal());
-        static::assertExceptionIsHandled($command, '[ERROR] An error occurred while restarting the Docker services.');
+        static::assertExceptionIsHandled($command, '[ERROR] ');
+    }
+
+    /**
+     * Prophesizes arguments needed by the \App\Command\Contextual\RestartCommand class.
+     */
+    private function prophesizeRestartCommandArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+            $this->prophesize(DockerCompose::class),
+        ];
     }
 }

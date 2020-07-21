@@ -19,26 +19,6 @@ final class TechnologyIdentifierTest extends TestCase
     use TestLocationTrait;
 
     /**
-     * {@inheritdoc}
-     */
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->createLocation();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        $this->removeLocation();
-    }
-
-    /**
      * @dataProvider provideSupportedTechnologies
      */
     public function testItIdentifiesSupportedTechnology(string $technology, string $configuration): void

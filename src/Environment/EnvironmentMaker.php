@@ -8,9 +8,8 @@ use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
 use App\Exception\InvalidConfigurationException;
+use App\Helper\Validator;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Validator\Constraints\Hostname;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class EnvironmentMaker
 {
@@ -30,14 +29,14 @@ class EnvironmentMaker
     /** @var RequirementsChecker */
     private $requirementsChecker;
 
-    /** @var ValidatorInterface */
+    /** @var Validator */
     private $validator;
 
     public function __construct(
         TechnologyIdentifier $technologyIdentifier,
         DockerHub $dockerHub,
         RequirementsChecker $requirementsChecker,
-        ValidatorInterface $validator
+        Validator $validator
     ) {
         $this->technologyIdentifier = $technologyIdentifier;
         $this->dockerHub = $dockerHub;
@@ -110,14 +109,8 @@ class EnvironmentMaker
      */
     private function localDomainsCallback(string $answer): string
     {
-        $constraint = new Hostname(['requireTld' => false]);
-        $errors = $this->validator->validate($answer, $constraint);
-
-        if ($errors->has(0)) {
-            /** @var string $message */
-            $message = $errors->get(0)->getMessage();
-
-            throw new InvalidConfigurationException($message);
+        if (!$this->validator->validateHostname($answer)) {
+            throw new InvalidConfigurationException('The hostname provided is invalid.');
         }
 
         return $answer;

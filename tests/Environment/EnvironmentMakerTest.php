@@ -9,6 +9,7 @@ use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
 use App\Helper\CommandExitCode;
+use App\Helper\Validator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -17,10 +18,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
-use Symfony\Component\Validator\Constraints\Hostname;
-use Symfony\Component\Validator\ConstraintViolation;
-use Symfony\Component\Validator\ConstraintViolationList;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * @internal
@@ -33,7 +30,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultEnvironmentName(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -48,7 +45,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomEnvironmentName(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -63,7 +60,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultEnvironmentType(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -80,7 +77,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomEnvironmentType(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -97,7 +94,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultPhpVersion(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -114,7 +111,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomPhpVersion(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -131,7 +128,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsNoDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -148,7 +145,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -157,10 +154,8 @@ final class EnvironmentMakerTest extends TestCase
             $validator->reveal()
         );
 
-        $violations = new ConstraintViolationList();
-
         $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
-        $validator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($violations);
+        $validator->validateHostname(Argument::type('string'))->shouldBeCalledOnce()->willReturn(true);
 
         $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput($command, ['yes', ''], "Result = symfony.localhost\n");
@@ -168,7 +163,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -177,10 +172,8 @@ final class EnvironmentMakerTest extends TestCase
             $validator->reveal()
         );
 
-        $noErrors = new ConstraintViolationList();
-
         $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
-        $validator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($noErrors);
+        $validator->validateHostname(Argument::type('string'))->shouldBeCalledOnce()->willReturn(true);
 
         $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput(
@@ -192,7 +185,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndRejectsInvalidCustomDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -201,16 +194,9 @@ final class EnvironmentMakerTest extends TestCase
             $validator->reveal()
         );
 
-        $violation = $this->prophesize(ConstraintViolation::class);
-        $errors = new ConstraintViolationList();
-        $errors->add($violation->reveal());
-
-        $noErrors = new ConstraintViolationList();
-
         $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(true);
-        $violation->getMessage()->shouldBeCalledOnce()->willReturn('Dummy exception.');
-        $validator->validate('@#&!$€*', Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($errors);
-        $validator->validate('custom-domain.localhost', Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($noErrors);
+        $validator->validateHostname('@#&!$€*')->shouldBeCalledOnce()->willReturn(false);
+        $validator->validateHostname('custom-domain.localhost')->shouldBeCalledOnce()->willReturn(true);
 
         $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput(
@@ -222,7 +208,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItDoesNotAskDomainsWithoutMkcert(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->getEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -232,7 +218,7 @@ final class EnvironmentMakerTest extends TestCase
         );
 
         $requirementsChecker->canMakeLocallyTrustedCertificates()->shouldBeCalledOnce()->willReturn(false);
-        $validator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldNotBeCalled();
+        $validator->validateHostname(Argument::type('string'))->shouldNotBeCalled();
 
         $command = $this->createEnvironmentDomainsCommand($environmentMaker);
         $this->assertCommandOutput($command, [], "Result = N/A\n");
@@ -241,13 +227,13 @@ final class EnvironmentMakerTest extends TestCase
     /**
      * Prophesizes arguments needed by the \App\Environment\EnvironmentMaker class.
      */
-    private function getEnvironmentMakerArguments(): array
+    private function prophesizeEnvironmentMakerArguments(): array
     {
         return [
             $this->prophesize(TechnologyIdentifier::class),
             $this->prophesize(DockerHub::class),
             $this->prophesize(RequirementsChecker::class),
-            $this->prophesize(ValidatorInterface::class),
+            $this->prophesize(Validator::class),
         ];
     }
 

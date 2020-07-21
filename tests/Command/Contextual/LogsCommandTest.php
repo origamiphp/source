@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\LogsCommand;
-use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
-use App\Tests\TestCommandTrait;
-use App\Tests\TestFakeEnvironmentTrait;
+use App\Tests\Command\TestCommandTrait;
+use App\Tests\TestLocationTrait;
 use Generator;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -32,22 +31,19 @@ final class LogsCommandTest extends WebTestCase
 {
     use ProphecyTrait;
     use TestCommandTrait;
-    use TestFakeEnvironmentTrait;
+    use TestLocationTrait;
 
     /**
      * @dataProvider provideCommandModifiers
-     *
-     * @throws InvalidEnvironmentException
-     * @throws FilesystemException
      */
     public function testItShowsServicesLogs(?int $tail, ?string $service): void
     {
-        $environment = $this->getFakeEnvironment();
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
+        [$currentContext, $dockerCompose] = $this->prophesizeLogsCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willReturn(true);
 
         $command = new LogsCommand($currentContext->reveal(), $dockerCompose->reveal());
@@ -65,20 +61,16 @@ final class LogsCommandTest extends WebTestCase
 
     /**
      * @dataProvider provideCommandModifiers
-     *
-     * @throws InvalidEnvironmentException
-     * @throws FilesystemException
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(?int $tail, ?string $service): void
     {
-        $environment = $this->getFakeEnvironment();
-        $exception = new InvalidEnvironmentException('Dummy exception.');
+        $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $dockerCompose = $this->prophesize(DockerCompose::class);
+        [$currentContext, $dockerCompose] = $this->prophesizeLogsCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willThrow($exception);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
 
         $command = new LogsCommand($currentContext->reveal(), $dockerCompose->reveal());
         $commandTester = new CommandTester($command);
@@ -88,7 +80,7 @@ final class LogsCommandTest extends WebTestCase
         );
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString('[ERROR] Dummy exception.', $display);
+        static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
     }
 
@@ -98,5 +90,16 @@ final class LogsCommandTest extends WebTestCase
         yield 'tail only' => [50, null];
         yield 'tail and service' => [50, 'php'];
         yield 'service only' => [null, 'php'];
+    }
+
+    /**
+     * Prophesizes arguments needed by the \App\Command\Contextual\LogsCommand class.
+     */
+    private function prophesizeLogsCommandArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+            $this->prophesize(DockerCompose::class),
+        ];
     }
 }

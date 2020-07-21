@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests;
+namespace App\Tests\Command;
 
 use App\Environment\EnvironmentEntity;
 use App\Helper\CommandExitCode;
@@ -17,7 +17,7 @@ trait TestCommandTrait
      */
     public static function assertDisplayIsVerbose(EnvironmentEntity $environment, string $display): void
     {
-        static::assertStringContainsString('[OK] An environment is currently running.', $display);
+        static::assertStringContainsString('[OK] ', $display);
         static::assertStringContainsString(sprintf('Environment location: %s', $environment->getLocation()), $display);
         static::assertStringContainsString(sprintf('Environment type: %s', $environment->getType()), $display);
     }
