@@ -6,9 +6,9 @@ namespace App\Command\Contextual;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -17,6 +17,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class LogsCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:logs';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -73,9 +76,9 @@ class LogsCommand extends AbstractBaseCommand
             $this->dockerCompose->showServicesLogs((int) $tail, $service);
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

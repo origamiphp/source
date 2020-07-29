@@ -6,7 +6,6 @@ namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\LogsCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
@@ -15,6 +14,7 @@ use Generator;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -56,7 +56,7 @@ final class LogsCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
 
         static::assertDisplayIsVerbose($environment, $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
@@ -81,7 +81,7 @@ final class LogsCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     public function provideCommandModifiers(): Generator

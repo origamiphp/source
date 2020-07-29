@@ -8,11 +8,11 @@ use App\Command\AbstractBaseCommand;
 use App\Event\EnvironmentStartedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Helper\OrigamiStyle;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,6 +20,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class StartCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:start';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -89,13 +92,13 @@ class StartCommand extends AbstractBaseCommand
                 $this->eventDispatcher->dispatch($event);
             } else {
                 $io->error('Unable to start an environment when there is already a running one.');
-                $exitCode = CommandExitCode::INVALID;
+                $exitCode = Command::FAILURE;
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

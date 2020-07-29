@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Environment\EnvironmentEntity;
-use App\Helper\CommandExitCode;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -32,6 +31,6 @@ trait TestCommandTrait
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString($message, $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 }

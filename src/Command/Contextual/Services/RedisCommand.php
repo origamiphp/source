@@ -9,6 +9,9 @@ class RedisCommand extends AbstractServiceCommand
     /** @var string */
     private const COMMAND_SERVICE_NAME = 'redis';
 
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:redis';
+
     /**
      * {@inheritdoc}
      */

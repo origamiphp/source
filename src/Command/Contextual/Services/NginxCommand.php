@@ -9,6 +9,9 @@ class NginxCommand extends AbstractServiceCommand
     /** @var string */
     private const COMMAND_SERVICE_NAME = 'nginx';
 
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:nginx';
+
     /**
      * {@inheritdoc}
      */
