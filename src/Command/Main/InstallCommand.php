@@ -9,15 +9,18 @@ use App\Environment\Configuration\ConfigurationInstaller;
 use App\Environment\EnvironmentMaker;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\OrigamiStyle;
 use App\Helper\ProcessProxy;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:install';
+
     /** @var ProcessProxy */
     private $processProxy;
 
@@ -82,9 +85,9 @@ class InstallCommand extends AbstractBaseCommand
             );
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

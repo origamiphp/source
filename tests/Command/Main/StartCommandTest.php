@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Command\Main;
 
 use App\Command\Main\StartCommand;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
@@ -14,6 +13,7 @@ use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -50,7 +50,7 @@ final class StartCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[OK] ', $display);
         static::assertStringContainsString('[INFO] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItDoesNotStartMultipleEnvironments(): void
@@ -72,7 +72,7 @@ final class StartCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
-        static::assertSame(CommandExitCode::INVALID, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -92,7 +92,7 @@ final class StartCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     /**

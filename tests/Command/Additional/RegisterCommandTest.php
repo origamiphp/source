@@ -9,12 +9,12 @@ use App\Environment\Configuration\ConfigurationInstaller;
 use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\CommandExitCode;
 use App\Helper\ProcessProxy;
 use App\Tests\Command\TestCommandTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -49,7 +49,7 @@ final class RegisterCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItRegistersAnExternalEnvironmentWithCustomName(): void
@@ -70,7 +70,7 @@ final class RegisterCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItAbortsTheRegistrationAfterDisapproval(): void
@@ -88,7 +88,7 @@ final class RegisterCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringNotContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -106,7 +106,7 @@ final class RegisterCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     /**

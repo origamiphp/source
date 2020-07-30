@@ -7,8 +7,8 @@ namespace App\Command\Main;
 use App\Command\AbstractBaseCommand;
 use App\Environment\Configuration\ConfigurationUpdater;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -16,6 +16,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UpdateCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:update';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -69,9 +72,9 @@ class UpdateCommand extends AbstractBaseCommand
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

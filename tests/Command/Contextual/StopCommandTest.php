@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Command\Contextual;
 
 use App\Command\Contextual\StopCommand;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
@@ -14,6 +13,7 @@ use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -52,7 +52,7 @@ final class StopCommandTest extends WebTestCase
 
         static::assertDisplayIsVerbose($environment, $display);
         static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void

@@ -7,15 +7,18 @@ namespace App\Command\Contextual;
 use App\Command\AbstractBaseCommand;
 use App\Environment\EnvironmentEntity;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RootCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:root';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -56,10 +59,10 @@ class RootCommand extends AbstractBaseCommand
             $this->writeInstructions($environment, $io);
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 
     /**

@@ -7,9 +7,9 @@ namespace App\Command\Main;
 use App\Command\AbstractBaseCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,6 +17,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class PrepareCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:prepare';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -70,9 +73,9 @@ class PrepareCommand extends AbstractBaseCommand
             $io->success('Docker services successfully prepared.');
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

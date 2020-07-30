@@ -9,6 +9,9 @@ class MysqlCommand extends AbstractServiceCommand
     /** @var string */
     private const COMMAND_SERVICE_NAME = 'mysql';
 
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:mysql';
+
     /**
      * {@inheritdoc}
      */

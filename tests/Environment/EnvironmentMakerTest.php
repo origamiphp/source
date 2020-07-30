@@ -8,7 +8,6 @@ use App\Environment\EnvironmentMaker;
 use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
-use App\Helper\CommandExitCode;
 use App\Helper\Validator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -251,7 +250,7 @@ final class EnvironmentMakerTest extends TestCase
                 $io = new SymfonyStyle($input, $output);
                 $io->writeln('Result = '.$this->environmentMaker->askEnvironmentName($io, 'default-name'));
 
-                return CommandExitCode::SUCCESS;
+                return Command::SUCCESS;
             }
         };
     }
@@ -270,7 +269,7 @@ final class EnvironmentMakerTest extends TestCase
                 $io = new SymfonyStyle($input, $output);
                 $io->writeln('Result = '.$this->environmentMaker->askEnvironmentType($io, '.'));
 
-                return CommandExitCode::SUCCESS;
+                return Command::SUCCESS;
             }
         };
     }
@@ -289,7 +288,7 @@ final class EnvironmentMakerTest extends TestCase
                 $io = new SymfonyStyle($input, $output);
                 $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io, 'symfony'));
 
-                return CommandExitCode::SUCCESS;
+                return Command::SUCCESS;
             }
         };
     }
@@ -308,7 +307,7 @@ final class EnvironmentMakerTest extends TestCase
                 $io = new SymfonyStyle($input, $output);
                 $io->writeln('Result = '.($this->environmentMaker->askDomains($io, 'symfony') ?? 'N/A'));
 
-                return CommandExitCode::SUCCESS;
+                return Command::SUCCESS;
             }
         };
     }
@@ -323,7 +322,7 @@ final class EnvironmentMakerTest extends TestCase
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
 
         static::assertStringEndsWith($output, $commandTester->getDisplay());
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 }
 

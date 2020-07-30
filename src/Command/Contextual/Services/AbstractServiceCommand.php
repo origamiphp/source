@@ -7,9 +7,9 @@ namespace App\Command\Contextual\Services;
 use App\Command\AbstractBaseCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -67,9 +67,9 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

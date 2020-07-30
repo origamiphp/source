@@ -12,6 +12,9 @@ class PhpCommand extends AbstractServiceCommand
     /** @var string */
     private const COMMAND_USERNAME = 'www-data:www-data';
 
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:php';
+
     /**
      * {@inheritdoc}
      */

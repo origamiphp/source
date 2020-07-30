@@ -8,9 +8,9 @@ use App\Command\AbstractBaseCommand;
 use App\Event\EnvironmentStoppedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -18,6 +18,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class StopCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:stop';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -73,9 +76,9 @@ class StopCommand extends AbstractBaseCommand
             $this->eventDispatcher->dispatch($event);
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

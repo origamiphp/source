@@ -9,9 +9,9 @@ use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,6 +20,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class UninstallCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:uninstall';
+
     /** @var CurrentContext */
     private $currentContext;
 
@@ -99,9 +102,9 @@ class UninstallCommand extends AbstractBaseCommand
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = CommandExitCode::EXCEPTION;
+            $exitCode = Command::FAILURE;
         }
 
-        return $exitCode ?? CommandExitCode::SUCCESS;
+        return $exitCode ?? Command::SUCCESS;
     }
 }

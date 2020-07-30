@@ -8,7 +8,6 @@ use App\Command\Contextual\RootCommand;
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
@@ -16,6 +15,7 @@ use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -61,7 +61,7 @@ final class RootCommandTest extends WebTestCase
         static::assertStringContainsString('export COMPOSE_PROJECT_NAME="'.$environment->getType().'_'.$environment->getName().'"', $display);
         static::assertStringContainsString('export DOCKER_PHP_IMAGE="default"', $display);
         static::assertStringContainsString('export PROJECT_LOCATION="'.$this->location.'"', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void

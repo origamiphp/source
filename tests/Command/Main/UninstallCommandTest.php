@@ -7,7 +7,6 @@ namespace App\Tests\Command\Main;
 use App\Command\Main\UninstallCommand;
 use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Environment\EnvironmentEntity;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
@@ -15,6 +14,7 @@ use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -54,7 +54,7 @@ final class UninstallCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItDoesNotUninstallARunningEnvironment(): void
@@ -78,7 +78,7 @@ final class UninstallCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -102,7 +102,7 @@ final class UninstallCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[WARNING] ', $display);
         static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**

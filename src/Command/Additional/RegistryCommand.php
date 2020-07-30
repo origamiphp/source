@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Command\Additional;
 
 use App\Command\AbstractBaseCommand;
-use App\Helper\CommandExitCode;
 use App\Middleware\Database;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -14,6 +14,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class RegistryCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:registry';
+
     /** @var Database */
     private $database;
 
@@ -59,6 +62,6 @@ class RegistryCommand extends AbstractBaseCommand
             $io->note('There is no registered environment at the moment.');
         }
 
-        return CommandExitCode::SUCCESS;
+        return Command::SUCCESS;
     }
 }

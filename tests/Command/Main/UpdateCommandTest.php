@@ -8,7 +8,6 @@ use App\Command\Main\UpdateCommand;
 use App\Environment\Configuration\ConfigurationUpdater;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Tests\Command\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -16,6 +15,7 @@ use Generator;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -49,7 +49,7 @@ final class UpdateCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
@@ -70,7 +70,7 @@ final class UpdateCommandTest extends WebTestCase
 
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
-        static::assertSame(CommandExitCode::EXCEPTION, $commandTester->getStatusCode());
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     public function provideInvalidEnvironments(): Generator

@@ -9,6 +9,9 @@ class ElasticsearchCommand extends AbstractServiceCommand
     /** @var string */
     private const COMMAND_SERVICE_NAME = 'elasticsearch';
 
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:elasticsearch';
+
     /**
      * {@inheritdoc}
      */

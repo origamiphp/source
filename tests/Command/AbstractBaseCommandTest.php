@@ -9,13 +9,13 @@ use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CommandExitCode;
 use App\Helper\CurrentContext;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -50,7 +50,7 @@ final class AbstractBaseCommandTest extends WebTestCase
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         static::assertStringContainsString('[OK] ', $commandTester->getDisplay());
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
@@ -70,7 +70,7 @@ final class AbstractBaseCommandTest extends WebTestCase
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
 
         static::assertStringNotContainsString('[OK] ', $commandTester->getDisplay());
-        static::assertSame(CommandExitCode::SUCCESS, $commandTester->getStatusCode());
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     /**
@@ -124,10 +124,10 @@ final class AbstractBaseCommandTest extends WebTestCase
                     // ...
                 } catch (OrigamiExceptionInterface $exception) {
                     $io->error($exception->getMessage());
-                    $exitCode = CommandExitCode::EXCEPTION;
+                    $exitCode = Command::FAILURE;
                 }
 
-                return $exitCode ?? CommandExitCode::SUCCESS;
+                return $exitCode ?? Command::SUCCESS;
             }
         };
     }
