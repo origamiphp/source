@@ -15,6 +15,7 @@ class EnvironmentMaker
 {
     /** @var array */
     private $availableTypes = [
+        EnvironmentEntity::TYPE_DRUPAL,
         EnvironmentEntity::TYPE_MAGENTO2,
         EnvironmentEntity::TYPE_SYLIUS,
         EnvironmentEntity::TYPE_SYMFONY,
