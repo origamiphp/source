@@ -13,6 +13,9 @@ class EnvironmentEntity
     public const TYPE_CUSTOM = 'custom';
 
     /** @var string */
+    public const TYPE_DRUPAL = 'drupal';
+
+    /** @var string */
     public const TYPE_MAGENTO2 = 'magento2';
 
     /** @var string */

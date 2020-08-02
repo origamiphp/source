@@ -1,0 +1,58 @@
+version: "3.4"
+
+services:
+  blackfire:
+    image: blackfire/blackfire:latest
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    depends_on:
+      - php
+
+  maildev:
+    image: djfarrelly/maildev:latest
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    depends_on:
+      - php
+    ports:
+      - 1080:80
+
+  mysql:
+    image: mysql:5.7
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql:/var/lib/mysql
+    tty: true
+
+  nginx:
+    image: ajardin/nginx:latest
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    ports:
+      - 443:443
+    volumes:
+      # Project files
+      - ${PROJECT_LOCATION}:/var/www/html:delegated
+      # SSL certificates
+      - ${PROJECT_LOCATION}/var/docker/nginx/certs:/etc/nginx/ssl:cached
+      # Custom configuration
+      - ${PROJECT_LOCATION}/var/docker/nginx/custom.conf:/etc/nginx/conf.d/custom.conf:ro
+    depends_on:
+      - php
+    tty: true
+
+  php:
+    image: ajardin/drupal-php:${DOCKER_PHP_IMAGE}
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    environment:
+      - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
+    volumes:
+      # Project files
+      - ${PROJECT_LOCATION}:/var/www/html:delegated
+      # Custom configuration
+      - ${PROJECT_LOCATION}/var/docker/php/custom.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      # SSH socket
+      - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+    tty: true
+
+volumes:
+  mysql: {}
