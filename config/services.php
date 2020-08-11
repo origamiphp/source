@@ -12,13 +12,16 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->defaults()
         ->autowire(true)
         ->autoconfigure(true)
-        ->bind('$projectDir', '%kernel.project_dir%');
+        ->bind('$projectDir', '%kernel.project_dir%')
+    ;
 
     $services
         ->load('App\\', __DIR__.'/../src/*')
-        ->exclude(__DIR__.'/../src/{DependencyInjection,Kernel.php}');
+        ->exclude([__DIR__.'/../src/DependencyInjection/', __DIR__.'/../src/Kernel.php'])
+    ;
 
     $services
         ->set(SystemVariables::class)->autowire(true)
-        ->set(Variables::class, SystemVariables::class);
+        ->set(Variables::class, SystemVariables::class)
+    ;
 };
