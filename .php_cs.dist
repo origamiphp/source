@@ -13,7 +13,7 @@ return PhpCsFixer\Config::create()
     ->setRiskyAllowed(true)
     ->setFinder(
         PhpCsFixer\Finder::create()
-            ->in([__DIR__.'/src', __DIR__.'/tests'])
+            ->in([__DIR__.'/config', __DIR__.'/src', __DIR__.'/tests'])
             ->append([__FILE__, 'bin/console'])
     )
     ->setCacheFile(__DIR__.'/var/.php_cs.cache')
