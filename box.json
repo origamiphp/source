@@ -6,13 +6,11 @@
         "vendor"
     ],
     "files": [
-        "src/Controller/.gitignore",
         "src/Resources/magento2/.env",
         "src/Resources/sylius/.env",
         "src/Resources/symfony/.env",
         ".env.local.php"
     ],
-    "force-autodiscovery": true,
     "output": "build/origami.phar",
     "compression": "GZ",
     "git": "app_version"

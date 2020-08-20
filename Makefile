@@ -11,28 +11,28 @@ box: ## Compiles the project into a PHAR archive
 	composer dump-env prod
 	./bin/console cache:clear
 	./bin/console cache:warmup
-	docker run --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box compile -vvv
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box compile -vvv
 	rm .env.local.php
 .PHONY: box
 
 phpcsfixer-audit: ## Executes the code style analysis in dry-run mode on all PHP files
-	docker run --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcsfixer fix --dry-run --verbose
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcsfixer fix --dry-run --verbose
 .PHONY: phpcsfixer
 
 phpcsfixer-fix: ## Executes the code style analysis on all PHP files
-	docker run --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcsfixer fix --verbose
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcsfixer fix --verbose
 .PHONY: phpcsfixer
 
 phpcpd: ## Executes a copy/paste analysis
-	docker run --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcpd --fuzzy src tests
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcpd --fuzzy src tests
 .PHONY: phpcpd
 
 psalm: ## Executes a static analysis on all PHP files
-	docker run --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/psalm --show-info=true --find-dead-code
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/psalm --show-info=true --find-dead-code
 .PHONY: psalm
 
 security: ## Executes a security audit on all PHP dependencies
-	docker run --interactive $${TTY} --volume="$$(pwd):/app:delegated" --workdir="/app" symfonycorp/cli check:security
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" --workdir="/app" symfonycorp/cli check:security
 .PHONY: security
 
 tests: ## Executes the unit tests and functional tests
@@ -40,7 +40,7 @@ tests: ## Executes the unit tests and functional tests
 .PHONY: tests
 
 update: ## Executes a Composer update within a PHP 7.3 environment
-	docker run --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.3 sh -c "composer update --optimize-autoloader"
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.3 sh -c "composer update --optimize-autoloader"
 .PHONY: update
 
 help:
