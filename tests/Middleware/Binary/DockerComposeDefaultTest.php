@@ -75,8 +75,8 @@ final class DockerComposeDefaultTest extends WebTestCase
     public function testItPreparesTheEnvironmentServices(): void
     {
         $commands = [
-            ['docker-compose', 'pull'],
-            ['docker-compose', 'build', '--pull', '--parallel'],
+            ['mutagen', 'compose', 'pull'],
+            ['mutagen', 'compose', 'build', '--pull', '--parallel'],
         ];
         $environment = $this->createEnvironment();
 
@@ -95,7 +95,7 @@ final class DockerComposeDefaultTest extends WebTestCase
 
     public function testItShowsResourcesUsage(): void
     {
-        $command = 'docker-compose ps -q | xargs docker stats';
+        $command = 'mutagen compose ps -q | xargs docker stats';
         $dockerCompose = $this->prepareForegroundFromShellCommand($command);
 
         static::assertTrue($dockerCompose->showResourcesUsage());
@@ -103,7 +103,7 @@ final class DockerComposeDefaultTest extends WebTestCase
 
     public function testItShowsServicesStatus(): void
     {
-        $command = ['docker-compose', 'ps'];
+        $command = ['mutagen', 'compose', 'ps'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesStatus());
@@ -111,7 +111,7 @@ final class DockerComposeDefaultTest extends WebTestCase
 
     public function testItRestartsServicesStatus(): void
     {
-        $command = ['docker-compose', 'restart'];
+        $command = ['mutagen', 'compose', 'restart'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->restartServices());
@@ -119,7 +119,7 @@ final class DockerComposeDefaultTest extends WebTestCase
 
     public function testItStartsServicesStatus(): void
     {
-        $command = ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'];
+        $command = ['mutagen', 'compose', 'up', '--build', '--detach', '--remove-orphans'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->startServices());
@@ -127,7 +127,7 @@ final class DockerComposeDefaultTest extends WebTestCase
 
     public function testItStopsServicesStatus(): void
     {
-        $command = ['docker-compose', 'stop'];
+        $command = ['mutagen', 'compose', 'stop'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->stopServices());
@@ -135,7 +135,7 @@ final class DockerComposeDefaultTest extends WebTestCase
 
     public function testItRemovesServicesStatus(): void
     {
-        $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $command = ['mutagen', 'compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->removeServices());
