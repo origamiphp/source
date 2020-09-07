@@ -45,7 +45,7 @@ class AbstractConfiguration
         $filesystem->mkdir($destination);
 
         // Copy the environment files into the project directory
-        $filesystem->mirror($source, $destination);
+        $filesystem->mirror($source, $destination, null, ['override' => true]);
     }
 
     /**
