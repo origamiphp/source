@@ -57,10 +57,10 @@ class DockerCompose
      */
     public function prepareServices(): bool
     {
-        $command = ['docker-compose', 'pull'];
+        $command = ['mutagen', 'compose', 'pull'];
         $pullProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
-        $command = ['docker-compose', 'build', '--pull', '--parallel'];
+        $command = ['mutagen', 'compose', 'build', '--pull', '--parallel'];
         $buildProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $pullProcess->isSuccessful() && $buildProcess->isSuccessful();
@@ -71,7 +71,7 @@ class DockerCompose
      */
     public function showResourcesUsage(): bool
     {
-        $command = 'docker-compose ps -q | xargs docker stats';
+        $command = 'mutagen compose ps -q | xargs docker stats';
         $process = $this->processFactory->runForegroundProcessFromShellCommandLine($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -82,7 +82,7 @@ class DockerCompose
      */
     public function showServicesLogs(?int $tail = null, ?string $service = null): bool
     {
-        $command = ['docker-compose', 'logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
+        $command = ['mutagen', 'compose', 'logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
 
         if ($service) {
             $command[] = $service;
@@ -98,7 +98,7 @@ class DockerCompose
      */
     public function showServicesStatus(): bool
     {
-        $command = ['docker-compose', 'ps'];
+        $command = ['mutagen', 'compose', 'ps'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -109,7 +109,7 @@ class DockerCompose
      */
     public function restartServices(): bool
     {
-        $command = ['docker-compose', 'restart'];
+        $command = ['mutagen', 'compose', 'restart'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -120,7 +120,7 @@ class DockerCompose
      */
     public function startServices(): bool
     {
-        $command = ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'];
+        $command = ['mutagen', 'compose', 'up', '--build', '--detach', '--remove-orphans'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -131,7 +131,7 @@ class DockerCompose
      */
     public function stopServices(): bool
     {
-        $command = ['docker-compose', 'stop'];
+        $command = ['mutagen', 'compose', 'stop'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -142,7 +142,7 @@ class DockerCompose
      */
     public function fixPermissionsOnSharedSSHAgent(): bool
     {
-        $command = ['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
+        $command = ['mutagen', 'compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -153,7 +153,7 @@ class DockerCompose
      */
     public function openTerminal(string $service, string $user = ''): bool
     {
-        $command = ['docker-compose', 'exec'];
+        $command = ['mutagen', 'compose', 'exec'];
 
         if ($user !== '') {
             $command = array_merge($command, ['-u', $user, $service, 'sh', '-l']);
@@ -171,7 +171,7 @@ class DockerCompose
      */
     public function removeServices(): bool
     {
-        $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $command = ['mutagen', 'compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();

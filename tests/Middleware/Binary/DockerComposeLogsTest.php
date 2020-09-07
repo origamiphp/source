@@ -21,7 +21,7 @@ final class DockerComposeLogsTest extends WebTestCase
 
     public function testItShowServicesLogsWithDefaultArguments(): void
     {
-        $command = ['docker-compose', 'logs', '--follow', '--tail=0'];
+        $command = ['mutagen', 'compose', 'logs', '--follow', '--tail=0'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs());
@@ -29,7 +29,7 @@ final class DockerComposeLogsTest extends WebTestCase
 
     public function testItShowServicesLogsWithSpecificService(): void
     {
-        $command = ['docker-compose', 'logs', '--follow', '--tail=0', 'php'];
+        $command = ['mutagen', 'compose', 'logs', '--follow', '--tail=0', 'php'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs(0, 'php'));
@@ -37,7 +37,7 @@ final class DockerComposeLogsTest extends WebTestCase
 
     public function testItShowServicesLogsWithSpecificTail(): void
     {
-        $command = ['docker-compose', 'logs', '--follow', '--tail=42'];
+        $command = ['mutagen', 'compose', 'logs', '--follow', '--tail=42'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs(42));
@@ -45,7 +45,7 @@ final class DockerComposeLogsTest extends WebTestCase
 
     public function testItShowServicesLogsWithSpecificServiceAndTail(): void
     {
-        $command = ['docker-compose', 'logs', '--follow', '--tail=42', 'php'];
+        $command = ['mutagen', 'compose', 'logs', '--follow', '--tail=42', 'php'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->showServicesLogs(42, 'php'));

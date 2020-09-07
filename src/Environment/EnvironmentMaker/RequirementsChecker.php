@@ -14,8 +14,8 @@ class RequirementsChecker
     ];
 
     private const ORCHESTRATION = [
-        'name' => 'docker-compose',
-        'description' => 'Define and run multi-container applications with Docker.',
+        'name' => 'mutagen',
+        'description' => 'Wrapper to define and run multi-container applications with Docker.',
     ];
 
     private const CERTIFICATES = [

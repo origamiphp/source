@@ -29,7 +29,7 @@ final class RequirementsCheckerTest extends TestCase
         $processFactory->runBackgroundProcess(['which', 'docker'])->shouldBeCalledOnce()->willReturn($processWithDocker->reveal());
 
         $processWithDockerCompose->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runBackgroundProcess(['which', 'docker-compose'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
+        $processFactory->runBackgroundProcess(['which', 'mutagen'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertSame([
@@ -39,8 +39,8 @@ final class RequirementsCheckerTest extends TestCase
                 'status' => true,
             ],
             [
-                'name' => 'docker-compose',
-                'description' => 'Define and run multi-container applications with Docker.',
+                'name' => 'mutagen',
+                'description' => 'Wrapper to define and run multi-container applications with Docker.',
                 'status' => true,
             ],
         ], $requirementsChecker->checkMandatoryRequirements());
