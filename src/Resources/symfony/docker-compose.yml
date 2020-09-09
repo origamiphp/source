@@ -65,11 +65,14 @@ x-mutagen:
       ignore:
         vcs: true
       mode: two-way-resolved
-      permissions:
-        defaultFileMode: 0666
-        defaultDirectoryMode: 0777
       symlink:
         mode: posix-raw
+      configurationBeta:
+        permissions:
+          defaultOwner: id:1000
+          defaultGroup: id:1000
+          defaultFileMode: 0644
+          defaultDirectoryMode: 0755
     code:
       alpha: ${PROJECT_LOCATION}
       beta: "volume://code"
