@@ -144,17 +144,11 @@ records:
   - delay: 2000
     content: "\r\n"
   - delay: 100
-    content: "\r\n\e[33m ! [NOTE] The environment will be installed in the current directory.                                           \e[39m\r\n\r\n \e[32mWhat is the name of the environment you want to install?\e[39m [\e[33msymfony\e[39m]:\r\n > "
+    content: "\r\n\e[33m ! [NOTE] The environment will be installed in the current directory.                                           \e[39m\r\n\r\n \e[32mWhat is the name of the environment you want to install?\e[39m [\e[33mmy-symfony\e[39m]:\r\n > "
   - delay: 2000
     content: "\r\n\r\n \e[32mWhich type of environment you want to install?\e[39m [\e[33msymfony\e[39m]:\r\n  [\e[33m0\e[39m] drupal\r\n  [\e[33m1\e[39m] magento2\r\n  [\e[33m2\e[39m] sylius\r\n  [\e[33m3\e[39m] symfony\r\n > "
-  - delay: 500
-    content: "3\e[K"
   - delay: 2000
-    content: "\r\n"
-  - delay: 0
-    content: "\r\n"
-  - delay: 0
-    content: " \e[32mWhich version of PHP do you want to use?\e[39m [\e[33mlatest\e[39m]:\r\n  [\e[33m0\e[39m] 7.1\r\n  [\e[33m1\e[39m] 7.2\r\n  [\e[33m2\e[39m] 7.3\r\n  [\e[33m3\e[39m] 7.4\r\n  [\e[33m4\e[39m] 8.0\r\n  [\e[33m5\e[39m] latest\r\n > "
+    content: "\r\n\r\n \e[32mWhich version of PHP do you want to use?\e[39m [\e[33mlatest\e[39m]:\r\n  [\e[33m0\e[39m] 7.1\r\n  [\e[33m1\e[39m] 7.2\r\n  [\e[33m2\e[39m] 7.3\r\n  [\e[33m3\e[39m] 7.4\r\n  [\e[33m4\e[39m] 8.0\r\n  [\e[33m5\e[39m] latest\r\n > "
   - delay: 500
     content: "3\e[K"
   - delay: 2000
@@ -170,13 +164,13 @@ records:
   - delay: 100
     content: s
   - delay: 2000
-    content: "\r\n\r\n \e[32mWhich domains does this certificate belong to?\e[39m [\e[33msymfony.localhost\e[39m]:\r\n > "
+    content: "\r\n\r\n \e[32mWhich domains does this certificate belong to?\e[39m [\e[33mmy-symfony.localhost\e[39m]:\r\n > "
   - delay: 2000
     content: "\r\n"
   - delay: 0
     content: "\r\n"
   - delay: 500
-    content: "\e[30;42m                                                                                        \e[39;49m\r\n\e[30;42m [OK] Environment successfully installed.                                               \e[39;49m\r\n\e[30;42m                                                                                        \e[39;49m\r\n\r\n\e[37;44m                                                                                        \e[39;49m\r\n\e[37;44m [INFO] You can now use the following commands to start the environment.                \e[39;49m\r\n\e[37;44m          * \"origami start symfony\" from any location.                                  \e[39;49m\r\n\e[37;44m          * \"origami start\" from this location (/Users/ajardin/Sites/symfony).          \e[39;49m\r\n\e[37;44m                                                                                        \e[39;49m\r\n\r\n"
+    content: "\e[30;42m                                                                                        \e[39;49m\r\n\e[30;42m [OK] Environment successfully installed.                                               \e[39;49m\r\n\e[30;42m                                                                                        \e[39;49m\r\n\r\n\e[37;44m                                                                                        \e[39;49m\r\n\e[37;44m [INFO] You can now use the following commands to start the environment.                \e[39;49m\r\n\e[37;44m          * \"origami start my-symfony\" from any location.                               \e[39;49m\r\n\e[37;44m          * \"origami start\" from this location (/Users/ajardin/Sites/my-symfony).       \e[39;49m\r\n\e[37;44m                                                                                        \e[39;49m\r\n\r\n"
   - delay: 0
     content: '$ '
   - delay: 500
@@ -214,6 +208,6 @@ records:
   - delay: 2000
     content: "\r\n"
   - delay: 500
-    content: "+---------+------------------------------+---------+-------------------+---------+\r\n|\e[32m Name    \e[39m|\e[32m Location                     \e[39m|\e[32m Type    \e[39m|\e[32m Domains           \e[39m|\e[32m Status  \e[39m|\r\n+---------+------------------------------+---------+-------------------+---------+\r\n| symfony | /Users/ajardin/Sites/symfony | symfony | symfony.localhost | \e[31mStopped\e[39m |\r\n+---------+------------------------------+---------+-------------------+---------+\r\n"
+    content: "+---------+---------------------------------+---------+----------------------+---------+\r\n|\e[32m Name    \e[39m|\e[32m Location                        \e[39m|\e[32m Type    \e[39m|\e[32m Domains              \e[39m|\e[32m Status  \e[39m|\r\n+---------+---------------------------------+---------+----------------------+---------+\r\n| symfony | /Users/ajardin/Sites/my-symfony | symfony | my-symfony.localhost | \e[31mStopped\e[39m |\r\n+---------+---------------------------------+---------+----------------------+---------+\r\n"
   - delay: 0
     content: "\r"
