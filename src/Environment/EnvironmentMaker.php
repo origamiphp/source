@@ -82,7 +82,7 @@ class EnvironmentMaker
     /**
      * Asks the question about the environment domains.
      */
-    public function askDomains(SymfonyStyle $io, string $type): ?string
+    public function askDomains(SymfonyStyle $io, string $name): ?string
     {
         if (!$this->requirementsChecker->canMakeLocallyTrustedCertificates()) {
             $io->warning('Generation of the locally-trusted development certificate skipped because the tool is not installed.');
@@ -93,7 +93,7 @@ class EnvironmentMaker
         if ($io->confirm('Do you want to generate a locally-trusted development certificate?', false)) {
             $domains = $io->ask(
                 'Which domains does this certificate belong to?',
-                "{$type}.localhost",
+                "{$name}.localhost",
                 function (string $answer) {
                     return $this->localDomainsCallback($answer);
                 }

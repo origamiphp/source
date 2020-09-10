@@ -47,7 +47,7 @@ final class InstallCommandTest extends WebTestCase
         $configurator->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
         $configurator->askEnvironmentType(Argument::type(SymfonyStyle::class), $fakeLocation)->shouldBeCalledOnce()->willReturn($type);
         $configurator->askPhpVersion(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($phpVersion);
-        $configurator->askDomains(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($domains ?? null);
+        $configurator->askDomains(Argument::type(SymfonyStyle::class), $name)->shouldBeCalledOnce()->willReturn($domains ?? null);
         $installer->install($name, $fakeLocation, $type, $phpVersion, $domains)->shouldBeCalledOnce()->willReturn($this->prophesize(EnvironmentEntity::class)->reveal());
         $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldBeCalledOnce();
 
