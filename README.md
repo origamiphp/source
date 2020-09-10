@@ -32,6 +32,9 @@ Because a picture is worth a thousand words...
 
 📦 Installing
 -------------
+> Before going any further, you need to install [Docker Compose][docker] and [Mutagen][mutagen] on your computer.  
+> You should also install [mkcert][mkcert] if you want to benefit from all `origami` features.
+
 You can install `origami` with Composer like any PHP dependency.
 ```shell script
 composer global require ajardin/origami

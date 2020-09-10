@@ -21,15 +21,17 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsMandatoryBinaryStatus(): void
     {
-        $processWithDocker = $this->prophesize(Process::class);
-        $processWithDockerCompose = $this->prophesize(Process::class);
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processWithDocker, $processWithDockerCompose, $processWithMutagen, $processFactory] = $this->getProcessProphecies();
 
         $processWithDocker->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
         $processFactory->runBackgroundProcess(['which', 'docker'])->shouldBeCalledOnce()->willReturn($processWithDocker->reveal());
 
-        $processWithDockerCompose->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runBackgroundProcess(['which', 'mutagen'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
+        $processWithDockerCompose->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
+        $processFactory->runBackgroundProcess(['which', 'docker-compose'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
+
+        $processWithMutagen->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processWithMutagen->getOutput()->shouldBeCalledOnce()->willReturn('0.12.0');
+        $processFactory->runBackgroundProcess(['mutagen', 'version'])->shouldBeCalledOnce()->willReturn($processWithMutagen->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertSame([
@@ -39,29 +41,50 @@ final class RequirementsCheckerTest extends TestCase
                 'status' => true,
             ],
             [
+                'name' => 'docker-compose',
+                'description' => 'Define and run multi-container applications with Docker.',
+                'status' => false,
+            ],
+            [
                 'name' => 'mutagen',
-                'description' => 'Wrapper to define and run multi-container applications with Docker.',
+                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
                 'status' => true,
             ],
         ], $requirementsChecker->checkMandatoryRequirements());
     }
 
-    public function testItDetectsNonMandatoryBinaryStatus(): void
+    public function testItDetectsWrongMutagenVersion(): void
     {
-        $processWithMkcert = $this->prophesize(Process::class);
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processWithDocker, $processWithDockerCompose, $processWithMutagen, $processFactory] = $this->getProcessProphecies();
 
-        $processWithMkcert->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
-        $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
+        $processWithDocker->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory->runBackgroundProcess(['which', 'docker'])->shouldBeCalledOnce()->willReturn($processWithDocker->reveal());
+
+        $processWithDockerCompose->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory->runBackgroundProcess(['which', 'docker-compose'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
+
+        $processWithMutagen->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processWithMutagen->getOutput()->shouldBeCalledOnce()->willReturn('0.10.0');
+        $processFactory->runBackgroundProcess(['mutagen', 'version'])->shouldBeCalledOnce()->willReturn($processWithMutagen->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertSame([
             [
-                'name' => 'mkcert',
-                'description' => 'A simple zero-config tool to make locally trusted development certificates.',
+                'name' => 'docker',
+                'description' => 'A self-sufficient runtime for containers.',
+                'status' => true,
+            ],
+            [
+                'name' => 'docker-compose',
+                'description' => 'Define and run multi-container applications with Docker.',
+                'status' => true,
+            ],
+            [
+                'name' => 'mutagen',
+                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
                 'status' => false,
             ],
-        ], $requirementsChecker->checkNonMandatoryRequirements());
+        ], $requirementsChecker->checkMandatoryRequirements());
     }
 
     public function testItDetectsCertificatesBinaryFoundStatus(): void
@@ -86,5 +109,18 @@ final class RequirementsCheckerTest extends TestCase
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
         static::assertFalse($requirementsChecker->canMakeLocallyTrustedCertificates());
+    }
+
+    /**
+     * Retrieves the prophecies used to test \App\Environment\EnvironmentMaker\RequirementsChecker::checkMandatoryRequirements.
+     */
+    private function getProcessProphecies(): array
+    {
+        return [
+            $this->prophesize(Process::class),
+            $this->prophesize(Process::class),
+            $this->prophesize(Process::class),
+            $this->prophesize(ProcessFactory::class),
+        ];
     }
 }

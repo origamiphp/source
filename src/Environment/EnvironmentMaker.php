@@ -85,7 +85,7 @@ class EnvironmentMaker
     public function askDomains(SymfonyStyle $io, string $type): ?string
     {
         if (!$this->requirementsChecker->canMakeLocallyTrustedCertificates()) {
-            $io->warning('Generation of the locally-trusted development certificate skipped because mkcert is not installed.');
+            $io->warning('Generation of the locally-trusted development certificate skipped because the tool is not installed.');
 
             return null;
         }

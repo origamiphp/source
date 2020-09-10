@@ -8,23 +8,7 @@ use App\Helper\ProcessFactory;
 
 class RequirementsChecker
 {
-    private const CONTAINERIZATION = [
-        'name' => 'docker',
-        'description' => 'A self-sufficient runtime for containers.',
-    ];
-
-    private const ORCHESTRATION = [
-        'name' => 'mutagen',
-        'description' => 'Wrapper to define and run multi-container applications with Docker.',
-    ];
-
-    private const CERTIFICATES = [
-        'name' => 'mkcert',
-        'description' => 'A simple zero-config tool to make locally trusted development certificates.',
-    ];
-
-    private const MANDATORY_REQUIREMENTS = [self::CONTAINERIZATION, self::ORCHESTRATION];
-    private const NON_MANDATORY_REQUIREMENTS = [self::CERTIFICATES];
+    private const MUTAGEN_MINIMUM_VERSION = '0.12.0-beta1';
 
     /** @var ProcessFactory */
     private $processFactory;
@@ -39,14 +23,23 @@ class RequirementsChecker
      */
     public function checkMandatoryRequirements(): array
     {
-        $result = [];
-
-        foreach (self::MANDATORY_REQUIREMENTS as $index => $requirement) {
-            $result[$index] = $requirement;
-            $result[$index]['status'] = $this->isInstalled($requirement['name']);
-        }
-
-        return $result;
+        return [
+            [
+                'name' => 'docker',
+                'description' => 'A self-sufficient runtime for containers.',
+                'status' => $this->isDockerInstalled(),
+            ],
+            [
+                'name' => 'docker-compose',
+                'description' => 'Define and run multi-container applications with Docker.',
+                'status' => $this->isDockerComposeInstalled(),
+            ],
+            [
+                'name' => 'mutagen',
+                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
+                'status' => $this->isMutagenBetaInstalled(),
+            ],
+        ];
     }
 
     /**
@@ -54,29 +47,47 @@ class RequirementsChecker
      */
     public function checkNonMandatoryRequirements(): array
     {
-        $result = [];
-
-        foreach (self::NON_MANDATORY_REQUIREMENTS as $index => $requirement) {
-            $result[$index] = $requirement;
-            $result[$index]['status'] = $this->isInstalled($requirement['name']);
-        }
-
-        return $result;
+        return [
+            [
+                'name' => 'mkcert',
+                'description' => 'A simple zero-config tool to make locally trusted development certificates.',
+                'status' => $this->canMakeLocallyTrustedCertificates(),
+            ],
+        ];
     }
 
     /**
-     * Checks whether the application can make locally trusted certificates with a third-party tool.
+     * Checks whether Mkcert is available in the system.
      */
     public function canMakeLocallyTrustedCertificates(): bool
     {
-        return $this->processFactory->runBackgroundProcess(['which', self::CERTIFICATES['name']])->isSuccessful();
+        return $this->processFactory->runBackgroundProcess(['which', 'mkcert'])->isSuccessful();
     }
 
     /**
-     * Checks whether the given binary is available.
+     * Checks whether Docker is available in the system.
      */
-    private function isInstalled(string $binary): bool
+    private function isDockerInstalled(): bool
     {
-        return $this->processFactory->runBackgroundProcess(['which', $binary])->isSuccessful();
+        return $this->processFactory->runBackgroundProcess(['which', 'docker'])->isSuccessful();
+    }
+
+    /**
+     * Checks whether Docker Composer is available in the system.
+     */
+    private function isDockerComposeInstalled(): bool
+    {
+        return $this->processFactory->runBackgroundProcess(['which', 'docker-compose'])->isSuccessful();
+    }
+
+    /**
+     * Checks whether Mutagen is available with the correct version in the system.
+     */
+    private function isMutagenBetaInstalled(): bool
+    {
+        $process = $this->processFactory->runBackgroundProcess(['mutagen', 'version']);
+        $version = trim($process->getOutput());
+
+        return $process->isSuccessful() && version_compare($version, self::MUTAGEN_MINIMUM_VERSION) !== -1;
     }
 }
