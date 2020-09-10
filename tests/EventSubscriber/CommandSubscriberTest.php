@@ -55,12 +55,11 @@ final class CommandSubscriberTest extends WebTestCase
         ];
         $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => true]];
         $command = $this->prophesize(Command::class);
-        $exception = new MissingRequirementException('At least one mandatory binary is missing from your system.');
 
         $requirementsChecker->checkMandatoryRequirements()->shouldBeCalledOnce()->willReturn($mandatoryRequirementsStatus);
         $requirementsChecker->checkNonMandatoryRequirements()->shouldBeCalledOnce()->willReturn($nonMandatoryRequirementsStatus);
         $command->getName()->shouldBeCalledOnce()->willReturn('origami:fake-command');
-        $this->expectExceptionObject($exception);
+        $this->expectException(MissingRequirementException::class);
 
         $input = new ArgvInput();
         $output = new BufferedOutput();
