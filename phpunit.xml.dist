@@ -16,6 +16,9 @@
         <include>
             <directory suffix=".php">src</directory>
         </include>
+        <exclude>
+            <file>src/.preload.php</file>
+        </exclude>
         <report>
             <clover outputFile="var/clover.xml"/>
         </report>
@@ -28,7 +31,6 @@
         <server name="SYMFONY_PHPUNIT_VERSION" value="9.4"/>
         <env name="COLUMNS" value="120" force="true"/>
     </php>
-
     <testsuites>
         <testsuite name="Project Test Suite">
             <directory>tests</directory>

@@ -96,7 +96,13 @@ final class RequirementsCheckerTest extends TestCase
         $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
-        static::assertTrue($requirementsChecker->canMakeLocallyTrustedCertificates());
+        static::assertSame([
+            [
+                'name' => 'mkcert',
+                'description' => 'A simple zero-config tool to make locally trusted development certificates.',
+                'status' => true,
+            ],
+        ], $requirementsChecker->checkNonMandatoryRequirements());
     }
 
     public function testItDetectsCertificatesBinaryNotFoundStatus(): void
@@ -108,7 +114,13 @@ final class RequirementsCheckerTest extends TestCase
         $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
 
         $requirementsChecker = new RequirementsChecker($processFactory->reveal());
-        static::assertFalse($requirementsChecker->canMakeLocallyTrustedCertificates());
+        static::assertSame([
+            [
+                'name' => 'mkcert',
+                'description' => 'A simple zero-config tool to make locally trusted development certificates.',
+                'status' => false,
+            ],
+        ], $requirementsChecker->checkNonMandatoryRequirements());
     }
 
     /**
