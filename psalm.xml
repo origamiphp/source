@@ -12,6 +12,7 @@
         <directory name="src"/>
         <directory name="tests"/>
         <ignoreFiles>
+            <directory name="var"/>
             <directory name="vendor"/>
         </ignoreFiles>
     </projectFiles>
