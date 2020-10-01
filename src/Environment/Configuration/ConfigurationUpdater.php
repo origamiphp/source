@@ -18,10 +18,6 @@ class ConfigurationUpdater extends AbstractConfiguration
      */
     public function update(EnvironmentEntity $environment): void
     {
-        if ($environment->getType() === EnvironmentEntity::TYPE_CUSTOM) {
-            throw new InvalidEnvironmentException('Unable to update a custom environment.');
-        }
-
         if ($environment->isActive()) {
             throw new InvalidEnvironmentException('Unable to update a running environment.');
         }

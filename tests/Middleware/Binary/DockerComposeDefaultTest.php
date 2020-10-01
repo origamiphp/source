@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Middleware\Binary;
 
 use App\Environment\Configuration\AbstractConfiguration;
-use App\Environment\EnvironmentEntity;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\TestLocationTrait;
@@ -44,29 +43,6 @@ final class DockerComposeDefaultTest extends WebTestCase
 
         static::assertArrayHasKey('DOCKER_PHP_IMAGE', $variables);
         static::assertFalse($variables['DOCKER_PHP_IMAGE']);
-
-        static::assertArrayHasKey('PROJECT_LOCATION', $variables);
-        static::assertSame($this->location, $variables['PROJECT_LOCATION']);
-    }
-
-    public function testItDefinesTheActiveEnvironmentWithExternals(): void
-    {
-        $environment = new EnvironmentEntity('bar', $this->location, EnvironmentEntity::TYPE_CUSTOM, null, true);
-
-        $processFactory = $this->prophesize(ProcessFactory::class);
-
-        $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($environment);
-
-        $variables = $dockerCompose->getRequiredVariables($environment);
-
-        static::assertArrayHasKey('COMPOSE_FILE', $variables);
-        static::assertSame("{$this->location}/docker-compose.yml", $variables['COMPOSE_FILE']);
-
-        static::assertArrayHasKey('COMPOSE_PROJECT_NAME', $variables);
-        static::assertSame('custom_bar', $variables['COMPOSE_PROJECT_NAME']);
-
-        static::assertArrayNotHasKey('DOCKER_PHP_IMAGE', $variables);
 
         static::assertArrayHasKey('PROJECT_LOCATION', $variables);
         static::assertSame($this->location, $variables['PROJECT_LOCATION']);

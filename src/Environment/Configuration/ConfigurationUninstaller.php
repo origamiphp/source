@@ -14,9 +14,7 @@ class ConfigurationUninstaller extends AbstractConfiguration
      */
     public function uninstall(EnvironmentEntity $environment): void
     {
-        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $filesystem = new Filesystem();
-            $filesystem->remove($environment->getLocation().self::INSTALLATION_DIRECTORY);
-        }
+        $filesystem = new Filesystem();
+        $filesystem->remove($environment->getLocation().self::INSTALLATION_DIRECTORY);
     }
 }
