@@ -10,9 +10,6 @@ namespace App\Environment;
 class EnvironmentEntity
 {
     /** @var string */
-    public const TYPE_CUSTOM = 'custom';
-
-    /** @var string */
     public const TYPE_DRUPAL = 'drupal';
 
     /** @var string */

@@ -95,24 +95,6 @@ final class ConfigurationUpdaterTest extends TestCase
     }
 
     /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     */
-    public function testItDoesNotUpdateACustomEnvironment(): void
-    {
-        $environment = new EnvironmentEntity(basename($this->location), $this->location, EnvironmentEntity::TYPE_CUSTOM, null);
-
-        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
-        file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=7.4');
-
-        $mkcert = $this->prophesize(Mkcert::class);
-        $this->expectExceptionObject(new InvalidEnvironmentException('Unable to update a custom environment.'));
-
-        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::empty());
-        $updater->update($environment);
-    }
-
-    /**
      * @dataProvider provideMultipleInstallContexts
      *
      * @throws FilesystemException

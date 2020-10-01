@@ -81,9 +81,7 @@ class CurrentContext
      */
     public function setActiveEnvironment(EnvironmentEntity $environment): void
     {
-        if ($environment->getType() !== EnvironmentEntity::TYPE_CUSTOM) {
-            $this->checkEnvironmentConfiguration($environment);
-        }
+        $this->checkEnvironmentConfiguration($environment);
         $this->dockerCompose->refreshEnvironmentVariables($environment);
     }
 

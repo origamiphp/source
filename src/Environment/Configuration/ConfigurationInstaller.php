@@ -21,25 +21,23 @@ class ConfigurationInstaller extends AbstractConfiguration
         ?string $phpVersion = null,
         ?string $domains = null
     ): EnvironmentEntity {
-        if ($type !== EnvironmentEntity::TYPE_CUSTOM) {
-            $source = __DIR__."/../../Resources/{$type}";
-            $destination = $location.self::INSTALLATION_DIRECTORY;
+        $source = __DIR__."/../../Resources/{$type}";
+        $destination = $location.self::INSTALLATION_DIRECTORY;
 
-            $this->copyEnvironmentFiles($source, $destination);
-            $configuration = "{$destination}/.env";
+        $this->copyEnvironmentFiles($source, $destination);
+        $configuration = "{$destination}/.env";
 
-            if ($phpVersion !== null) {
-                $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
-            }
+        if ($phpVersion !== null) {
+            $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
+        }
 
-            $this->loadBlackfireParameters($destination);
+        $this->loadBlackfireParameters($destination);
 
-            if ($domains !== null) {
-                $certificate = "{$destination}/nginx/certs/custom.pem";
-                $privateKey = "{$destination}/nginx/certs/custom.key";
+        if ($domains !== null) {
+            $certificate = "{$destination}/nginx/certs/custom.pem";
+            $privateKey = "{$destination}/nginx/certs/custom.key";
 
-                $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
-            }
+            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
         }
 
         return new EnvironmentEntity($name, $location, $type, $domains);

@@ -1,4 +1,5 @@
 build/
+src/.preload.php
 
 ###> symfony/framework-bundle ###
 /.env.local

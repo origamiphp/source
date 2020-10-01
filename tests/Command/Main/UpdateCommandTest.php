@@ -75,10 +75,6 @@ final class UpdateCommandTest extends WebTestCase
 
     public function provideInvalidEnvironments(): Generator
     {
-        yield 'A custom environment' => [
-            new EnvironmentEntity('foo', '~/Sites/foo', EnvironmentEntity::TYPE_CUSTOM, 'foo.localhost', false),
-        ];
-
         yield 'A running environment' => [
             new EnvironmentEntity('bar', '~/Sites/bar', EnvironmentEntity::TYPE_SYMFONY, 'bar.localhost', true),
         ];
