@@ -21,7 +21,7 @@ jobs:
             php7.4 php7.4-ctype php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
 
       - name: 'Install Composer dependencies'
-        run: composer install --optimize-autoloader --classmap-authoritative
+        run: composer install --optimize-autoloader --classmap-authoritative --ansi
 
       - name: 'Execute PHP-CS-Fixer in dry-run'
         run: make phpcsfixer-audit
