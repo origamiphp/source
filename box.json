@@ -6,9 +6,7 @@
         "vendor"
     ],
     "files": [
-        "src/Resources/magento2/.env",
-        "src/Resources/sylius/.env",
-        "src/Resources/symfony/.env",
+        "src/Resources/.env",
         ".env.local.php"
     ],
     "output": "build/origami.phar",

@@ -16,8 +16,12 @@ class ConfigurationUpdater extends AbstractConfiguration
      * @throws FilesystemException
      * @throws InvalidEnvironmentException
      */
-    public function update(EnvironmentEntity $environment): void
-    {
+    public function update(
+        EnvironmentEntity $environment,
+        string $phpVersion,
+        string $databaseVersion,
+        ?string $domains = null
+    ): void {
         if ($environment->isActive()) {
             throw new InvalidEnvironmentException('Unable to update a running environment.');
         }
@@ -25,11 +29,19 @@ class ConfigurationUpdater extends AbstractConfiguration
         $source = __DIR__."/../../Resources/{$environment->getType()}";
         $destination = $environment->getLocation().self::INSTALLATION_DIRECTORY;
 
-        $configuration = "{$destination}/.env";
-        $phpVersion = $this->getPhpVersion($configuration);
-
         $this->copyEnvironmentFiles($source, $destination);
+        $configuration = "{$destination}/.env";
+
+        $this->updateEnvironment($configuration, self::DATABASE_IMAGE_OPTION_NAME, $databaseVersion);
         $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
+
         $this->loadBlackfireParameters($destination);
+
+        if ($domains !== null) {
+            $certificate = "{$destination}/nginx/certs/custom.pem";
+            $privateKey = "{$destination}/nginx/certs/custom.key";
+
+            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+        }
     }
 }

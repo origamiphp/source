@@ -125,6 +125,23 @@ final class EnvironmentMakerTest extends TestCase
         $this->assertCommandOutput($command, ['7.4'], "Result = 7.4\n");
     }
 
+    public function testItAsksAndReturnsCustomDatabaseVersion(): void
+    {
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+
+        $environmentMaker = new EnvironmentMaker(
+            $technologyIdentifier->reveal(),
+            $dockerHub->reveal(),
+            $requirementsChecker->reveal(),
+            $validator->reveal()
+        );
+
+        $dockerHub->getImageTags(Argument::type('string'))->shouldBeCalledOnce()->willReturn(['10.4', '10.5', 'latest']);
+
+        $command = $this->createEnvironmentDatabaseVersionCommand($environmentMaker);
+        $this->assertCommandOutput($command, ['10.5'], "Result = 10.5\n");
+    }
+
     public function testItAsksAndReturnsNoDomains(): void
     {
         [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
@@ -287,6 +304,25 @@ final class EnvironmentMakerTest extends TestCase
             {
                 $io = new SymfonyStyle($input, $output);
                 $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io, 'symfony'));
+
+                return Command::SUCCESS;
+            }
+        };
+    }
+
+    /**
+     * Creates a fake PHP class to simulate the question about the environment database version.
+     */
+    private function createEnvironmentDatabaseVersionCommand(EnvironmentMaker $environmentMaker): Command
+    {
+        return new class($environmentMaker) extends Command {
+            use FakeCommandConstructor;
+            protected static $defaultName = 'origami:test';
+
+            protected function execute(InputInterface $input, OutputInterface $output): int
+            {
+                $io = new SymfonyStyle($input, $output);
+                $io->writeln('Result = '.$this->environmentMaker->askDatabaseVersion($io));
 
                 return Command::SUCCESS;
             }

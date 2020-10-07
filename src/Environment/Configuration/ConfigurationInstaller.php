@@ -15,10 +15,11 @@ class ConfigurationInstaller extends AbstractConfiguration
      * @throws FilesystemException
      */
     public function install(
-        string $name,
         string $location,
+        string $name,
         string $type,
-        ?string $phpVersion = null,
+        string $phpVersion,
+        string $databaseVersion,
         ?string $domains = null
     ): EnvironmentEntity {
         $source = __DIR__."/../../Resources/{$type}";
@@ -27,9 +28,8 @@ class ConfigurationInstaller extends AbstractConfiguration
         $this->copyEnvironmentFiles($source, $destination);
         $configuration = "{$destination}/.env";
 
-        if ($phpVersion !== null) {
-            $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
-        }
+        $this->updateEnvironment($configuration, self::DATABASE_IMAGE_OPTION_NAME, $databaseVersion);
+        $this->updateEnvironment($configuration, self::PHP_IMAGE_OPTION_NAME, $phpVersion);
 
         $this->loadBlackfireParameters($destination);
 

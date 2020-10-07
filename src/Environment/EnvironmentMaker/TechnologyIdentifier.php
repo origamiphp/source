@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Environment\EnvironmentMaker;
 
+use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use JsonException;
 
 class TechnologyIdentifier
 {
     private const REQUIRED_TECHNOLOGY_PACKAGE = [
-        'drupal' => ['drupal/core', 'drupal/core-recommended', 'drupal/recommended-project'],
-        'magento2' => ['magento/product-community-edition', 'magento/product-enterprise-edition'],
-        'sylius' => ['sylius/sylius'],
-        'symfony' => ['symfony/framework-bundle'],
+        EnvironmentEntity::TYPE_DRUPAL => ['drupal/core', 'drupal/core-recommended', 'drupal/recommended-project'],
+        EnvironmentEntity::TYPE_MAGENTO2 => ['magento/product-community-edition', 'magento/product-enterprise-edition'],
+        EnvironmentEntity::TYPE_SYLIUS => ['sylius/sylius'],
+        EnvironmentEntity::TYPE_SYMFONY => ['symfony/framework-bundle'],
     ];
 
     /**
