@@ -6,6 +6,7 @@ namespace App\Command\Main;
 
 use App\Command\AbstractBaseCommand;
 use App\Environment\Configuration\ConfigurationUpdater;
+use App\Environment\EnvironmentMaker;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
 use Symfony\Component\Console\Command\Command;
@@ -22,17 +23,22 @@ class UpdateCommand extends AbstractBaseCommand
     /** @var CurrentContext */
     private $currentContext;
 
+    /** @var EnvironmentMaker */
+    private $configurator;
+
     /** @var ConfigurationUpdater */
     private $updater;
 
     public function __construct(
         CurrentContext $currentContext,
+        EnvironmentMaker $configurator,
         ConfigurationUpdater $updater,
         ?string $name = null
     ) {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
+        $this->configurator = $configurator;
         $this->updater = $updater;
     }
 
@@ -67,7 +73,16 @@ class UpdateCommand extends AbstractBaseCommand
             );
 
             if ($io->confirm($question, false)) {
-                $this->updater->update($environment);
+                $name = $environment->getName();
+                $type = $environment->getType();
+
+                $this->updater->update(
+                    $environment,
+                    $this->configurator->askPhpVersion($io, $type),
+                    $this->configurator->askDatabaseVersion($io),
+                    $this->configurator->askDomains($io, $name)
+                );
+
                 $io->success('Environment successfully updated.');
             }
         } catch (OrigamiExceptionInterface $exception) {

@@ -9,6 +9,7 @@ use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
 use App\Exception\InvalidConfigurationException;
 use App\Helper\Validator;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 class EnvironmentMaker
@@ -70,13 +71,27 @@ class EnvironmentMaker
      */
     public function askPhpVersion(SymfonyStyle $io, string $type): string
     {
-        $availableVersions = $this->dockerHub->getImageTags("{$type}-php");
+        $availableVersions = $this->dockerHub->getImageTags("ajardin/{$type}-php");
         $defaultVersion = DockerHub::DEFAULT_IMAGE_VERSION;
 
         return \count($availableVersions) > 1
             ? $io->choice('Which version of PHP do you want to use?', $availableVersions, $defaultVersion)
             : $availableVersions[0]
         ;
+    }
+
+    /**
+     * Asks the autocomplete question about the database version.
+     */
+    public function askDatabaseVersion(SymfonyStyle $io): string
+    {
+        $availableVersions = $this->dockerHub->getImageTags('library/mariadb');
+        $defaultVersion = DockerHub::DEFAULT_IMAGE_VERSION;
+
+        $question = new Question('Which version of MariaDB do you want to use?', $defaultVersion);
+        $question->setAutocompleterValues($availableVersions);
+
+        return $io->askQuestion($question);
     }
 
     /**
@@ -94,7 +109,7 @@ class EnvironmentMaker
             $domains = $io->ask(
                 'Which domains does this certificate belong to?',
                 "{$name}.localhost",
-                function (string $answer) {
+                function (string $answer): string {
                     return $this->localDomainsCallback($answer);
                 }
             );

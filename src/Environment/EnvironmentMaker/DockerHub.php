@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Environment\EnvironmentMaker;
 
 use App\Exception\DockerHubException;
-use JsonException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
@@ -15,7 +14,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 class DockerHub
 {
     public const DEFAULT_IMAGE_VERSION = 'latest';
-    private const API_ENDPOINT = 'https://hub.docker.com/v2/repositories/ajardin/%s/tags';
+    private const API_ENDPOINT = 'https://hub.docker.com/v2/repositories/%s/tags';
 
     /** @var HttpClientInterface */
     private $httpClient;
@@ -30,7 +29,6 @@ class DockerHub
      *
      * @throws DockerHubException
      * @throws TransportExceptionInterface
-     * @throws JsonException
      */
     public function getImageTags(string $image): array
     {
@@ -39,7 +37,7 @@ class DockerHub
 
         if (\array_key_exists('results', $parsedResponse) && \is_array($parsedResponse['results'])) {
             $tags = array_column($parsedResponse['results'], 'name');
-            sort($tags);
+            rsort($tags);
 
             return $tags;
         }
@@ -51,20 +49,15 @@ class DockerHub
      * Analyzes the Docker Hub API response by checking the status code and by decoding the JSON content.
      *
      * @throws DockerHubException
-     * @throws JsonException
      */
     private function parseResponse(ResponseInterface $response): array
     {
         try {
-            $rawContent = $response->getContent(true);
-            $parsedContent = (!empty($rawContent) && $rawContent !== 'null')
-                ? json_decode($rawContent, true, 512, JSON_THROW_ON_ERROR) : [];
+            return $response->toArray(true);
         } catch (ExceptionInterface $exception) {
             throw new DockerHubException(
                 sprintf("Unable to parse the Docker Hub API response.\n%s", $exception->getMessage())
             );
         }
-
-        return $parsedContent;
     }
 }

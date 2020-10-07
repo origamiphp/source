@@ -6,7 +6,6 @@ namespace App\Tests\Environment\Configuration;
 
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationUninstaller;
-use App\Environment\EnvironmentEntity;
 use App\Middleware\Binary\Mkcert;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
@@ -25,12 +24,9 @@ final class ConfigurationUninstallerTest extends TestCase
     use TestConfigurationTrait;
     use TestLocationTrait;
 
-    /**
-     * @dataProvider provideMultipleInstallContexts
-     */
-    public function testItUninstallsEnvironment(string $name, string $type, ?string $domains = null): void
+    public function testItUninstallsEnvironment(): void
     {
-        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;

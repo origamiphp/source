@@ -31,17 +31,20 @@ final class ConfigurationInstallerTest extends TestCase
      *
      * @throws FilesystemException
      */
-    public function testItInstallsConfigurationFilesWithBlackfireCredentials(string $name, string $type, ?string $domains = null): void
-    {
-        $phpVersion = '7.4';
-
+    public function testItInstallsConfigurationFilesWithBlackfireCredentials(
+        string $name,
+        string $type,
+        string $phpVersion,
+        string $databaseVersion,
+        ?string $domains = null
+    ): void {
         $mkcert = $this->prophesize(Mkcert::class);
 
         $source = __DIR__."/../../../src/Resources/{$type}";
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
 
         /** @var string $defaultConfiguration */
-        $defaultConfiguration = file_get_contents("{$source}/.env");
+        $defaultConfiguration = file_get_contents("{$source}/../.env");
         static::assertStringNotContainsString($phpVersion, $defaultConfiguration);
 
         if ($domains !== null) {
@@ -56,9 +59,9 @@ final class ConfigurationInstallerTest extends TestCase
         $credentials = $this->getFakeBlackfireCredentials();
 
         $installer = new ConfigurationInstaller($mkcert->reveal(), FakeVariables::fromArray($credentials));
-        $installer->install($name, $this->location, $type, $phpVersion, $domains);
+        $installer->install($this->location, $name, $type, $phpVersion, $databaseVersion, $domains);
 
-        $this->assertConfigurationIsInstalled($type, $destination, $phpVersion);
+        $this->assertConfigurationIsInstalled($type, $destination, $phpVersion, $databaseVersion);
         $this->assertConfigurationContainsBlackfireCredentials($destination, $credentials);
     }
 }

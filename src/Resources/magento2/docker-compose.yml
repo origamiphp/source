@@ -13,6 +13,15 @@ services:
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
 
+  database:
+    image: mariadb:${DOCKER_DATABASE_IMAGE}
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    ports:
+      - 3306:3306
+    volumes:
+      - database:/var/lib/mysql
+    tty: true
+
   maildev:
     image: djfarrelly/maildev:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
@@ -20,15 +29,6 @@ services:
       - php
     ports:
       - 1080:80
-
-  mysql:
-    image: ajardin/magento2-mysql:latest
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    ports:
-      - 3306:3306
-    volumes:
-      - mysql:/var/lib/mysql
-    tty: true
 
   nginx:
     image: ajardin/magento2-nginx:latest
@@ -71,7 +71,7 @@ services:
 volumes:
   code: {}
   elasticsearch: {}
-  mysql: {}
+  database: {}
   redis: {}
 
 x-mutagen:

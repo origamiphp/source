@@ -12,14 +12,21 @@ trait TestConfigurationTrait
 {
     public function provideMultipleInstallContexts(): Generator
     {
-        yield 'Magento environment with domain' => ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, 'magento.localhost'];
-        yield 'Magento environment without domain' => ['magento2-project', EnvironmentEntity::TYPE_MAGENTO2, ''];
+        yield 'Symfony environment with domain' => [
+            'symfony-project',
+            EnvironmentEntity::TYPE_SYMFONY,
+            '8.0',
+            '10.5.5',
+            'symfony.localhost',
+        ];
 
-        yield 'Sylius environment with domain' => ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, 'sylius.localhost'];
-        yield 'Sylius environment without domain' => ['sylius-project', EnvironmentEntity::TYPE_SYLIUS, ''];
-
-        yield 'Symfony environment with domain' => ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, 'symfony.localhost'];
-        yield 'Symfony environment without domain' => ['symfony-project', EnvironmentEntity::TYPE_SYMFONY, ''];
+        yield 'Symfony environment without domain' => [
+            'symfony-project',
+            EnvironmentEntity::TYPE_SYMFONY,
+            '8.0',
+            '10.5.5',
+            '',
+        ];
     }
 
     protected function getFakeBlackfireCredentials(): array
@@ -32,7 +39,7 @@ trait TestConfigurationTrait
         ];
     }
 
-    protected function assertConfigurationIsInstalled(string $type, string $destination, string $phpVersion): void
+    protected function assertConfigurationIsInstalled(string $type, string $destination, string $phpVersion, string $databaseVersion): void
     {
         $finder = new Finder();
         $finder->files()->in(__DIR__."/../../../src/Resources/{$type}");
@@ -47,6 +54,7 @@ trait TestConfigurationTrait
         /** @var string $projectConfiguration */
         $projectConfiguration = file_get_contents(sprintf('%s/.env', $destination));
         static::assertStringContainsString($phpVersion, $projectConfiguration);
+        static::assertStringContainsString($databaseVersion, $projectConfiguration);
     }
 
     protected function assertConfigurationContainsBlackfireCredentials(string $destination, array $credentials): void

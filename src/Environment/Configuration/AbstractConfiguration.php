@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Environment\Configuration;
 
-use App\Environment\EnvironmentMaker\DockerHub;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
 use Ergebnis\Environment\Variables;
@@ -14,7 +13,9 @@ class AbstractConfiguration
 {
     public const INSTALLATION_DIRECTORY = '/var/docker/';
 
+    protected const DATABASE_IMAGE_OPTION_NAME = 'DOCKER_DATABASE_IMAGE';
     protected const PHP_IMAGE_OPTION_NAME = 'DOCKER_PHP_IMAGE';
+
     protected const BLACKFIRE_PARAMETERS = [
         'BLACKFIRE_CLIENT_ID',
         'BLACKFIRE_CLIENT_TOKEN',
@@ -46,6 +47,9 @@ class AbstractConfiguration
 
         // Copy the environment files into the project directory
         $filesystem->mirror($source, $destination, null, ['override' => true]);
+
+        // Copy the common dotenv file into the project directory
+        $filesystem->copy("{$source}/../.env", "{$destination}/.env", true);
     }
 
     /**
@@ -93,30 +97,5 @@ class AbstractConfiguration
             );
             // @codeCoverageIgnoreEnd
         }
-    }
-
-    /**
-     * Retrieves the value currently defined as the environment PHP version.
-     *
-     * @throws FilesystemException
-     */
-    protected function getPhpVersion(string $filename): string
-    {
-        if (!$configuration = file_get_contents($filename)) {
-            // @codeCoverageIgnoreStart
-            throw new FilesystemException(
-                sprintf("Unable to load the environment configuration.\n%s", $filename)
-            );
-            // @codeCoverageIgnoreEnd
-        }
-
-        $pattern = sprintf('/%s=(?<version>.*)/', self::PHP_IMAGE_OPTION_NAME);
-        $matches = [];
-
-        if (preg_match($pattern, $configuration, $matches) !== false && $matches['version'] !== '') {
-            return $matches['version'];
-        }
-
-        return DockerHub::DEFAULT_IMAGE_VERSION;
     }
 }

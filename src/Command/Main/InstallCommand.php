@@ -65,14 +65,14 @@ class InstallCommand extends AbstractBaseCommand
         $io->note('The environment will be installed in the current directory.');
 
         try {
-            $location = $this->processProxy->getWorkingDirectory();
-
-            $name = $this->configurator->askEnvironmentName($io, basename($location));
-            $type = $this->configurator->askEnvironmentType($io, $location);
-            $phpVersion = $this->configurator->askPhpVersion($io, $type);
-            $domains = $this->configurator->askDomains($io, $name);
-
-            $environment = $this->installer->install($name, $location, $type, $phpVersion, $domains);
+            $environment = $this->installer->install(
+                $location = $this->processProxy->getWorkingDirectory(),
+                $name = $this->configurator->askEnvironmentName($io, basename($location)),
+                $type = $this->configurator->askEnvironmentType($io, $location),
+                $this->configurator->askPhpVersion($io, $type),
+                $this->configurator->askDatabaseVersion($io),
+                $this->configurator->askDomains($io, $name)
+            );
 
             $event = new EnvironmentInstalledEvent($environment, $io);
             $this->eventDispatcher->dispatch($event);

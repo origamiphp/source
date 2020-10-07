@@ -37,21 +37,23 @@ final class InstallCommandTest extends WebTestCase
     /**
      * @dataProvider provideEnvironmentConfigurations
      */
-    public function testItInstallTheRequestedEnvironment(string $name, string $type, string $phpVersion, ?string $domains): void
+    public function testItInstallTheRequestedEnvironment(string $name, string $type, string $phpVersion, string $databaseVersion, ?string $domains): void
     {
         $fakeLocation = '/fake/directory';
 
-        [$processProxy, $configurator, $installer, $eventDispatcher] = $this->prophesizeInstallCommandArguments();
+        [$processProxy, $environmentMaker, $installer, $eventDispatcher] = $this->prophesizeInstallCommandArguments();
 
         $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn($fakeLocation);
-        $configurator->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
-        $configurator->askEnvironmentType(Argument::type(SymfonyStyle::class), $fakeLocation)->shouldBeCalledOnce()->willReturn($type);
-        $configurator->askPhpVersion(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($phpVersion);
-        $configurator->askDomains(Argument::type(SymfonyStyle::class), $name)->shouldBeCalledOnce()->willReturn($domains ?? null);
-        $installer->install($name, $fakeLocation, $type, $phpVersion, $domains)->shouldBeCalledOnce()->willReturn($this->prophesize(EnvironmentEntity::class)->reveal());
+        $environmentMaker->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
+        $environmentMaker->askEnvironmentType(Argument::type(SymfonyStyle::class), $fakeLocation)->shouldBeCalledOnce()->willReturn($type);
+        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($phpVersion);
+        $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn($databaseVersion);
+        $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $name)->shouldBeCalledOnce()->willReturn($domains ?? null);
+
+        $installer->install($fakeLocation, $name, $type, $phpVersion, $databaseVersion, $domains)->shouldBeCalledOnce()->willReturn($this->prophesize(EnvironmentEntity::class)->reveal());
         $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldBeCalledOnce();
 
-        $command = new InstallCommand($processProxy->reveal(), $configurator->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $command = new InstallCommand($processProxy->reveal(), $environmentMaker->reveal(), $installer->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         if ($domains) {
             $commandTester->setInputs([$name, $type, $phpVersion, 'yes', $domains]);
@@ -68,14 +70,30 @@ final class InstallCommandTest extends WebTestCase
 
     public function provideEnvironmentConfigurations(): Generator
     {
-        yield 'Magento environment with domain' => ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', 'magento.localhost'];
-        yield 'Magento environment without domain' => ['fake-magento', EnvironmentEntity::TYPE_MAGENTO2, 'latest', null];
+        $technologies = [
+            EnvironmentEntity::TYPE_DRUPAL,
+            EnvironmentEntity::TYPE_MAGENTO2,
+            EnvironmentEntity::TYPE_SYLIUS,
+            EnvironmentEntity::TYPE_SYMFONY,
+        ];
 
-        yield 'Sylius environment with domain' => ['fake-sylius', EnvironmentEntity::TYPE_SYLIUS, 'latest', 'sylius.localhost'];
-        yield 'Sylius environment without domain' => ['fake-sylius', EnvironmentEntity::TYPE_SYLIUS, 'latest', null];
+        foreach ($technologies as $technology) {
+            yield "{$technology} environment with domain" => [
+                "fake-{$technology}",
+                $technology,
+                'latest',
+                'latest',
+                "{$technology}.localhost",
+            ];
 
-        yield 'Symfony environment with domain' => ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', 'symfony.localhost'];
-        yield 'Symfony environment without domain' => ['fake-symfony', EnvironmentEntity::TYPE_SYMFONY, 'latest', null];
+            yield "{$technology} environment without domain" => [
+                "fake-{$technology}",
+                $technology,
+                'latest',
+                'latest',
+                null,
+            ];
+        }
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void

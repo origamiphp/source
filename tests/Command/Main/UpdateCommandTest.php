@@ -6,17 +6,17 @@ namespace App\Tests\Command\Main;
 
 use App\Command\Main\UpdateCommand;
 use App\Environment\Configuration\ConfigurationUpdater;
-use App\Environment\EnvironmentEntity;
-use App\Exception\InvalidEnvironmentException;
+use App\Environment\EnvironmentMaker;
+use App\Exception\InvalidConfigurationException;
 use App\Helper\CurrentContext;
 use App\Tests\Command\TestCommandTrait;
 use App\Tests\TestLocationTrait;
-use Generator;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -33,16 +33,24 @@ final class UpdateCommandTest extends WebTestCase
     use TestCommandTrait;
     use TestLocationTrait;
 
-    public function testItSuccessfullyUpdateTheCurrentEnvironment(): void
+    private const DEFAULT_PHP_VERSION = '8.0';
+    private const DEFAULT_DATABASE_VERSION = '10.5';
+    private const DEFAULT_DOMAINS = 'origami.localhost';
+
+    public function testItSuccessfullyUpdatesTheCurrentEnvironment(): void
     {
         $environment = $this->createEnvironment();
-
-        [$currentContext, $updater] = $this->prophesizeUpdateCommandArguments();
+        [$currentContext, $environmentMaker, $updater] = $this->prophesizeUpdateCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
-        $command = new UpdateCommand($currentContext->reveal(), $updater->reveal());
+        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class), $environment->getType())->shouldBeCalledOnce()->willReturn(self::DEFAULT_PHP_VERSION);
+        $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_DATABASE_VERSION);
+        $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $environment->getName())->shouldBeCalledOnce()->willReturn(self::DEFAULT_DOMAINS);
+        $updater->update($environment, self::DEFAULT_PHP_VERSION, self::DEFAULT_DATABASE_VERSION, self::DEFAULT_DOMAINS)->shouldBeCalledOnce();
+
+        $command = new UpdateCommand($currentContext->reveal(), $environmentMaker->reveal(), $updater->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -52,18 +60,17 @@ final class UpdateCommandTest extends WebTestCase
         static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
-    /**
-     * @dataProvider provideInvalidEnvironments
-     */
-    public function testItAbortGracefullyTheUpdate(EnvironmentEntity $environment): void
+    public function testItAbortsGracefullyTheUpdate(): void
     {
-        [$currentContext, $updater] = $this->prophesizeUpdateCommandArguments();
+        $environment = $this->createEnvironment();
+        [$currentContext, $environmentMaker, $updater] = $this->prophesizeUpdateCommandArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $updater->update($environment)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
+        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce()->willThrow(InvalidConfigurationException::class);
 
-        $command = new UpdateCommand($currentContext->reveal(), $updater->reveal());
+        $updater->update($environment, self::DEFAULT_PHP_VERSION, self::DEFAULT_DATABASE_VERSION, self::DEFAULT_DOMAINS)->shouldNotBeCalled();
+
+        $command = new UpdateCommand($currentContext->reveal(), $environmentMaker->reveal(), $updater->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -73,13 +80,6 @@ final class UpdateCommandTest extends WebTestCase
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
-    public function provideInvalidEnvironments(): Generator
-    {
-        yield 'A running environment' => [
-            new EnvironmentEntity('bar', '~/Sites/bar', EnvironmentEntity::TYPE_SYMFONY, 'bar.localhost', true),
-        ];
-    }
-
     /**
      * Prophesizes arguments needed by the \App\Command\Main\UpdateCommand class.
      */
@@ -87,6 +87,7 @@ final class UpdateCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
+            $this->prophesize(EnvironmentMaker::class),
             $this->prophesize(ConfigurationUpdater::class),
         ];
     }
