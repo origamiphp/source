@@ -43,7 +43,7 @@ class Database
         }
 
         $this->serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);
-        $this->environments = $this->loadEnvironments();
+        $this->environments = new EnvironmentCollection($this->getRegisteredEnvironments());
     }
 
     /**
@@ -129,18 +129,17 @@ class Database
     }
 
     /**
-     * Loads the registered environments from the database file.
-     *
-     * @throws InvalidEnvironmentException
+     * Extracts the registered environments from the database file.
      */
-    private function loadEnvironments(): EnvironmentCollection
+    private function getRegisteredEnvironments(): array
     {
         if ($records = file_get_contents($this->path)) {
-            return new EnvironmentCollection(
-                $this->serializer->deserialize($records, 'App\Environment\EnvironmentEntity[]', 'json')
-            );
+            $entities = $this->serializer->deserialize($records, 'App\Environment\EnvironmentEntity[]', 'json');
+            if (\is_array($entities)) {
+                return $entities;
+            }
         }
 
-        return new EnvironmentCollection();
+        return [];
     }
 }

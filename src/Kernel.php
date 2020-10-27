@@ -42,7 +42,7 @@ class Kernel extends BaseKernel
     {
         $container->import('../config/{packages}/*.php');
         $container->import('../config/{packages}/'.$this->environment.'/*.php');
-        $container->import('../config/{services}.php');
+        $container->import('../config/services.php');
         $container->import('../config/{services}_'.$this->environment.'.php');
     }
 
