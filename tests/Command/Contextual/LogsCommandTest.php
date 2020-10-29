@@ -80,6 +80,7 @@ final class LogsCommandTest extends WebTestCase
         );
 
         $display = $commandTester->getDisplay();
+
         static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }

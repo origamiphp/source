@@ -20,6 +20,8 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\Contextual\PsCommand
  * @uses \App\Command\Contextual\RestartCommand
  * @uses \App\Command\Contextual\RootCommand
+ * @uses \App\Command\Contextual\Database\BackupCommand
+ * @uses \App\Command\Contextual\Database\RestoreCommand
  * @uses \App\Command\Contextual\Services\AbstractServiceCommand
  * @uses \App\Command\Contextual\Services\ElasticsearchCommand
  * @uses \App\Command\Contextual\Services\MysqlCommand

@@ -15,10 +15,7 @@ use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @internal
@@ -51,17 +48,7 @@ final class RootCommandTest extends WebTestCase
         $dockerCompose->getRequiredVariables($environment)->willReturn($environmentVariables);
 
         $command = new RootCommand($currentContext->reveal(), $dockerCompose->reveal());
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        $display = $commandTester->getDisplay();
-
-        static::assertDisplayIsVerbose($environment, $display);
-        static::assertStringContainsString('export COMPOSE_FILE="'.$this->location.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml"', $display);
-        static::assertStringContainsString('export COMPOSE_PROJECT_NAME="'.$environment->getType().'_'.$environment->getName().'"', $display);
-        static::assertStringContainsString('export DOCKER_PHP_IMAGE="default"', $display);
-        static::assertStringContainsString('export PROJECT_LOCATION="'.$this->location.'"', $display);
-        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -72,7 +59,7 @@ final class RootCommandTest extends WebTestCase
         $currentContext->setActiveEnvironment(Argument::type(EnvironmentEntity::class))->shouldNotBeCalled();
 
         $command = new RootCommand($currentContext->reveal(), $dockerCompose->reveal());
-        static::assertExceptionIsHandled($command, '[ERROR] ');
+        static::assertExceptionIsHandled($command);
     }
 
     /**

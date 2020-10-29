@@ -85,7 +85,7 @@ final class ServicesCommandTest extends WebTestCase
         $dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
 
         $command = new $classname($currentContext->reveal(), $dockerCompose->reveal());
-        self::assertExceptionIsHandled($command, 'An error occurred while opening a terminal.');
+        self::assertExceptionIsHandled($command);
     }
 
     public function provideServiceDetails(): Generator
