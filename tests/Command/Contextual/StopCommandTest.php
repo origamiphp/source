@@ -13,10 +13,7 @@ use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -45,14 +42,7 @@ final class StopCommandTest extends WebTestCase
         $eventDispatcher->dispatch(Argument::any())->willReturn(new stdClass());
 
         $command = new StopCommand($currentContext->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        $display = $commandTester->getDisplay();
-
-        static::assertDisplayIsVerbose($environment, $display);
-        static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -66,7 +56,7 @@ final class StopCommandTest extends WebTestCase
         $dockerCompose->stopServices()->shouldBeCalledOnce()->willReturn(false);
 
         $command = new StopCommand($currentContext->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
-        static::assertExceptionIsHandled($command, '[ERROR] ');
+        static::assertExceptionIsHandled($command);
     }
 
     /**

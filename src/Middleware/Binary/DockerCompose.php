@@ -10,6 +10,10 @@ use App\Helper\ProcessFactory;
 
 class DockerCompose
 {
+    private const DATABASE_BACKUP_CMD = 'tar cvf /tmp/database_backup.tar /var/lib/mysql/';
+    private const DATABASE_FLUSH_CMD = 'rm -rf /var/lib/mysql/*';
+    private const DATABASE_RESTORE_CMD = 'tar xvf /tmp/database_backup.tar /var/lib/mysql/';
+
     /** @var ProcessFactory */
     private $processFactory;
 
@@ -165,5 +169,69 @@ class DockerCompose
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
+    }
+
+    /**
+     * Backups the database volume into a TAR archive in the environment configuration.
+     */
+    public function backupDatabaseVolume(): bool
+    {
+        $source = $this->getDatabaseContainerId();
+        $destination = $this->formatBackupAndRestoreBindMount();
+
+        $command = ['docker', 'run', '--rm', "--volumes-from={$source}", "--mount={$destination}", 'busybox', 'sh', '-c', self::DATABASE_BACKUP_CMD];
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+
+        return $process->isSuccessful();
+    }
+
+    /**
+     * Removes everything located in the database volume.
+     */
+    public function resetDatabaseVolume(): bool
+    {
+        $source = $this->getDatabaseContainerId();
+        $destination = $this->formatBackupAndRestoreBindMount();
+
+        $command = ['docker', 'run', '--rm', "--volumes-from={$source}", "--mount={$destination}", 'busybox', 'sh', '-c', self::DATABASE_FLUSH_CMD];
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+
+        return $process->isSuccessful();
+    }
+
+    /**
+     * Restores the database volume from a TAR archive in the environment configuration.
+     */
+    public function restoreDatabaseVolume(): bool
+    {
+        $source = $this->getDatabaseContainerId();
+        $destination = $this->formatBackupAndRestoreBindMount();
+
+        $command = ['docker', 'run', '--rm', "--volumes-from={$source}", "--mount={$destination}", 'busybox', 'sh', '-c', self::DATABASE_RESTORE_CMD];
+        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+
+        return $process->isSuccessful();
+    }
+
+    /**
+     * Retrieves the ID of the current database container.
+     */
+    private function getDatabaseContainerId(): string
+    {
+        $command = ['docker-compose', 'ps', '--quiet', 'database'];
+        $output = $this->processFactory->runBackgroundProcess($command, $this->environmentVariables)->getOutput();
+
+        return trim($output);
+    }
+
+    /**
+     * Formats the bind-mount configuration used for the backup/restore process.
+     */
+    private function formatBackupAndRestoreBindMount(): string
+    {
+        return sprintf(
+            'type=bind,source=%s,target=/tmp',
+            $this->environmentVariables['PROJECT_LOCATION'].AbstractConfiguration::INSTALLATION_DIRECTORY
+        );
     }
 }

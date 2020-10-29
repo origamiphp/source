@@ -12,10 +12,7 @@ use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @internal
@@ -40,11 +37,7 @@ final class DataCommandTest extends WebTestCase
         $dockerCompose->showResourcesUsage()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new DataCommand($currentContext->reveal(), $dockerCompose->reveal());
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        static::assertDisplayIsVerbose($environment, $commandTester->getDisplay());
-        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -58,7 +51,7 @@ final class DataCommandTest extends WebTestCase
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $dockerCompose->showResourcesUsage()->shouldBeCalledOnce()->willReturn(false);
 
-        static::assertExceptionIsHandled($command, '[ERROR] ');
+        static::assertExceptionIsHandled($command);
     }
 
     /**

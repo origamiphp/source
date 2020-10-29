@@ -12,10 +12,7 @@ use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @internal
@@ -40,14 +37,7 @@ final class RestartCommandTest extends WebTestCase
         $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new RestartCommand($currentContext->reveal(), $dockerCompose->reveal());
-        $commandTester = new CommandTester($command);
-        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
-
-        $display = $commandTester->getDisplay();
-
-        static::assertDisplayIsVerbose($environment, $display);
-        static::assertStringContainsString('[OK] ', $display);
-        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+        static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -61,7 +51,7 @@ final class RestartCommandTest extends WebTestCase
         $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(false);
 
         $command = new RestartCommand($currentContext->reveal(), $dockerCompose->reveal());
-        static::assertExceptionIsHandled($command, '[ERROR] ');
+        static::assertExceptionIsHandled($command);
     }
 
     /**

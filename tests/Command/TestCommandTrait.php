@@ -22,15 +22,32 @@ trait TestCommandTrait
     }
 
     /**
-     * Executes the given command and asserts the exception is properly handled.
+     * Asserts that the result of the given command is successful.
      */
-    public static function assertExceptionIsHandled(Command $command, string $message): void
+    public static function assertResultIsSuccessful(Command $command, EnvironmentEntity $environment): void
     {
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
-        static::assertStringContainsString($message, $display);
+
+        static::assertStringContainsString('[OK] ', $display);
+        static::assertStringContainsString(sprintf('Environment location: %s', $environment->getLocation()), $display);
+        static::assertStringContainsString(sprintf('Environment type: %s', $environment->getType()), $display);
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+    }
+
+    /**
+     * Asserts that the exception of the given command is properly handled.
+     */
+    public static function assertExceptionIsHandled(Command $command): void
+    {
+        $commandTester = new CommandTester($command);
+        $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
+
+        $display = $commandTester->getDisplay();
+
+        static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 }
