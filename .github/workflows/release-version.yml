@@ -35,7 +35,9 @@ jobs:
           git config --global user.signingkey "405DC05A6F8FFBA9"
 
       - name: 'Install Composer dependencies'
-        run: composer install --optimize-autoloader --classmap-authoritative --ansi
+        run: |
+          composer validate --strict --ansi
+          composer install --optimize-autoloader --classmap-authoritative --ansi
 
       - name: 'Compile the PHAR archive'
         run: make box
