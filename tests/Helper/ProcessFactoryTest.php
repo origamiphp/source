@@ -6,9 +6,9 @@ namespace App\Tests\Helper;
 
 use App\Helper\ProcessFactory;
 use App\Helper\ProcessProxy;
+use App\Tests\CustomProphecyTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -19,12 +19,11 @@ use Psr\Log\LoggerInterface;
  */
 final class ProcessFactoryTest extends TestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
 
     public function testItRunsBackgroundProcess(): void
     {
-        $procesProxy = $this->prophesize(ProcessProxy::class);
-        $logger = $this->prophesize(LoggerInterface::class);
+        [$procesProxy, $logger] = $this->prophesizeObjectArguments();
 
         $logger->debug(Argument::type('string'), ['command' => 'php -v'])->shouldBeCalledOnce();
 
@@ -36,8 +35,7 @@ final class ProcessFactoryTest extends TestCase
 
     public function testItRunsForegroundProcess(): void
     {
-        $procesProxy = $this->prophesize(ProcessProxy::class);
-        $logger = $this->prophesize(LoggerInterface::class);
+        [$procesProxy, $logger] = $this->prophesizeObjectArguments();
 
         $procesProxy->isTtySupported()->shouldBeCalledOnce()->willReturn(false);
         $logger->debug(Argument::type('string'), ['command' => 'php -v'])->shouldBeCalledOnce();
@@ -50,8 +48,7 @@ final class ProcessFactoryTest extends TestCase
 
     public function testitRunsForegroundProcessFromShellCommandLine(): void
     {
-        $procesProxy = $this->prophesize(ProcessProxy::class);
-        $logger = $this->prophesize(LoggerInterface::class);
+        [$procesProxy, $logger] = $this->prophesizeObjectArguments();
 
         $procesProxy->isTtySupported()->shouldBeCalledOnce()->willReturn(false);
         $logger->debug(Argument::type('string'), ['command' => 'php -v | grep PHP'])->shouldBeCalledOnce();
@@ -60,5 +57,16 @@ final class ProcessFactoryTest extends TestCase
 
         $factory = new ProcessFactory($procesProxy->reveal(), $logger->reveal());
         $factory->runForegroundProcessFromShellCommandLine('php -v | grep PHP');
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(ProcessProxy::class),
+            $this->prophesize(LoggerInterface::class),
+        ];
     }
 }

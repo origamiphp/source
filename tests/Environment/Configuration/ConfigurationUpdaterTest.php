@@ -10,11 +10,11 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Binary\Mkcert;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -24,7 +24,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
  */
 final class ConfigurationUpdaterTest extends TestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestConfigurationTrait;
     use TestLocationTrait;
 
@@ -41,13 +41,13 @@ final class ConfigurationUpdaterTest extends TestCase
         string $databaseVersion,
         ?string $domains = null
     ): void {
-        $mkcert = $this->prophesize(Mkcert::class);
-
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
 
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         file_put_contents("{$destination}/.env", 'DOCKER_PHP_IMAGE=7.4');
+
+        [$mkcert, $environmentVariables] = $this->prophesizeObjectArguments();
 
         if ($domains !== null) {
             $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
@@ -60,7 +60,7 @@ final class ConfigurationUpdaterTest extends TestCase
 
         $credentials = $this->getFakeBlackfireCredentials();
 
-        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::fromArray($credentials));
+        $updater = new ConfigurationUpdater($mkcert->reveal(), $environmentVariables);
         $updater->update($environment, $phpVersion, $databaseVersion, $domains);
 
         $this->assertConfigurationIsInstalled($type, $destination, $phpVersion, $databaseVersion);
@@ -83,12 +83,24 @@ final class ConfigurationUpdaterTest extends TestCase
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains, true);
         $this->installEnvironmentConfiguration($environment);
 
-        $mkcert = $this->prophesize(Mkcert::class);
+        [$mkcert, $environmentVariables] = $this->prophesizeObjectArguments();
+
         $this->expectException(InvalidEnvironmentException::class);
 
+        $updater = new ConfigurationUpdater($mkcert->reveal(), $environmentVariables);
+        $updater->update($environment, $phpVersion, $databaseVersion, $domains);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
         $credentials = $this->getFakeBlackfireCredentials();
 
-        $updater = new ConfigurationUpdater($mkcert->reveal(), FakeVariables::fromArray($credentials));
-        $updater->update($environment, $phpVersion, $databaseVersion, $domains);
+        return [
+            $this->prophesize(Mkcert::class),
+            FakeVariables::fromArray($credentials),
+        ];
     }
 }

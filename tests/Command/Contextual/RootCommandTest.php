@@ -11,9 +11,9 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -27,7 +27,7 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 final class RootCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
     use TestLocationTrait;
 
@@ -41,7 +41,7 @@ final class RootCommandTest extends WebTestCase
             'PROJECT_LOCATION' => $environment->getLocation(),
         ];
 
-        [$currentContext, $dockerCompose] = $this->prophesizeRootCommandArguments();
+        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -53,7 +53,7 @@ final class RootCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        [$currentContext, $dockerCompose] = $this->prophesizeRootCommandArguments();
+        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
         $currentContext->setActiveEnvironment(Argument::type(EnvironmentEntity::class))->shouldNotBeCalled();
@@ -63,9 +63,9 @@ final class RootCommandTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Command\Contextual\RootCommand class.
+     * {@inheritdoc}
      */
-    private function prophesizeRootCommandArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(CurrentContext::class),

@@ -10,9 +10,9 @@ use App\Environment\EnvironmentEntity;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,7 +29,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  */
 final class UninstallCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
     use TestLocationTrait;
 
@@ -39,7 +39,7 @@ final class UninstallCommandTest extends WebTestCase
         $environment->deactivate();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeUninstallCommandArguments();
+        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -63,7 +63,7 @@ final class UninstallCommandTest extends WebTestCase
         $environment->activate();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeUninstallCommandArguments();
+        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment(Argument::type(EnvironmentEntity::class))->shouldNotBeCalled();
@@ -86,7 +86,7 @@ final class UninstallCommandTest extends WebTestCase
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeUninstallCommandArguments();
+        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -106,9 +106,9 @@ final class UninstallCommandTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Command\Main\UninstallCommand class.
+     * {@inheritdoc}
      */
-    private function prophesizeUninstallCommandArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(CurrentContext::class),

@@ -8,9 +8,9 @@ use App\Command\Contextual\RestartCommand;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -22,7 +22,7 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 final class RestartCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
     use TestLocationTrait;
 
@@ -30,7 +30,7 @@ final class RestartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeRestartCommandArguments();
+        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -44,7 +44,7 @@ final class RestartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeRestartCommandArguments();
+        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -55,9 +55,9 @@ final class RestartCommandTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Command\Contextual\RestartCommand class.
+     * {@inheritdoc}
      */
-    private function prophesizeRestartCommandArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(CurrentContext::class),

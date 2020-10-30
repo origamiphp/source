@@ -9,10 +9,10 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Generator;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,7 +29,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class LogsCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
     use TestLocationTrait;
 
@@ -40,7 +40,7 @@ final class LogsCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeLogsCommandArguments();
+        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -66,7 +66,7 @@ final class LogsCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeLogsCommandArguments();
+        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -94,9 +94,9 @@ final class LogsCommandTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Command\Contextual\LogsCommand class.
+     * {@inheritdoc}
      */
-    private function prophesizeLogsCommandArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(CurrentContext::class),

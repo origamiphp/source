@@ -9,9 +9,9 @@ use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -28,7 +28,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  */
 final class StartCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
     use TestLocationTrait;
 
@@ -36,7 +36,7 @@ final class StartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeStartCommandArguments();
+        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -58,7 +58,7 @@ final class StartCommandTest extends WebTestCase
         $environment = $this->createEnvironment();
         $environment->activate();
 
-        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeStartCommandArguments();
+        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -79,7 +79,7 @@ final class StartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeStartCommandArguments();
+        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
@@ -96,9 +96,9 @@ final class StartCommandTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Command\Main\StartCommand class.
+     * {@inheritdoc}
      */
-    private function prophesizeStartCommandArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(CurrentContext::class),
