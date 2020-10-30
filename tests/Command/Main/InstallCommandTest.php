@@ -12,9 +12,9 @@ use App\Event\EnvironmentInstalledEvent;
 use App\Exception\FilesystemException;
 use App\Helper\ProcessProxy;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use Generator;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -31,7 +31,7 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  */
 final class InstallCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
 
     /**
@@ -41,7 +41,7 @@ final class InstallCommandTest extends WebTestCase
     {
         $fakeLocation = '/fake/directory';
 
-        [$processProxy, $environmentMaker, $installer, $eventDispatcher] = $this->prophesizeInstallCommandArguments();
+        [$processProxy, $environmentMaker, $installer, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn($fakeLocation);
         $environmentMaker->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
@@ -98,7 +98,7 @@ final class InstallCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        [$processProxy, $configurator, $installer, $eventDispatcher] = $this->prophesizeInstallCommandArguments();
+        [$processProxy, $configurator, $installer, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willThrow(FilesystemException::class);
 
@@ -113,9 +113,9 @@ final class InstallCommandTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Command\Main\InstallCommand class.
+     * {@inheritdoc}
      */
-    private function prophesizeInstallCommandArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(ProcessProxy::class),

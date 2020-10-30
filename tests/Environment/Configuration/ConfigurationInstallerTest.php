@@ -8,11 +8,11 @@ use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationInstaller;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -22,7 +22,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
  */
 final class ConfigurationInstallerTest extends TestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestConfigurationTrait;
     use TestLocationTrait;
 
@@ -38,7 +38,7 @@ final class ConfigurationInstallerTest extends TestCase
         string $databaseVersion,
         ?string $domains = null
     ): void {
-        $mkcert = $this->prophesize(Mkcert::class);
+        [$mkcert] = $this->prophesizeObjectArguments();
 
         $source = __DIR__."/../../../src/Resources/{$type}";
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
@@ -63,5 +63,15 @@ final class ConfigurationInstallerTest extends TestCase
 
         $this->assertConfigurationIsInstalled($type, $destination, $phpVersion, $databaseVersion);
         $this->assertConfigurationContainsBlackfireCredentials($destination, $credentials);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(Mkcert::class),
+        ];
     }
 }

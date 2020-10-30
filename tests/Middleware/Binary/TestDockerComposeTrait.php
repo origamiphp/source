@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
-use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
 use Prophecy\Argument;
 use Symfony\Component\Process\Process;
@@ -16,16 +15,14 @@ trait TestDockerComposeTrait
      */
     protected function prepareForegroundCommand(array $command): DockerCompose
     {
-        $environment = $this->createEnvironment();
-
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processFactory] = $this->prophesizeObjectArguments();
         $process = $this->prophesize(Process::class);
 
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
         $processFactory->runForegroundProcess($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
 
         $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($environment);
+        $dockerCompose->refreshEnvironmentVariables($this->createEnvironment());
 
         return $dockerCompose;
     }
@@ -35,16 +32,14 @@ trait TestDockerComposeTrait
      */
     protected function prepareForegroundFromShellCommand(string $command): DockerCompose
     {
-        $environment = $this->createEnvironment();
-
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processFactory] = $this->prophesizeObjectArguments();
         $process = $this->prophesize(Process::class);
 
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
         $processFactory->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
 
         $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($environment);
+        $dockerCompose->refreshEnvironmentVariables($this->createEnvironment());
 
         return $dockerCompose;
     }

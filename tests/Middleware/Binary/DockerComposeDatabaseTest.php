@@ -6,9 +6,9 @@ namespace App\Tests\Middleware\Binary;
 
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Process\Process;
 
@@ -19,7 +19,7 @@ use Symfony\Component\Process\Process;
  */
 final class DockerComposeDatabaseTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestDockerComposeTrait;
     use TestLocationTrait;
 
@@ -41,10 +41,19 @@ final class DockerComposeDatabaseTest extends WebTestCase
         static::assertTrue($dockerCompose->restoreDatabaseVolume());
     }
 
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(ProcessFactory::class),
+        ];
+    }
+
     private function prophesizeCommonInstructions(): DockerCompose
     {
-        $environment = $this->createEnvironment();
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processFactory] = $this->prophesizeObjectArguments();
 
         $databaseContainerIdProcess = $this->prophesize(Process::class);
         $databaseContainerIdProcess->getOutput()->shouldBeCalledOnce()->willReturn(str_pad('', 64, 'x'));
@@ -55,7 +64,7 @@ final class DockerComposeDatabaseTest extends WebTestCase
         $processFactory->runForegroundProcess(Argument::type('array'), Argument::type('array'))->shouldBeCalledOnce()->willReturn($actionProcess->reveal());
 
         $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($environment);
+        $dockerCompose->refreshEnvironmentVariables($this->createEnvironment());
 
         return $dockerCompose;
     }

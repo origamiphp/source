@@ -9,9 +9,9 @@ use App\Environment\EnvironmentMaker\DockerHub;
 use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Environment\EnvironmentMaker\TechnologyIdentifier;
 use App\Helper\Validator;
+use App\Tests\CustomProphecyTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,11 +25,11 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class EnvironmentMakerTest extends TestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
 
     public function testItAsksAndReturnsDefaultEnvironmentName(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -44,7 +44,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomEnvironmentName(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -59,7 +59,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultEnvironmentType(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -76,7 +76,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomEnvironmentType(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -93,7 +93,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultPhpVersion(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -110,7 +110,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomPhpVersion(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -127,7 +127,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomDatabaseVersion(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -144,7 +144,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsNoDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -161,7 +161,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsDefaultDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -179,7 +179,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndReturnsCustomDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -201,7 +201,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItAsksAndRejectsInvalidCustomDomains(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -224,7 +224,7 @@ final class EnvironmentMakerTest extends TestCase
 
     public function testItDoesNotAskDomainsWithoutMkcert(): void
     {
-        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeEnvironmentMakerArguments();
+        [$technologyIdentifier, $dockerHub, $requirementsChecker, $validator] = $this->prophesizeObjectArguments();
 
         $environmentMaker = new EnvironmentMaker(
             $technologyIdentifier->reveal(),
@@ -241,9 +241,9 @@ final class EnvironmentMakerTest extends TestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Environment\EnvironmentMaker class.
+     * {@inheritdoc}
      */
-    private function prophesizeEnvironmentMakerArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(TechnologyIdentifier::class),

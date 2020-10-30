@@ -10,8 +10,8 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
 use App\Tests\Command\TestCommandTrait;
+use App\Tests\CustomProphecyTrait;
 use Generator;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -23,12 +23,12 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class RegistryCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
 
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
-        $database = $this->prophesize(Database::class);
+        [$database] = $this->prophesizeObjectArguments();
         $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection());
 
         $command = new RegistryCommand($database->reveal());
@@ -46,7 +46,7 @@ final class RegistryCommandTest extends WebTestCase
      */
     public function testItPrintsEnvironmentDetailsInTable(EnvironmentEntity $environment): void
     {
-        $database = $this->prophesize(Database::class);
+        [$database] = $this->prophesizeObjectArguments();
         $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection([$environment]));
 
         $command = new RegistryCommand($database->reveal());
@@ -95,6 +95,16 @@ final class RegistryCommandTest extends WebTestCase
                 'origami.localhost',
                 true
             ),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(Database::class),
         ];
     }
 }

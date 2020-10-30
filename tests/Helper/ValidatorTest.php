@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Helper;
 
 use App\Helper\Validator;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Validator\Constraints\Hostname;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -21,13 +21,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class ValidatorTest extends TestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestLocationTrait;
 
     public function testItValidatesConfiguration(): void
     {
         $environment = $this->createEnvironment();
-        [$symfonyValidator, $projectDir] = $this->prophesizeValidatorArguments();
+        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $this->installEnvironmentConfiguration($environment);
 
@@ -38,7 +38,7 @@ final class ValidatorTest extends TestCase
     public function testItInvalidatesMissingConfiguration(): void
     {
         $environment = $this->createEnvironment();
-        [$symfonyValidator, $projectDir] = $this->prophesizeValidatorArguments();
+        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertFalse($validator->validateConfigurationFiles($environment));
@@ -48,7 +48,7 @@ final class ValidatorTest extends TestCase
     {
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
-        [$symfonyValidator, $projectDir] = $this->prophesizeValidatorArguments();
+        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertTrue($validator->validateDotEnvExistence($environment));
@@ -57,7 +57,7 @@ final class ValidatorTest extends TestCase
     public function testItInvalidatesAMissingDotEnvFile(): void
     {
         $environment = $this->createEnvironment();
-        [$symfonyValidator, $projectDir] = $this->prophesizeValidatorArguments();
+        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertFalse($validator->validateDotEnvExistence($environment));
@@ -67,7 +67,7 @@ final class ValidatorTest extends TestCase
     {
         $noErrors = new ConstraintViolationList();
 
-        [$symfonyValidator, $projectDir] = $this->prophesizeValidatorArguments();
+        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
         $symfonyValidator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($noErrors);
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
@@ -80,7 +80,7 @@ final class ValidatorTest extends TestCase
         $errors = new ConstraintViolationList();
         $errors->add($violation->reveal());
 
-        [$symfonyValidator, $projectDir] = $this->prophesizeValidatorArguments();
+        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
         $symfonyValidator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($errors);
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
@@ -88,9 +88,9 @@ final class ValidatorTest extends TestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Helper\Validator class.
+     * {@inheritdoc}
      */
-    private function prophesizeValidatorArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(ValidatorInterface::class),

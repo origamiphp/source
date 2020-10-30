@@ -7,9 +7,9 @@ namespace App\Tests\Middleware\Binary;
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Process\Process;
 
@@ -20,7 +20,7 @@ use Symfony\Component\Process\Process;
  */
 final class DockerComposeDefaultTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestDockerComposeTrait;
     use TestLocationTrait;
 
@@ -28,7 +28,7 @@ final class DockerComposeDefaultTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processFactory] = $this->prophesizeObjectArguments();
 
         $dockerCompose = new DockerCompose($processFactory->reveal());
         $dockerCompose->refreshEnvironmentVariables($environment);
@@ -54,9 +54,8 @@ final class DockerComposeDefaultTest extends WebTestCase
             ['mutagen', 'compose', 'pull'],
             ['mutagen', 'compose', 'build', '--pull', '--parallel'],
         ];
-        $environment = $this->createEnvironment();
 
-        $processFactory = $this->prophesize(ProcessFactory::class);
+        [$processFactory] = $this->prophesizeObjectArguments();
         $process = $this->prophesize(Process::class);
 
         $process->isSuccessful()->shouldBeCalledTimes(2)->willReturn(true);
@@ -64,7 +63,7 @@ final class DockerComposeDefaultTest extends WebTestCase
         $processFactory->runForegroundProcess($commands[1], Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
 
         $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($environment);
+        $dockerCompose->refreshEnvironmentVariables($this->createEnvironment());
 
         static::assertTrue($dockerCompose->prepareServices());
     }
@@ -115,5 +114,15 @@ final class DockerComposeDefaultTest extends WebTestCase
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->removeServices());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(ProcessFactory::class),
+        ];
     }
 }

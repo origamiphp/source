@@ -7,10 +7,10 @@ namespace App\Tests\Environment\Configuration;
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Middleware\Binary\Mkcert;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
-use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -20,7 +20,7 @@ use Prophecy\PhpUnit\ProphecyTrait;
  */
 final class ConfigurationUninstallerTest extends TestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestConfigurationTrait;
     use TestLocationTrait;
 
@@ -32,11 +32,22 @@ final class ConfigurationUninstallerTest extends TestCase
         $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
         static::assertDirectoryExists($destination);
 
-        $mkcert = $this->prophesize(Mkcert::class);
+        [$mkcert, $environmentVariables] = $this->prophesizeObjectArguments();
 
-        $uninstaller = new ConfigurationUninstaller($mkcert->reveal(), FakeVariables::empty());
+        $uninstaller = new ConfigurationUninstaller($mkcert->reveal(), $environmentVariables);
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(Mkcert::class),
+            FakeVariables::empty(),
+        ];
     }
 }

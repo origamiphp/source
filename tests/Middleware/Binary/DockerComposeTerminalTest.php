@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Middleware\Binary;
 
+use App\Helper\ProcessFactory;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
@@ -15,7 +16,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
  */
 final class DockerComposeTerminalTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestDockerComposeTrait;
     use TestLocationTrait;
 
@@ -41,5 +42,15 @@ final class DockerComposeTerminalTest extends WebTestCase
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->openTerminal('php'));
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(ProcessFactory::class),
+        ];
     }
 }

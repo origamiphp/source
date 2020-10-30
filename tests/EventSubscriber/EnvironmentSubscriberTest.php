@@ -13,8 +13,8 @@ use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\UnsupportedOperatingSystemException;
 use App\Middleware\Database;
 use App\Middleware\Hosts;
+use App\Tests\CustomProphecyTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
@@ -29,11 +29,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 final class EnvironmentSubscriberTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
 
     public function testItCreatesTheEnvironmentAfterInstall(): void
     {
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -50,7 +50,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $domains = 'test.localhost';
 
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -71,7 +71,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $domains = 'test.localhost';
 
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -94,7 +94,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
     {
         $domains = 'test.localhost';
 
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -115,7 +115,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStartsTheEnvironment(): void
     {
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -130,7 +130,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItStopsTheEnvironment(): void
     {
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -145,7 +145,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
     public function testItUninstallsTheEnvironment(): void
     {
-        [$hosts, $database] = $this->prophesizeEnvironmentSubscriberArguments();
+        [$hosts, $database] = $this->prophesizeObjectArguments();
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $database->reveal());
 
         $environment = $this->prophesize(EnvironmentEntity::class);
@@ -159,9 +159,9 @@ final class EnvironmentSubscriberTest extends WebTestCase
     }
 
     /**
-     * Prophesizes arguments needed by the \App\Event\EnvironmentUninstalledEvent class.
+     * {@inheritdoc}
      */
-    private function prophesizeEnvironmentSubscriberArguments(): array
+    protected function prophesizeObjectArguments(): array
     {
         return [
             $this->prophesize(Hosts::class),

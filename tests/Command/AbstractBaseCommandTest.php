@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\AbstractBaseCommand;
-use App\Exception\FilesystemException;
-use App\Exception\InvalidConfigurationException;
-use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
+use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
-use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
@@ -29,20 +26,15 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 final class AbstractBaseCommandTest extends WebTestCase
 {
-    use ProphecyTrait;
+    use CustomProphecyTrait;
     use TestCommandTrait;
     use TestLocationTrait;
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     * @throws InvalidConfigurationException
-     */
     public function testItDoesPrintDetailsWhenVerbose(): void
     {
         $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
+        [$currentContext] = $this->prophesizeObjectArguments();
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
@@ -53,16 +45,11 @@ final class AbstractBaseCommandTest extends WebTestCase
         static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
-    /**
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
-     * @throws InvalidConfigurationException
-     */
     public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
         $environment = $this->createEnvironment();
 
-        $currentContext = $this->prophesize(CurrentContext::class);
+        [$currentContext] = $this->prophesizeObjectArguments();
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
@@ -71,6 +58,16 @@ final class AbstractBaseCommandTest extends WebTestCase
 
         static::assertStringNotContainsString('[OK] ', $commandTester->getDisplay());
         static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function prophesizeObjectArguments(): array
+    {
+        return [
+            $this->prophesize(CurrentContext::class),
+        ];
     }
 
     /**
