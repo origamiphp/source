@@ -8,6 +8,7 @@ use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
 use App\Tests\CustomProphecyTrait;
+use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;

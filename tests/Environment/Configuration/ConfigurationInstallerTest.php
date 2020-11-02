@@ -9,6 +9,7 @@ use App\Environment\Configuration\ConfigurationInstaller;
 use App\Exception\FilesystemException;
 use App\Middleware\Binary\Mkcert;
 use App\Tests\CustomProphecyTrait;
+use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;

@@ -8,6 +8,7 @@ use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Middleware\Binary\Mkcert;
 use App\Tests\CustomProphecyTrait;
+use App\Tests\TestConfigurationTrait;
 use App\Tests\TestLocationTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;

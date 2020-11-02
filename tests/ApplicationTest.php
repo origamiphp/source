@@ -14,26 +14,26 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @covers \App\Application
  *
- * @uses \App\Command\Additional\RegistryCommand
- * @uses \App\Command\Contextual\DataCommand
- * @uses \App\Command\Contextual\LogsCommand
- * @uses \App\Command\Contextual\PsCommand
- * @uses \App\Command\Contextual\RestartCommand
- * @uses \App\Command\Contextual\RootCommand
- * @uses \App\Command\Contextual\Database\BackupCommand
- * @uses \App\Command\Contextual\Database\RestoreCommand
- * @uses \App\Command\Contextual\Services\AbstractServiceCommand
- * @uses \App\Command\Contextual\Services\ElasticsearchCommand
- * @uses \App\Command\Contextual\Services\MysqlCommand
- * @uses \App\Command\Contextual\Services\NginxCommand
- * @uses \App\Command\Contextual\Services\PhpCommand
- * @uses \App\Command\Contextual\Services\RedisCommand
- * @uses \App\Command\Contextual\StopCommand
- * @uses \App\Command\Main\InstallCommand
- * @uses \App\Command\Main\PrepareCommand
- * @uses \App\Command\Main\StartCommand
- * @uses \App\Command\Main\UninstallCommand
- * @uses \App\Command\Main\UpdateCommand
+ * @uses \App\Command\RegistryCommand
+ * @uses \App\Command\DataCommand
+ * @uses \App\Command\LogsCommand
+ * @uses \App\Command\PsCommand
+ * @uses \App\Command\RestartCommand
+ * @uses \App\Command\RootCommand
+ * @uses \App\Command\Database\BackupCommand
+ * @uses \App\Command\Database\RestoreCommand
+ * @uses \App\Command\Services\AbstractServiceCommand
+ * @uses \App\Command\Services\ElasticsearchCommand
+ * @uses \App\Command\Services\MysqlCommand
+ * @uses \App\Command\Services\NginxCommand
+ * @uses \App\Command\Services\PhpCommand
+ * @uses \App\Command\Services\RedisCommand
+ * @uses \App\Command\StopCommand
+ * @uses \App\Command\InstallCommand
+ * @uses \App\Command\PrepareCommand
+ * @uses \App\Command\StartCommand
+ * @uses \App\Command\UninstallCommand
+ * @uses \App\Command\UpdateCommand
  * @uses \App\Command\AbstractBaseCommand
  * @uses \App\Command\DefaultCommand
  * @uses \App\Helper\ProcessFactory

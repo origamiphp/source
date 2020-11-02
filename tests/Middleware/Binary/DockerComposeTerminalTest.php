@@ -6,6 +6,7 @@ namespace App\Tests\Middleware\Binary;
 
 use App\Helper\ProcessFactory;
 use App\Tests\CustomProphecyTrait;
+use App\Tests\TestDockerComposeTrait;
 use App\Tests\TestLocationTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
