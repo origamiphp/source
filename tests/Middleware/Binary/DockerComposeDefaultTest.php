@@ -8,6 +8,7 @@ use App\Environment\Configuration\AbstractConfiguration;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\DockerCompose;
 use App\Tests\CustomProphecyTrait;
+use App\Tests\TestDockerComposeTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
