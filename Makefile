@@ -36,11 +36,11 @@ security: ## Executes a security audit on all PHP dependencies
 .PHONY: security
 
 tests: ## Executes the unit tests and functional tests
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.3 sh -c "./bin/phpunit --testdox"
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.4 sh -c "./bin/phpunit --testdox"
 .PHONY: tests
 
-update: ## Executes a Composer update within a PHP 7.3 environment
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.3 sh -c "composer update --optimize-autoloader"
+update: ## Executes a Composer update within a PHP 7.4 environment
+	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.4 sh -c "composer update --optimize-autoloader"
 .PHONY: update
 
 help:
