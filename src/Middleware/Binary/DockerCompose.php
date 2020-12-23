@@ -41,6 +41,7 @@ class DockerCompose
         return [
             'COMPOSE_FILE' => $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
             'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
+            'DOCKER_DATABASE_IMAGE' => getenv('DOCKER_DATABASE_IMAGE'),
             'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
             'PROJECT_LOCATION' => $environment->getLocation(),
         ];
