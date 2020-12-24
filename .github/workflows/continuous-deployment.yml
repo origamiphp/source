@@ -11,14 +11,16 @@ jobs:
 
     steps:
       - name: 'Prepare the build context'
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: 'Install system requirements'
-        run: |
-          sudo apt update
-          sudo apt install -y libicu-dev
-          sudo apt-fast install -y --no-install-recommends \
-            php7.4 php7.4-ctype php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: intl, mbstring, xml
+          coverage: none
+        env:
+          fail-fast: true
 
       - name: 'Load the keys used to deploy the PHAR archive'
         run: |
