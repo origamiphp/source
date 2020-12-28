@@ -11,14 +11,18 @@ jobs:
 
     steps:
       - name: 'Prepare the build context'
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
 
       - name: 'Install system requirements'
-        run: |
-          sudo apt update
-          sudo apt install -y libicu-dev
-          sudo apt-fast install -y --no-install-recommends \
-            php7.4 php7.4-ctype php7.4-intl php7.4-mbstring php7.4-pcov php7.4-sqlite php7.4-xml
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: intl, mbstring, xml
+          coverage: pcov
+        env:
+          fail-fast: true
 
       - name: 'Install Composer dependencies'
         run: |
@@ -40,6 +44,4 @@ jobs:
       - name: 'Execute PHPUnit tests and send report to Codecov'
         run: |
           make tests
-          bash <(curl -s https://codecov.io/bash)
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          bash <(curl -s https://codecov.io/bash) -Z
