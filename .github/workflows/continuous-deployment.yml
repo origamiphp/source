@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: 'Prepare the build context'
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
       - name: 'Install system requirements'
         uses: shivammathur/setup-php@v2

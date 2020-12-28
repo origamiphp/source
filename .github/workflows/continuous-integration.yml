@@ -43,5 +43,5 @@ jobs:
 
       - name: 'Execute PHPUnit tests and send report to Codecov'
         run: |
-          make tests
+          ./bin/phpunit --testdox
           bash <(curl -s https://codecov.io/bash) -Z
