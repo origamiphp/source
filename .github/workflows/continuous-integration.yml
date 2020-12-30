@@ -13,7 +13,7 @@ jobs:
       - name: 'Prepare the build context'
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: 'Install system requirements'
         uses: shivammathur/setup-php@v2
@@ -45,3 +45,6 @@ jobs:
         run: |
           ./bin/phpunit --testdox
           bash <(curl -s https://codecov.io/bash) -Z
+
+      - name: 'Compile the PHAR archive'
+        run: make box

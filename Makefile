@@ -8,11 +8,11 @@
 export TTY := $(shell if [ -z "$${GITHUB_ACTIONS}" ]; then echo "--tty"; else echo ""; fi)
 
 box: ## Compiles the project into a PHAR archive
-	composer dump-env prod
-	./bin/console cache:clear
-	./bin/console cache:warmup
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box compile --verbose --ansi
-	rm .env.local.php
+	@composer dump-env prod
+	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box validate --verbose --ansi
+	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box compile --verbose --ansi
+	@php build/origami.phar --version
+	@rm .env.local.php
 .PHONY: box
 
 phpcsfixer-audit: ## Executes the code style analysis in dry-run mode on all PHP files
