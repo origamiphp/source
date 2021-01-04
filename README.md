@@ -13,8 +13,12 @@
   </a>
 </p>
 
-`origami` manages local Docker environments for [Drupal][drupal], [Magento 2][magento], [Sylius][sylius], or
-[Symfony][symfony] projects.
+`origami` manages local Docker environments for different PHP solutions.
+* [Drupal][drupal]
+* [Magento 2][magento]
+* [OroCommerce][orocommerce]
+* [Sylius][sylius]
+* [Symfony][symfony]
 
 It allows you to create a new environment from scratch without impacting the source code of your project. It also
 offers the ability to have a global overview of all installed environments and perform actions without having to be in
@@ -93,5 +97,6 @@ Copyright © [Alexandre Jardin][me]. `origami` is an open-sourced software licen
 [me]: https://github.com/ajardin
 [mkcert]: https://github.com/FiloSottile/mkcert
 [mutagen]: https://mutagen.io/
+[orocommerce]: https://oroinc.com/
 [sylius]: https://sylius.com/
 [symfony]: https://symfony.com/

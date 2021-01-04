@@ -13,6 +13,7 @@ class TechnologyIdentifier
     private const REQUIRED_TECHNOLOGY_PACKAGE = [
         EnvironmentEntity::TYPE_DRUPAL => ['drupal/core', 'drupal/core-recommended', 'drupal/recommended-project'],
         EnvironmentEntity::TYPE_MAGENTO2 => ['magento/product-community-edition', 'magento/product-enterprise-edition'],
+        EnvironmentEntity::TYPE_OROCOMMERCE => ['oro/commerce'],
         EnvironmentEntity::TYPE_SYLIUS => ['sylius/sylius'],
         EnvironmentEntity::TYPE_SYMFONY => ['symfony/framework-bundle'],
     ];

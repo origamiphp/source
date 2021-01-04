@@ -58,6 +58,7 @@ final class TechnologyIdentifierTest extends TestCase
         yield 'drupal/recommended-project' => ['drupal', '{"require":{"drupal/recommended-project": "dev-master"}}'];
         yield 'magento/product-community-edition' => ['magento2', '{"require":{"magento/product-community-edition": "dev-master"}}'];
         yield 'magento/product-enterprise-edition' => ['magento2', '{"require":{"magento/product-enterprise-edition": "dev-master"}}'];
+        yield 'oro/commerce' => ['orocommerce', '{"require":{"oro/commerce": "dev-master"}}'];
         yield 'sylius/sylius' => ['sylius', '{"require":{"sylius/sylius": "dev-master"}}'];
         yield 'symfony/framework-bundle' => ['symfony', '{"require":{"symfony/framework-bundle": "dev-master"}}'];
     }
