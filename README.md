@@ -58,23 +58,10 @@ your convenience; it is your configuration now. 😉
 
 ✅ Testing
 ----------
-There is a Makefile that provides all the continuous integration processes.
+There is a `Makefile` with the most common commands (e.g. fixing the coding style or running the tests).
 
 ```shell script
-$ make
-
- ----------------------------------------------------------------------------
-   ORIGAMI
- ----------------------------------------------------------------------------
-
-box                            Compiles the project into a PHAR archive
-phpcsfixer-audit               Executes the code style analysis in dry-run mode on all PHP files
-phpcsfixer-fix                 Executes the code style analysis on all PHP files
-phpcpd                         Executes a copy/paste analysis
-psalm                          Executes a static analysis on all PHP files
-security                       Executes a security audit on all PHP dependencies
-tests                          Executes the unit tests and functional tests
-update                         Executes a Composer update within a PHP 7.3 environment
+make
 ```
 
 🔍 Architecture

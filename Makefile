@@ -9,39 +9,32 @@ export TTY := $(shell if [ -z "$${GITHUB_ACTIONS}" ]; then echo "--tty"; else ec
 
 box: ## Compiles the project into a PHAR archive
 	@composer dump-env prod
-	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box validate --verbose --ansi
-	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/humbug-box compile --verbose --ansi
+	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app" ajardin/humbug-box validate --verbose --ansi
+	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app" ajardin/humbug-box compile --verbose --ansi
+	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app" ajardin/humbug-box info --verbose --ansi
 	@php build/origami.phar --version
 	@rm .env.local.php
 .PHONY: box
 
 phpcsfixer-audit: ## Executes the code style analysis in dry-run mode on all PHP files
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcsfixer fix --dry-run --verbose --ansi
+	PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix --dry-run --verbose --ansi
 .PHONY: phpcsfixer
 
 phpcsfixer-fix: ## Executes the code style analysis on all PHP files
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcsfixer fix --verbose --ansi
+	PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix --verbose --ansi
 .PHONY: phpcsfixer
 
-phpcpd: ## Executes a copy/paste analysis
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/phpcpd src tests --fuzzy --verbose
-.PHONY: phpcpd
-
 psalm: ## Executes a static analysis on all PHP files
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" ajardin/psalm --show-info=true --find-dead-code
+	./vendor/bin/psalm --show-info=true --find-dead-code
 .PHONY: psalm
 
 security: ## Executes a security audit on all PHP dependencies
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/app:delegated" --workdir="/app" symfonycorp/cli check:security --verbose --ansi
+	./vendor/bin/security-checker security:check --verbose --ansi
 .PHONY: security
 
 tests: ## Executes the unit tests and functional tests
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.4 sh -c "./bin/phpunit --testdox"
+	./bin/phpunit --testdox
 .PHONY: tests
-
-update: ## Executes a Composer update within a PHP 7.4 environment
-	docker run --rm --interactive $${TTY} --volume="$$(pwd):/var/www/html:delegated" ajardin/symfony-php:7.4 sh -c "composer update --optimize-autoloader"
-.PHONY: update
 
 help:
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) \
