@@ -9,7 +9,6 @@
         "src/Resources/.env",
         ".env.local.php"
     ],
-    "check-requirements": false,
     "output": "build/origami.phar",
     "compression": "GZ",
     "git": "app_version"
