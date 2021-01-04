@@ -30,7 +30,7 @@ final class ProcessFactoryTest extends TestCase
         $factory = new ProcessFactory($procesProxy->reveal(), $logger->reveal());
         $process = $factory->runBackgroundProcess(['php', '-v']);
 
-        static::assertStringContainsString('PHP 7.', $process->getOutput());
+        static::assertMatchesRegularExpression('/^PHP \d{1}\.\d{1}\.{1,2}\d/', $process->getOutput());
     }
 
     public function testItRunsForegroundProcess(): void
@@ -40,7 +40,7 @@ final class ProcessFactoryTest extends TestCase
         $procesProxy->isTtySupported()->shouldBeCalledOnce()->willReturn(false);
         $logger->debug(Argument::type('string'), ['command' => 'php -v'])->shouldBeCalledOnce();
 
-        $this->expectOutputRegex('/^PHP 7\.\d{1}\.{1,2}\d/');
+        $this->expectOutputRegex('/^PHP \d{1}\.\d{1}\.{1,2}\d/');
 
         $factory = new ProcessFactory($procesProxy->reveal(), $logger->reveal());
         $factory->runForegroundProcess(['php', '-v']);
@@ -53,7 +53,7 @@ final class ProcessFactoryTest extends TestCase
         $procesProxy->isTtySupported()->shouldBeCalledOnce()->willReturn(false);
         $logger->debug(Argument::type('string'), ['command' => 'php -v | grep PHP'])->shouldBeCalledOnce();
 
-        $this->expectOutputRegex('/^PHP 7\.\d{1}\.{1,2}\d/');
+        $this->expectOutputRegex('/^PHP \d{1}\.\d{1}\.{1,2}\d/');
 
         $factory = new ProcessFactory($procesProxy->reveal(), $logger->reveal());
         $factory->runForegroundProcessFromShellCommandLine('php -v | grep PHP');

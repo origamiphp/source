@@ -1,14 +1,14 @@
 {
     "main": "bin/console",
     "directories": [
-        "config",
-        "src",
-        "vendor"
+        "config"
     ],
     "files": [
         "src/Resources/.env",
         ".env.local.php"
     ],
+    "force-autodiscovery": true,
+    "exclude-composer-files": false,
     "output": "build/origami.phar",
     "compression": "GZ",
     "git": "app_version"

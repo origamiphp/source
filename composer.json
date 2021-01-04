@@ -44,12 +44,17 @@
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
+        "friendsofphp/php-cs-fixer": "^2.17",
         "phpspec/prophecy": "^1.11",
         "phpspec/prophecy-phpunit": "^2.0",
+        "psalm/plugin-phpunit": "^0.15.0",
+        "psalm/plugin-symfony": "^2.1",
         "roave/security-advisories": "dev-master",
+        "sensiolabs/security-checker": "^6.0",
         "symfony/maker-bundle": "^1.0",
         "symfony/phpunit-bridge": "5.2.*",
-        "symfony/var-dumper": "5.2.*"
+        "symfony/var-dumper": "5.2.*",
+        "vimeo/psalm": "^4.3"
     },
     "config": {
         "preferred-install": {
@@ -74,11 +79,17 @@
         }
     },
     "scripts": {
-        "post-autoload-dump": [
-            "@auto-scripts"
-        ],
         "auto-scripts": {
             "cache:clear": "symfony-cmd"
-        }
+        },
+        "post-install-cmd": [
+            "@auto-scripts"
+        ],
+        "post-update-cmd": [
+            "@auto-scripts"
+        ],
+        "post-autoload-dump": [
+            "@auto-scripts"
+        ]
     }
 }

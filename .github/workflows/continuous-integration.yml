@@ -2,12 +2,15 @@ name: Continuous Integration
 
 on:
   push:
-    branches: ['**']
+    branches: [ '**' ]
 
 jobs:
-  tests:
-    name: Tests
+  quality_tests:
+    name: 'Quality Tests with PHP ${{ matrix.php }}'
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [ '7.4', '8.0' ]
 
     steps:
       - name: 'Prepare the build context'
@@ -18,11 +21,10 @@ jobs:
       - name: 'Install system requirements'
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: ${{ matrix.php }}
+          ini-values: phar.readonly=0
           extensions: intl, mbstring, xml
           coverage: pcov
-        env:
-          fail-fast: true
 
       - name: 'Install Composer dependencies'
         run: |
@@ -31,9 +33,6 @@ jobs:
 
       - name: 'Execute PHP-CS-Fixer in dry-run'
         run: make phpcsfixer-audit
-
-      - name: 'Execute a copy/paste analysis'
-        run: make phpcpd
 
       - name: 'Execute Psalm analysis'
         run: make psalm
