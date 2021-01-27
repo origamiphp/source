@@ -10,11 +10,8 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractEnvironmentEvent extends Event
 {
-    /** @var EnvironmentEntity */
-    protected $environment;
-
-    /** @var SymfonyStyle */
-    protected $symfonyStyle;
+    protected EnvironmentEntity $environment;
+    protected SymfonyStyle $symfonyStyle;
 
     public function __construct(EnvironmentEntity $environment, SymfonyStyle $symfonyStyle)
     {

@@ -13,11 +13,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class Validator
 {
-    /** @var ValidatorInterface */
-    private $symfonyValidator;
-
-    /** @var string */
-    private $projectDir;
+    private ValidatorInterface $symfonyValidator;
+    private string $projectDir;
 
     public function __construct(ValidatorInterface $symfonyValidator, string $projectDir)
     {

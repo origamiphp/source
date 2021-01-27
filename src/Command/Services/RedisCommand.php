@@ -6,7 +6,6 @@ namespace App\Command\Services;
 
 class RedisCommand extends AbstractServiceCommand
 {
-    /** @var string */
     private const COMMAND_SERVICE_NAME = 'redis';
 
     /** {@inheritdoc} */

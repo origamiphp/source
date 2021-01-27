@@ -14,11 +14,8 @@ class DockerCompose
     private const DATABASE_FLUSH_CMD = 'rm -rf /var/lib/mysql/*';
     private const DATABASE_RESTORE_CMD = 'tar xvf /tmp/database_backup.tar var/lib/mysql/';
 
-    /** @var ProcessFactory */
-    private $processFactory;
-
-    /** @var array */
-    private $environmentVariables = [];
+    private ProcessFactory $processFactory;
+    private array $environmentVariables = [];
 
     public function __construct(ProcessFactory $processFactory)
     {

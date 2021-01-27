@@ -78,9 +78,7 @@ final class AbstractBaseCommandTest extends WebTestCase
     {
         return new class($currentContext->reveal()) extends AbstractBaseCommand {
             protected static $defaultName = 'origami:test';
-
-            /** @var CurrentContext */
-            protected $currentContext;
+            protected CurrentContext $currentContext;
 
             public function __construct(CurrentContext $currentContext, string $name = null)
             {

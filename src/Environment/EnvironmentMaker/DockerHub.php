@@ -16,8 +16,7 @@ class DockerHub
     public const DEFAULT_IMAGE_VERSION = 'latest';
     private const API_ENDPOINT = 'https://hub.docker.com/v2/repositories/%s/tags';
 
-    /** @var HttpClientInterface */
-    private $httpClient;
+    private HttpClientInterface $httpClient;
 
     public function __construct(HttpClientInterface $httpClient)
     {

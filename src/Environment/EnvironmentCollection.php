@@ -11,11 +11,10 @@ use App\Exception\InvalidEnvironmentException;
  */
 class EnvironmentCollection implements \Countable, \Iterator, \ArrayAccess
 {
-    /** @var int */
-    private $position = 0;
+    private int $position = 0;
 
     /** @var EnvironmentEntity[] */
-    private $values = [];
+    private array $values = [];
 
     /**
      * @param array<array-key, EnvironmentEntity> $values

@@ -7,14 +7,14 @@ namespace App\Environment\Configuration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
+use App\Exception\MkcertException;
 
 class ConfigurationUpdater extends AbstractConfiguration
 {
     /**
      * Updates the Docker environment configuration.
      *
-     * @throws FilesystemException
-     * @throws InvalidEnvironmentException
+     * @throws FilesystemException|InvalidEnvironmentException|MkcertException
      */
     public function update(
         EnvironmentEntity $environment,

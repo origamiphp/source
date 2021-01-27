@@ -6,10 +6,7 @@ namespace App\Command\Services;
 
 class PhpCommand extends AbstractServiceCommand
 {
-    /** @var string */
     private const COMMAND_SERVICE_NAME = 'php';
-
-    /** @var string */
     private const COMMAND_USERNAME = 'www-data:www-data';
 
     /** {@inheritdoc} */

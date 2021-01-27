@@ -12,8 +12,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 trait TestLocationTrait
 {
-    /** @var string */
-    private $location = '';
+    private string $location = '';
 
     /**
      * {@inheritdoc}

@@ -11,8 +11,7 @@ class Mkcert
 {
     private const DEFAULT_DOMAINS = ['localhost', '127.0.0.1', '::1'];
 
-    /** @var ProcessFactory */
-    private $processFactory;
+    private ProcessFactory $processFactory;
 
     public function __construct(ProcessFactory $processFactory)
     {

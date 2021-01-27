@@ -25,7 +25,7 @@ phpcsfixer-fix: ## Executes the code style analysis on all PHP files
 .PHONY: phpcsfixer
 
 psalm: ## Executes a static analysis on all PHP files
-	./vendor/bin/psalm --show-info=true --find-dead-code
+	./vendor/bin/psalm --show-info=true --find-dead-code --no-cache
 .PHONY: psalm
 
 security: ## Executes a security audit on all PHP dependencies

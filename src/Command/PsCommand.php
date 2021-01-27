@@ -18,11 +18,8 @@ class PsCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:ps';
 
-    /** @var CurrentContext */
-    private $currentContext;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
+    private CurrentContext $currentContext;
+    private DockerCompose $dockerCompose;
 
     public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
     {

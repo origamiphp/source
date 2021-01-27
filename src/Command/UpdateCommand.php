@@ -19,14 +19,9 @@ class UpdateCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:update';
 
-    /** @var CurrentContext */
-    private $currentContext;
-
-    /** @var EnvironmentMaker */
-    private $configurator;
-
-    /** @var ConfigurationUpdater */
-    private $updater;
+    private CurrentContext $currentContext;
+    private EnvironmentMaker $configurator;
+    private ConfigurationUpdater $updater;
 
     public function __construct(
         CurrentContext $currentContext,

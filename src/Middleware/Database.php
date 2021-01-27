@@ -18,14 +18,9 @@ class Database
 {
     public const DATABASE_FILENAME = '.origami';
 
-    /** @var string */
-    private $path;
-
-    /** @var Serializer */
-    private $serializer;
-
-    /** @var EnvironmentCollection */
-    private $environments;
+    private string $path;
+    private Serializer $serializer;
+    private EnvironmentCollection $environments;
 
     /**
      * @throws FilesystemException

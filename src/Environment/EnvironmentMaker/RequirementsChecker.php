@@ -10,8 +10,7 @@ class RequirementsChecker
 {
     private const MUTAGEN_MINIMUM_VERSION = '0.12.0-beta1';
 
-    /** @var ProcessFactory */
-    private $processFactory;
+    private ProcessFactory $processFactory;
 
     public function __construct(ProcessFactory $processFactory)
     {

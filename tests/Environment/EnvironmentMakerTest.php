@@ -364,8 +364,7 @@ final class EnvironmentMakerTest extends TestCase
 
 trait FakeCommandConstructor
 {
-    /** @var EnvironmentMaker */
-    protected $environmentMaker;
+    protected EnvironmentMaker $environmentMaker;
 
     public function __construct(EnvironmentMaker $environmentMaker, string $name = null)
     {
