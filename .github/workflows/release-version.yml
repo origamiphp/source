@@ -10,12 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 'Prepare the build context'
+      - name: 'Prepares the build context'
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: 'Install system requirements'
+      - name: 'Installs the system requirements'
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
@@ -24,35 +24,35 @@ jobs:
         env:
           fail-fast: true
 
-      - name: 'Load the keys used to deploy the PHAR archive'
+      - name: 'Loads the keys used to deploy the PHAR archive'
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.PRIVATE_DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           echo "${{ secrets.PRIVATE_SIGNING_KEY }}" | gpg --import
 
-      - name: 'Configure the committer identity'
+      - name: 'Configures the committer identity'
         run: |
           git config --global user.email "info@ajardin.fr"
           git config --global user.name "Alexandre Jardin"
           git config --global commit.gpgsign "true"
           git config --global user.signingkey "405DC05A6F8FFBA9"
 
-      - name: 'Install Composer dependencies'
+      - name: 'Installs the Composer dependencies'
         run: |
           composer validate --strict --ansi
           composer install --optimize-autoloader --classmap-authoritative --ansi
 
-      - name: 'Compile the PHAR archive'
+      - name: 'Compiles the project into a PHAR archive'
         run: make box
 
-      - name: 'Prepare the local Git repository which contains the PHAR archive'
+      - name: 'Prepares the local Git repository which contains the PHAR archive'
         run: |
           git clone git@github.com:ajardin/origami.git /tmp/origami
           mkdir -p /tmp/origami/bin/
           cp ./build/origami.phar /tmp/origami/bin/origami
 
-      - name: 'Update the remote Git repository which contains the PHAR archive'
+      - name: 'Updates the remote Git repository which contains the PHAR archive'
         run: |
           tag_name=$(git show "${{ github.ref }}" --no-patch --format="" | head -n1 | awk '{print $2}')
           tag_message=$(git show "${{ github.ref }}" --no-patch --format="" | tail -n1)
