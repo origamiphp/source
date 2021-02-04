@@ -13,12 +13,12 @@ jobs:
         php: [ '7.4', '8.0' ]
 
     steps:
-      - name: 'Prepare the build context'
+      - name: 'Prepares the build context'
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
 
-      - name: 'Install system requirements'
+      - name: 'Installs the system requirements'
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
@@ -26,24 +26,30 @@ jobs:
           extensions: intl, mbstring, xml
           coverage: pcov
 
-      - name: 'Install Composer dependencies'
+      - name: 'Installs the Composer dependencies'
         run: |
           composer validate --strict --ansi
           composer install --optimize-autoloader --classmap-authoritative --ansi
 
-      - name: 'Execute PHP-CS-Fixer in dry-run'
+      - name: 'Executes the code style analysis in dry-run mode on all PHP files'
         run: make phpcsfixer-audit
 
-      - name: 'Execute Psalm analysis'
+      - name: 'Executes the static analysis on all PHP files'
         run: make psalm
 
-      - name: 'Execute security analysis'
-        run: make security
+      - name: 'Executes the security audit on all PHP dependencies'
+        run: |
+          repository="local-php-security-checker" && \
+          latest_version=$(curl --silent https://api.github.com/repos/fabpot/${repository}/releases/latest | jq -r ".tag_name") && \
+          destination="/usr/local/bin/${repository}" && \
+          wget -O "${destination}" "https://github.com/fabpot/${repository}/releases/download/${latest_version}/${repository}_${latest_version##v}_linux_amd64" && \
+          chmod +x "${destination}" && \
+          ${destination}
 
-      - name: 'Execute PHPUnit tests and send report to Codecov'
+      - name: 'Executes the unit tests and functional tests'
         run: |
           ./bin/phpunit --testdox
           bash <(curl -s https://codecov.io/bash) -Z
 
-      - name: 'Compile the PHAR archive'
+      - name: 'Compiles the project into a PHAR archive'
         run: make box
