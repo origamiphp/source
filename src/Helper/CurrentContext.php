@@ -18,17 +18,10 @@ class CurrentContext
 {
     private const INVALID_CONFIGURATION_MESSAGE = 'The environment is not configured, consider executing the "install" command.';
 
-    /** @var Database */
-    private $database;
-
-    /** @var ProcessProxy */
-    private $processProxy;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /** @var Validator */
-    private $validator;
+    private Database $database;
+    private ProcessProxy $processProxy;
+    private DockerCompose $dockerCompose;
+    private Validator $validator;
 
     public function __construct(Database $database, ProcessProxy $processProxy, DockerCompose $dockerCompose, Validator $validator)
     {

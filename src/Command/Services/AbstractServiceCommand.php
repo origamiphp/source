@@ -16,17 +16,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractServiceCommand extends AbstractBaseCommand implements ServiceCommandInterface
 {
-    /** @var CurrentContext */
-    protected $currentContext;
-
-    /** @var DockerCompose */
-    protected $dockerCompose;
-
-    /** @var string */
-    protected $serviceName;
-
-    /** @var string */
-    protected $username;
+    protected CurrentContext $currentContext;
+    protected DockerCompose $dockerCompose;
+    protected string $serviceName;
+    protected string $username;
 
     public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
     {

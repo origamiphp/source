@@ -11,11 +11,8 @@ class ProcessFactory
 {
     private const DEFAULT_PROCESS_TIMEOUT = null;
 
-    /** @var ProcessProxy */
-    private $processProxy;
-
-    /** @var LoggerInterface */
-    private $logger;
+    private ProcessProxy $processProxy;
+    private LoggerInterface $logger;
 
     public function __construct(ProcessProxy $processProxy, LoggerInterface $logger)
     {

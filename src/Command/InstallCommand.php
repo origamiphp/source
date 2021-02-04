@@ -20,17 +20,10 @@ class InstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:install';
 
-    /** @var ProcessProxy */
-    private $processProxy;
-
-    /** @var EnvironmentMaker */
-    private $configurator;
-
-    /** @var ConfigurationInstaller */
-    private $installer;
-
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private ProcessProxy $processProxy;
+    private EnvironmentMaker $configurator;
+    private ConfigurationInstaller $installer;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         ProcessProxy $processProxy,

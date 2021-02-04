@@ -22,17 +22,10 @@ class StartCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:start';
 
-    /** @var CurrentContext */
-    private $currentContext;
-
-    /** @var ProcessProxy */
-    private $processProxy;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private CurrentContext $currentContext;
+    private ProcessProxy $processProxy;
+    private DockerCompose $dockerCompose;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,

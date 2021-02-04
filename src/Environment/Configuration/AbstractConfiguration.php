@@ -15,7 +15,6 @@ class AbstractConfiguration
 
     protected const DATABASE_IMAGE_OPTION_NAME = 'DOCKER_DATABASE_IMAGE';
     protected const PHP_IMAGE_OPTION_NAME = 'DOCKER_PHP_IMAGE';
-
     protected const BLACKFIRE_PARAMETERS = [
         'BLACKFIRE_CLIENT_ID',
         'BLACKFIRE_CLIENT_TOKEN',
@@ -23,11 +22,8 @@ class AbstractConfiguration
         'BLACKFIRE_SERVER_TOKEN',
     ];
 
-    /** @var Mkcert */
-    protected $mkcert;
-
-    /** @var Variables */
-    protected $systemVariables;
+    protected Mkcert $mkcert;
+    protected Variables $systemVariables;
 
     public function __construct(Mkcert $mkcert, Variables $systemVariables)
     {

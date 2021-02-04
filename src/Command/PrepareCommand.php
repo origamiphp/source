@@ -19,11 +19,8 @@ class PrepareCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:prepare';
 
-    /** @var CurrentContext */
-    private $currentContext;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
+    private CurrentContext $currentContext;
+    private DockerCompose $dockerCompose;
 
     public function __construct(
         CurrentContext $currentContext,

@@ -6,13 +6,14 @@ namespace App\Environment\Configuration;
 
 use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
+use App\Exception\MkcertException;
 
 class ConfigurationInstaller extends AbstractConfiguration
 {
     /**
      * Installs the Docker environment configuration.
      *
-     * @throws FilesystemException
+     * @throws FilesystemException|MkcertException
      */
     public function install(
         string $location,

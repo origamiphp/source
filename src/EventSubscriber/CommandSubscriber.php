@@ -13,8 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    /** @var RequirementsChecker */
-    private $requirementsChecker;
+    private RequirementsChecker $requirementsChecker;
 
     public function __construct(RequirementsChecker $binaryChecker)
     {

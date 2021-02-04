@@ -9,35 +9,17 @@ namespace App\Environment;
  */
 class EnvironmentEntity
 {
-    /** @var string */
     public const TYPE_DRUPAL = 'drupal';
-
-    /** @var string */
     public const TYPE_MAGENTO2 = 'magento2';
-
-    /** @var string */
     public const TYPE_OROCOMMERCE = 'orocommerce';
-
-    /** @var string */
     public const TYPE_SYLIUS = 'sylius';
-
-    /** @var string */
     public const TYPE_SYMFONY = 'symfony';
 
-    /** @var string */
-    private $name;
-
-    /** @var string */
-    private $location;
-
-    /** @var string */
-    private $type;
-
-    /** @var null|string */
-    private $domains;
-
-    /** @var bool */
-    private $active;
+    private string $name;
+    private string $location;
+    private string $type;
+    private ?string $domains;
+    private bool $active;
 
     public function __construct(
         string $name,

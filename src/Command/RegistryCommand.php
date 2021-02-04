@@ -16,8 +16,7 @@ class RegistryCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:registry';
 
-    /** @var Database */
-    private $database;
+    private Database $database;
 
     public function __construct(Database $database, ?string $name = null)
     {

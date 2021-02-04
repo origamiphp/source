@@ -20,14 +20,9 @@ class StopCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:stop';
 
-    /** @var CurrentContext */
-    private $currentContext;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private CurrentContext $currentContext;
+    private DockerCompose $dockerCompose;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,

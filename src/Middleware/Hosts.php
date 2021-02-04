@@ -9,8 +9,7 @@ use App\Helper\ProcessFactory;
 
 class Hosts
 {
-    /** @var ProcessFactory */
-    private $processFactory;
+    private ProcessFactory $processFactory;
 
     public function __construct(ProcessFactory $processFactory)
     {

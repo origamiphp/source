@@ -15,11 +15,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EnvironmentSubscriber implements EventSubscriberInterface
 {
-    /** @var Hosts */
-    private $hosts;
-
-    /** @var Database */
-    private $database;
+    private Hosts $hosts;
+    private Database $database;
 
     public function __construct(Hosts $hosts, Database $database)
     {

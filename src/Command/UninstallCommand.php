@@ -22,17 +22,10 @@ class UninstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:uninstall';
 
-    /** @var CurrentContext */
-    private $currentContext;
-
-    /** @var DockerCompose */
-    private $dockerCompose;
-
-    /** @var ConfigurationUninstaller */
-    private $uninstaller;
-
-    /** @var EventDispatcherInterface */
-    private $eventDispatcher;
+    private CurrentContext $currentContext;
+    private DockerCompose $dockerCompose;
+    private ConfigurationUninstaller $uninstaller;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,

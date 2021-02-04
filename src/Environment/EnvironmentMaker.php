@@ -14,8 +14,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class EnvironmentMaker
 {
-    /** @var array */
-    private $availableTypes = [
+    private array $availableTypes = [
         EnvironmentEntity::TYPE_DRUPAL,
         EnvironmentEntity::TYPE_MAGENTO2,
         EnvironmentEntity::TYPE_OROCOMMERCE,
@@ -23,17 +22,10 @@ class EnvironmentMaker
         EnvironmentEntity::TYPE_SYMFONY,
     ];
 
-    /** @var TechnologyIdentifier */
-    private $technologyIdentifier;
-
-    /** @var DockerHub */
-    private $dockerHub;
-
-    /** @var RequirementsChecker */
-    private $requirementsChecker;
-
-    /** @var Validator */
-    private $validator;
+    private TechnologyIdentifier $technologyIdentifier;
+    private DockerHub $dockerHub;
+    private RequirementsChecker $requirementsChecker;
+    private Validator $validator;
 
     public function __construct(
         TechnologyIdentifier $technologyIdentifier,
@@ -110,9 +102,7 @@ class EnvironmentMaker
             $domains = $io->ask(
                 'Which domains does this certificate belong to?',
                 "{$name}.localhost",
-                function (string $answer): string {
-                    return $this->localDomainsCallback($answer);
-                }
+                fn (string $answer): string => $this->localDomainsCallback($answer)
             );
         }
 
