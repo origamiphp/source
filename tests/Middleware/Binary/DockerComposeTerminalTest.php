@@ -23,7 +23,7 @@ final class DockerComposeTerminalTest extends WebTestCase
 
     public function testItFixesPermissionsOnSharedSshAgent(): void
     {
-        $command = ['mutagen', 'compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
+        $command = ['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->fixPermissionsOnSharedSSHAgent());
@@ -31,7 +31,7 @@ final class DockerComposeTerminalTest extends WebTestCase
 
     public function testItOpensTerminalOnGivenServiceWithSpecificUser(): void
     {
-        $command = ['mutagen', 'compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'];
+        $command = ['docker-compose', 'exec', '-u', 'www-data:www-data', 'php', 'sh', '-l'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->openTerminal('php', 'www-data:www-data'));
@@ -39,7 +39,7 @@ final class DockerComposeTerminalTest extends WebTestCase
 
     public function testItOpensTerminalOnGivenServiceWithoutSpecificUser(): void
     {
-        $command = ['mutagen', 'compose', 'exec', 'php', 'sh', '-l'];
+        $command = ['docker-compose', 'exec', 'php', 'sh', '-l'];
         $dockerCompose = $this->prepareForegroundCommand($command);
 
         static::assertTrue($dockerCompose->openTerminal('php'));

@@ -25,8 +25,8 @@ final class DockerHubTest extends TestCase
      */
     public function testItRetrievesImageTags(): void
     {
-        $successResponse = new MockResponse($this->getFakeSuccessfullyResponse(), ['http_code' => Response::HTTP_OK]);
-        $httpClient = new MockHttpClient($successResponse);
+        $response = new MockResponse($this->getFakeSuccessfullyResponse(), ['http_code' => Response::HTTP_OK]);
+        $httpClient = new MockHttpClient($response);
 
         $dockerHub = new DockerHub($httpClient);
         $imageTags = $dockerHub->getImageTags('origami');
@@ -40,8 +40,8 @@ final class DockerHubTest extends TestCase
      */
     public function testItManagesResultsException(): void
     {
-        $successResponse = new MockResponse('', ['http_code' => Response::HTTP_OK]);
-        $httpClient = new MockHttpClient($successResponse);
+        $response = new MockResponse('', ['http_code' => Response::HTTP_OK]);
+        $httpClient = new MockHttpClient($response);
 
         $this->expectException(DockerHubException::class);
 
@@ -55,8 +55,8 @@ final class DockerHubTest extends TestCase
      */
     public function testItManagesParseException(): void
     {
-        $successResponse = new MockResponse('', ['http_code' => Response::HTTP_BAD_GATEWAY]);
-        $httpClient = new MockHttpClient($successResponse);
+        $response = new MockResponse('', ['http_code' => Response::HTTP_BAD_GATEWAY]);
+        $httpClient = new MockHttpClient($response);
 
         $this->expectException(DockerHubException::class);
 

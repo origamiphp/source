@@ -55,24 +55,12 @@ services:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
     tty: true
 
+  synchro:
+    image: ajardin/synchro:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_synchro
+    volumes:
+      - code:/var/www/html:nocopy
+
 volumes:
   code: {}
   database: {}
-
-x-mutagen:
-  sync:
-    defaults:
-      ignore:
-        vcs: true
-      mode: two-way-resolved
-      symlink:
-        mode: posix-raw
-      configurationBeta:
-        permissions:
-          defaultOwner: id:1000
-          defaultGroup: id:1000
-          defaultFileMode: 0644
-          defaultDirectoryMode: 0755
-    code:
-      alpha: ${PROJECT_LOCATION}
-      beta: "volume://code"

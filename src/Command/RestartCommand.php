@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Event\EnvironmentRestartedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
@@ -12,6 +13,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class RestartCommand extends AbstractBaseCommand
 {
@@ -20,16 +22,19 @@ class RestartCommand extends AbstractBaseCommand
 
     private CurrentContext $currentContext;
     private DockerCompose $dockerCompose;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,
         DockerCompose $dockerCompose,
+        EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
         $this->dockerCompose = $dockerCompose;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -58,6 +63,9 @@ class RestartCommand extends AbstractBaseCommand
             if (!$this->dockerCompose->restartServices()) {
                 throw new InvalidEnvironmentException('An error occurred while restarting the Docker services.');
             }
+
+            $event = new EnvironmentRestartedEvent($environment, $io);
+            $this->eventDispatcher->dispatch($event);
 
             $io->success('Docker services successfully restarted.');
         } catch (OrigamiExceptionInterface $exception) {

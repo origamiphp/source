@@ -64,10 +64,10 @@ class StopCommand extends AbstractBaseCommand
                 throw new InvalidEnvironmentException('An error occurred while stopping the Docker services.');
             }
 
-            $io->success('Docker services successfully stopped.');
-
             $event = new EnvironmentStoppedEvent($environment, $io);
             $this->eventDispatcher->dispatch($event);
+
+            $io->success('Docker services successfully stopped.');
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
             $exitCode = Command::FAILURE;

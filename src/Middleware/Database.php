@@ -29,12 +29,13 @@ class Database
     public function __construct(Variables $systemVariables)
     {
         $home = PHP_OS_FAMILY !== 'Windows'
-            ? $systemVariables->get('HOME')
-            : $systemVariables->get('HOMEDRIVE').$systemVariables->get('HOMEPATH');
+            ? $systemVariables->get('HOME')                                                     // @codeCoverageIgnore
+            : $systemVariables->get('HOMEDRIVE').$systemVariables->get('HOMEPATH')              // @codeCoverageIgnore
+        ;
 
         $this->path = $home.\DIRECTORY_SEPARATOR.self::DATABASE_FILENAME;
         if (!@is_file($this->path) && !@touch($this->path)) {
-            throw new FilesystemException('Unable to create the database file.'); // @codeCoverageIgnore
+            throw new FilesystemException('Unable to create the database file.');       // @codeCoverageIgnore
         }
 
         $this->serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);

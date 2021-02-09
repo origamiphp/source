@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Event\EnvironmentInstalledEvent;
+use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
+use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
 use App\Middleware\Hosts;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -16,11 +19,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class EnvironmentSubscriber implements EventSubscriberInterface
 {
     private Hosts $hosts;
+    private DockerCompose $dockerCompose;
+    private Mutagen $mutagen;
     private Database $database;
 
-    public function __construct(Hosts $hosts, Database $database)
+    public function __construct(Hosts $hosts, DockerCompose $dockerCompose, Mutagen $mutagen, Database $database)
     {
         $this->hosts = $hosts;
+        $this->dockerCompose = $dockerCompose;
+        $this->mutagen = $mutagen;
         $this->database = $database;
     }
 
@@ -29,9 +36,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      *
      * @codeCoverageIgnore
      *
-     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentInstall
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStop
+     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentUninstall
      */
     public static function getSubscribedEvents(): array
@@ -40,6 +47,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             EnvironmentInstalledEvent::class => 'onEnvironmentInstall',
             EnvironmentStartedEvent::class => 'onEnvironmentStart',
             EnvironmentStoppedEvent::class => 'onEnvironmentStop',
+            EnvironmentRestartedEvent::class => 'onEnvironmentRestart',
             EnvironmentUninstalledEvent::class => 'onEnvironmentUninstall',
         ];
     }
@@ -73,8 +81,18 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentStart(EnvironmentStartedEvent $event): void
     {
         $environment = $event->getEnvironment();
-        $environment->activate();
+        $io = $event->getSymfonyStyle();
 
+        if (!$this->dockerCompose->fixPermissionsOnSharedSSHAgent()) {
+            $io->error('An error occurred while trying to fix the permissions on the shared SSH agent.');
+        }
+
+        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        if (!$this->mutagen->startDockerSynchronization($environmentVariables)) {
+            $io->error('An error occurred while starting the Docker synchronization.');
+        }
+
+        $environment->activate();
         $this->database->save();
     }
 
@@ -84,9 +102,31 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentStop(EnvironmentStoppedEvent $event): void
     {
         $environment = $event->getEnvironment();
-        $environment->deactivate();
+        $io = $event->getSymfonyStyle();
 
+        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        if (!$this->mutagen->stopDockerSynchronization($environmentVariables)) {
+            $io->error('An error occurred while stopping the Docker synchronization.');
+        }
+
+        $environment->deactivate();
         $this->database->save();
+    }
+
+    /**
+     * Listener which triggers the Docker synchronization restart.
+     */
+    public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
+    {
+        $environment = $event->getEnvironment();
+        $io = $event->getSymfonyStyle();
+
+        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        if (!$this->mutagen->stopDockerSynchronization($environmentVariables)
+            || !$this->mutagen->startDockerSynchronization($environmentVariables)
+        ) {
+            $io->error('An error occurred while restarting the Docker synchronization.');
+        }
     }
 
     /**
@@ -95,6 +135,12 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentUninstall(EnvironmentUninstalledEvent $event): void
     {
         $environment = $event->getEnvironment();
+        $io = $event->getSymfonyStyle();
+
+        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        if (!$this->mutagen->removeDockerSynchronization($environmentVariables)) {
+            $io->error('An error occurred while removing the Docker synchronization.');
+        }
 
         $this->database->remove($environment);
         $this->database->save();
