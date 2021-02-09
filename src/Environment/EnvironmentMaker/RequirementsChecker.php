@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Environment\EnvironmentMaker;
 
-use App\Helper\ProcessFactory;
+use Symfony\Component\Process\ExecutableFinder;
 
 class RequirementsChecker
 {
-    private ProcessFactory $processFactory;
+    private ExecutableFinder $executableFinder;
 
-    public function __construct(ProcessFactory $processFactory)
+    public function __construct(ExecutableFinder $executableFinder)
     {
-        $this->processFactory = $processFactory;
+        $this->executableFinder = $executableFinder;
     }
 
     /**
@@ -58,7 +58,7 @@ class RequirementsChecker
      */
     public function canMakeLocallyTrustedCertificates(): bool
     {
-        return $this->processFactory->runBackgroundProcess(['which', 'mkcert'])->isSuccessful();
+        return $this->executableFinder->find('mkcert') !== null;
     }
 
     /**
@@ -66,7 +66,7 @@ class RequirementsChecker
      */
     private function isDockerInstalled(): bool
     {
-        return $this->processFactory->runBackgroundProcess(['which', 'docker'])->isSuccessful();
+        return $this->executableFinder->find('docker') !== null;
     }
 
     /**
@@ -74,7 +74,7 @@ class RequirementsChecker
      */
     private function isDockerComposeInstalled(): bool
     {
-        return $this->processFactory->runBackgroundProcess(['which', 'docker-compose'])->isSuccessful();
+        return $this->executableFinder->find('docker-compose') !== null;
     }
 
     /**
@@ -82,6 +82,6 @@ class RequirementsChecker
      */
     private function isMutagenInstalled(): bool
     {
-        return $this->processFactory->runBackgroundProcess(['which', 'mutagen'])->isSuccessful();
+        return $this->executableFinder->find('mutagen') !== null;
     }
 }
