@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Ergebnis\Environment\SystemVariables;
 use Ergebnis\Environment\Variables;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\Process\ExecutableFinder;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
@@ -23,5 +24,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services
         ->set(SystemVariables::class)->autowire(true)
         ->set(Variables::class, SystemVariables::class)
+        ->set(ExecutableFinder::class)->autowire(true)
     ;
 };

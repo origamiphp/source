@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Environment\EnvironmentMaker;
 
 use App\Environment\EnvironmentMaker\RequirementsChecker;
-use App\Helper\ProcessFactory;
 use App\Tests\CustomProphecyTrait;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Process\Process;
+use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @internal
@@ -21,21 +20,13 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsMandatoryBinaryStatus(): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
+        [$executableFinder] = $this->prophesizeObjectArguments();
 
-        $processWithDocker = $this->prophesize(Process::class);
-        $processWithDocker->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runBackgroundProcess(['which', 'docker'])->shouldBeCalledOnce()->willReturn($processWithDocker->reveal());
+        $executableFinder->find('docker')->shouldBeCalledOnce()->willReturn('/usr/local/bin/docker');
+        $executableFinder->find('docker-compose')->shouldBeCalledOnce()->willReturn(null);
+        $executableFinder->find('mutagen')->shouldBeCalledOnce()->willReturn('/usr/local/bin/mutagen');
 
-        $processWithDockerCompose = $this->prophesize(Process::class);
-        $processWithDockerCompose->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
-        $processFactory->runBackgroundProcess(['which', 'docker-compose'])->shouldBeCalledOnce()->willReturn($processWithDockerCompose->reveal());
-
-        $processWithMutagen = $this->prophesize(Process::class);
-        $processWithMutagen->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runBackgroundProcess(['which', 'mutagen'])->shouldBeCalledOnce()->willReturn($processWithMutagen->reveal());
-
-        $requirementsChecker = new RequirementsChecker($processFactory->reveal());
+        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
         static::assertSame([
             [
                 'name' => 'docker',
@@ -57,13 +48,10 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsCertificatesBinaryFoundStatus(): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
+        [$executableFinder] = $this->prophesizeObjectArguments();
+        $executableFinder->find('mkcert')->shouldBeCalledOnce()->willReturn('/usr/local/bin/mkcert');
 
-        $processWithMkcert = $this->prophesize(Process::class);
-        $processWithMkcert->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
-
-        $requirementsChecker = new RequirementsChecker($processFactory->reveal());
+        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
         static::assertSame([
             [
                 'name' => 'mkcert',
@@ -75,13 +63,10 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsCertificatesBinaryNotFoundStatus(): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
+        [$executableFinder] = $this->prophesizeObjectArguments();
+        $executableFinder->find('mkcert')->shouldBeCalledOnce()->willReturn(null);
 
-        $processWithMkcert = $this->prophesize(Process::class);
-        $processWithMkcert->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
-        $processFactory->runBackgroundProcess(['which', 'mkcert'])->shouldBeCalledOnce()->willReturn($processWithMkcert->reveal());
-
-        $requirementsChecker = new RequirementsChecker($processFactory->reveal());
+        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
         static::assertSame([
             [
                 'name' => 'mkcert',
@@ -97,7 +82,7 @@ final class RequirementsCheckerTest extends TestCase
     protected function prophesizeObjectArguments(): array
     {
         return [
-            $this->prophesize(ProcessFactory::class),
+            $this->prophesize(ExecutableFinder::class),
         ];
     }
 }
