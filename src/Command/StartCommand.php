@@ -74,14 +74,14 @@ class StartCommand extends AbstractBaseCommand
 
                 $domains = $environment->getDomains();
 
+                $event = new EnvironmentStartedEvent($environment, $io);
+                $this->eventDispatcher->dispatch($event);
+
                 $io->success('Docker services successfully started.');
                 $io->info(sprintf(
                     'Please visit %s to access your environment.',
-                    ($domains !== null ? "https://{$environment->getDomains()}" : 'https://127.0.0.1')
+                    ($domains !== null ? "https://{$domains}" : 'https://127.0.0.1')
                 ));
-
-                $event = new EnvironmentStartedEvent($environment, $io);
-                $this->eventDispatcher->dispatch($event);
             } else {
                 $io->error('Unable to start an environment when there is already a running one.');
                 $exitCode = Command::FAILURE;

@@ -8,8 +8,6 @@ use App\Helper\ProcessFactory;
 
 class RequirementsChecker
 {
-    private const MUTAGEN_MINIMUM_VERSION = '0.12.0-beta1';
-
     private ProcessFactory $processFactory;
 
     public function __construct(ProcessFactory $processFactory)
@@ -36,7 +34,7 @@ class RequirementsChecker
             [
                 'name' => 'mutagen',
                 'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-                'status' => $this->isMutagenBetaInstalled(),
+                'status' => $this->isMutagenInstalled(),
             ],
         ];
     }
@@ -80,13 +78,10 @@ class RequirementsChecker
     }
 
     /**
-     * Checks whether Mutagen is available with the correct version in the system.
+     * Checks whether Mutagen is available in the system.
      */
-    private function isMutagenBetaInstalled(): bool
+    private function isMutagenInstalled(): bool
     {
-        $process = $this->processFactory->runBackgroundProcess(['mutagen', 'version']);
-        $version = trim($process->getOutput());
-
-        return $process->isSuccessful() && version_compare($version, self::MUTAGEN_MINIMUM_VERSION) !== -1;
+        return $this->processFactory->runBackgroundProcess(['which', 'mutagen'])->isSuccessful();
     }
 }
