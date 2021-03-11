@@ -28,10 +28,6 @@ psalm: ## Executes a static analysis on all PHP files
 	./vendor/bin/psalm --show-info=true --find-dead-code --no-cache
 .PHONY: psalm
 
-security: ## Executes a security audit on all PHP dependencies
-	./vendor/bin/security-checker security:check --verbose --ansi
-.PHONY: security
-
 tests: ## Executes the unit tests and functional tests
 	./bin/phpunit --testdox
 .PHONY: tests
