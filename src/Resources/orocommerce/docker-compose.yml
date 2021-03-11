@@ -16,6 +16,15 @@ services:
       - database:/var/lib/mysql
     tty: true
 
+  elasticsearch:
+    image: library/elasticsearch:7.10.1
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+
   maildev:
     image: djfarrelly/maildev:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
@@ -55,6 +64,25 @@ services:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
     tty: true
 
+  rabbitmq:
+    image: ajardin/orocommerce-rabbitmq:3.8
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    ports:
+      - 15672:15672
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    tty: true
+
+  redis:
+    image: library/redis:6.0-alpine
+    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    volumes:
+      - redis:/data
+      # Custom configuration
+      - ${PROJECT_LOCATION}/var/docker/redis/custom.conf:/usr/local/etc/redis/redis.conf
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    tty: true
+
   synchro:
     image: ajardin/synchro:latest
     container_name: ${COMPOSE_PROJECT_NAME}_synchro
@@ -64,3 +92,6 @@ services:
 volumes:
   code: {}
   database: {}
+  elasticsearch: {}
+  rabbitmq: {}
+  redis: {}
