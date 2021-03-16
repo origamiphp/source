@@ -54,8 +54,10 @@ jobs:
 
       - name: 'Updates the remote Git repository which contains the PHAR archive'
         run: |
-          tag_name=$(git show "${{ github.ref }}" --no-patch --format="" | head -n1 | awk '{print $2}')
-          tag_message=$(git show "${{ github.ref }}" --no-patch --format="" | tail -n1)
+          git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+          tag_name="${GITHUB_REF#refs/*/}"
+          tag_message=$(git tag --list --format="%(contents)" "${tag_name}")
+
           cd /tmp/origami
 
           git add bin/origami
