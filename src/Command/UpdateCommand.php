@@ -68,11 +68,10 @@ class UpdateCommand extends AbstractBaseCommand
 
             if ($io->confirm($question, false)) {
                 $name = $environment->getName();
-                $type = $environment->getType();
 
                 $this->updater->update(
                     $environment,
-                    $this->configurator->askPhpVersion($io, $type),
+                    $this->configurator->askPhpVersion($io),
                     $this->configurator->askDatabaseVersion($io),
                     $this->configurator->askDomains($io, $name)
                 );

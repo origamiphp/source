@@ -46,7 +46,7 @@ final class InstallCommandTest extends WebTestCase
         $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn($fakeLocation);
         $environmentMaker->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
         $environmentMaker->askEnvironmentType(Argument::type(SymfonyStyle::class), $fakeLocation)->shouldBeCalledOnce()->willReturn($type);
-        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class), $type)->shouldBeCalledOnce()->willReturn($phpVersion);
+        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn($phpVersion);
         $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn($databaseVersion);
         $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $name)->shouldBeCalledOnce()->willReturn($domains ?? null);
 

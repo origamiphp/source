@@ -50,7 +50,7 @@ services:
     tty: true
 
   php:
-    image: ajardin/magento2-php:${DOCKER_PHP_IMAGE}
+    image: ajardin/php:${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock

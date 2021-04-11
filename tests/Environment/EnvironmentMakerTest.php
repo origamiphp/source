@@ -303,7 +303,7 @@ final class EnvironmentMakerTest extends TestCase
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
                 $io = new SymfonyStyle($input, $output);
-                $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io, 'symfony'));
+                $io->writeln('Result = '.$this->environmentMaker->askPhpVersion($io));
 
                 return Command::SUCCESS;
             }

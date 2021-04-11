@@ -62,9 +62,9 @@ class EnvironmentMaker
     /**
      * Asks the choice question about the PHP version.
      */
-    public function askPhpVersion(SymfonyStyle $io, string $type): string
+    public function askPhpVersion(SymfonyStyle $io): string
     {
-        $availableVersions = $this->dockerHub->getImageTags("ajardin/{$type}-php");
+        $availableVersions = $this->dockerHub->getImageTags('ajardin/php');
         $defaultVersion = DockerHub::DEFAULT_IMAGE_VERSION;
 
         return \count($availableVersions) > 1
