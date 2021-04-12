@@ -60,8 +60,8 @@ class InstallCommand extends AbstractBaseCommand
             $environment = $this->installer->install(
                 $location = $this->processProxy->getWorkingDirectory(),
                 $name = $this->configurator->askEnvironmentName($io, basename($location)),
-                $type = $this->configurator->askEnvironmentType($io, $location),
-                $this->configurator->askPhpVersion($io, $type),
+                $this->configurator->askEnvironmentType($io, $location),
+                $this->configurator->askPhpVersion($io),
                 $this->configurator->askDatabaseVersion($io),
                 $this->configurator->askDomains($io, $name)
             );

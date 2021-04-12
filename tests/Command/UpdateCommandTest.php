@@ -45,7 +45,7 @@ final class UpdateCommandTest extends WebTestCase
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
-        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class), $environment->getType())->shouldBeCalledOnce()->willReturn(self::DEFAULT_PHP_VERSION);
+        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_PHP_VERSION);
         $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_DATABASE_VERSION);
         $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $environment->getName())->shouldBeCalledOnce()->willReturn(self::DEFAULT_DOMAINS);
         $updater->update($environment, self::DEFAULT_PHP_VERSION, self::DEFAULT_DATABASE_VERSION, self::DEFAULT_DOMAINS)->shouldBeCalledOnce();
