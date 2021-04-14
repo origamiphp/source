@@ -7,7 +7,7 @@ namespace App\Command\Database;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,14 +19,14 @@ class BackupCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:database:backup';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
 
-    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
+    public function __construct(CurrentContext $currentContext, Docker $docker, ?string $name = null)
     {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
     }
 
     /**
@@ -52,7 +52,7 @@ class BackupCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            $this->dockerCompose->backupDatabaseVolume();
+            $this->docker->backupDatabaseVolume();
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
             $exitCode = Command::FAILURE;

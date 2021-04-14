@@ -9,7 +9,7 @@ use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,13 +23,13 @@ class UninstallCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:uninstall';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
     private ConfigurationUninstaller $uninstaller;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,
-        DockerCompose $dockerCompose,
+        Docker $docker,
         ConfigurationUninstaller $uninstaller,
         EventDispatcherInterface $eventDispatcher,
         ?string $name = null
@@ -37,7 +37,7 @@ class UninstallCommand extends AbstractBaseCommand
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
         $this->uninstaller = $uninstaller;
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -78,7 +78,7 @@ class UninstallCommand extends AbstractBaseCommand
 
                 try {
                     $this->currentContext->setActiveEnvironment($environment);
-                    if (!$this->dockerCompose->removeServices()) {
+                    if (!$this->docker->removeServices()) {
                         throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
                     }
                 } catch (OrigamiExceptionInterface $exception) {

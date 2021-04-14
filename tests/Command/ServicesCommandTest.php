@@ -11,7 +11,7 @@ use App\Command\Services\NginxCommand;
 use App\Command\Services\PhpCommand;
 use App\Command\Services\RedisCommand;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -54,13 +54,13 @@ final class ServicesCommandTest extends WebTestCase
 
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
+        $docker->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new $classname($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new $classname($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
@@ -78,13 +78,13 @@ final class ServicesCommandTest extends WebTestCase
 
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
+        $docker->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
 
-        $command = new $classname($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new $classname($currentContext->reveal(), $docker->reveal());
         self::assertExceptionIsHandled($command);
     }
 
@@ -104,7 +104,7 @@ final class ServicesCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\PsCommand;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -30,13 +30,13 @@ final class PsCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->showServicesStatus()->shouldBeCalledOnce()->willReturn(true);
+        $docker->showServicesStatus()->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new PsCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new PsCommand($currentContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
@@ -44,13 +44,13 @@ final class PsCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->showServicesStatus()->shouldBeCalledOnce()->willReturn(false);
+        $docker->showServicesStatus()->shouldBeCalledOnce()->willReturn(false);
 
-        $command = new PsCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new PsCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 
@@ -61,7 +61,7 @@ final class PsCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

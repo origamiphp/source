@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\PrepareCommand;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -35,13 +35,13 @@ final class PrepareCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->prepareServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->prepareServices()->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new PrepareCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
@@ -56,13 +56,13 @@ final class PrepareCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->prepareServices()->shouldBeCalledOnce()->willReturn(false);
+        $docker->prepareServices()->shouldBeCalledOnce()->willReturn(false);
 
-        $command = new PrepareCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
@@ -78,7 +78,7 @@ final class PrepareCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

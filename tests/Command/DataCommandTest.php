@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\DataCommand;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -30,13 +30,13 @@ final class DataCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->showResourcesUsage()->shouldBeCalledOnce()->willReturn(true);
+        $docker->showResourcesUsage()->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new DataCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new DataCommand($currentContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
@@ -44,12 +44,12 @@ final class DataCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $command = new DataCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new DataCommand($currentContext->reveal(), $docker->reveal());
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->showResourcesUsage()->shouldBeCalledOnce()->willReturn(false);
+        $docker->showResourcesUsage()->shouldBeCalledOnce()->willReturn(false);
 
         static::assertExceptionIsHandled($command);
     }
@@ -61,7 +61,7 @@ final class DataCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

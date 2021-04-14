@@ -44,7 +44,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Environment\EnvironmentMaker\TechnologyIdentifier
  * @uses \App\Environment\EnvironmentMaker
  * @uses \App\Kernel
- * @uses \App\Middleware\Binary\DockerCompose
+ * @uses \App\Middleware\Binary\Docker
  * @uses \App\Middleware\Binary\Mkcert
  * @uses \App\Environment\Configuration\AbstractConfiguration
  * @uses \App\Environment\Configuration\ConfigurationInstaller

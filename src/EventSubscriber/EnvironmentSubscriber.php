@@ -10,7 +10,7 @@ use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
 use App\Middleware\Hosts;
@@ -19,14 +19,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class EnvironmentSubscriber implements EventSubscriberInterface
 {
     private Hosts $hosts;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
     private Mutagen $mutagen;
     private Database $database;
 
-    public function __construct(Hosts $hosts, DockerCompose $dockerCompose, Mutagen $mutagen, Database $database)
+    public function __construct(Hosts $hosts, Docker $docker, Mutagen $mutagen, Database $database)
     {
         $this->hosts = $hosts;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
         $this->mutagen = $mutagen;
         $this->database = $database;
     }
@@ -83,11 +83,11 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        if (!$this->dockerCompose->fixPermissionsOnSharedSSHAgent()) {
+        if (!$this->docker->fixPermissionsOnSharedSSHAgent()) {
             $io->error('An error occurred while trying to fix the permissions on the shared SSH agent.');
         }
 
-        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        $environmentVariables = $this->docker->getRequiredVariables($environment);
         if (!$this->mutagen->startDockerSynchronization($environmentVariables)) {
             $io->error('An error occurred while starting the Docker synchronization.');
         }
@@ -104,7 +104,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        $environmentVariables = $this->docker->getRequiredVariables($environment);
         if (!$this->mutagen->stopDockerSynchronization($environmentVariables)) {
             $io->error('An error occurred while stopping the Docker synchronization.');
         }
@@ -121,7 +121,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        $environmentVariables = $this->docker->getRequiredVariables($environment);
         if (!$this->mutagen->stopDockerSynchronization($environmentVariables)
             || !$this->mutagen->startDockerSynchronization($environmentVariables)
         ) {
@@ -137,7 +137,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        $environmentVariables = $this->dockerCompose->getRequiredVariables($environment);
+        $environmentVariables = $this->docker->getRequiredVariables($environment);
         if (!$this->mutagen->removeDockerSynchronization($environmentVariables)) {
             $io->error('An error occurred while removing the Docker synchronization.');
         }

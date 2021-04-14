@@ -7,7 +7,7 @@ namespace App\Tests\Command\Database;
 use App\Command\Database\BackupCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -30,26 +30,26 @@ final class BackupCommandTest extends WebTestCase
     public function testItTriggersTheBackupProcess(): void
     {
         $environment = $this->createEnvironment();
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
-        $dockerCompose->backupDatabaseVolume()->shouldBeCalledOnce()->willReturn(true);
+        $docker->backupDatabaseVolume()->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new BackupCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new BackupCommand($currentContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
 
-        $command = new BackupCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new BackupCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 
@@ -60,7 +60,7 @@ final class BackupCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

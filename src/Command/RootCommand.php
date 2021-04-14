@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Environment\EnvironmentEntity;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,14 +19,14 @@ class RootCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:root';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
 
-    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
+    public function __construct(CurrentContext $currentContext, Docker $docker, ?string $name = null)
     {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
     }
 
     /**
@@ -68,7 +68,7 @@ class RootCommand extends AbstractBaseCommand
     {
         $result = '';
 
-        foreach ($this->dockerCompose->getRequiredVariables($environment) as $key => $value) {
+        foreach ($this->docker->getRequiredVariables($environment) as $key => $value) {
             $result .= "export {$key}=\"{$value}\"\n";
         }
 

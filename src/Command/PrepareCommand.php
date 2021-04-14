@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,17 +20,17 @@ class PrepareCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:prepare';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
 
     public function __construct(
         CurrentContext $currentContext,
-        DockerCompose $dockerCompose,
+        Docker $docker,
         ?string $name = null
     ) {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
     }
 
     /**
@@ -62,7 +62,7 @@ class PrepareCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->dockerCompose->prepareServices()) {
+            if (!$this->docker->prepareServices()) {
                 throw new InvalidEnvironmentException('An error occurred while preparing the Docker services.');
             }
 

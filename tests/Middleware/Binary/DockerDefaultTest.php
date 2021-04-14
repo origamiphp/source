@@ -6,9 +6,9 @@ namespace App\Tests\Middleware\Binary;
 
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Helper\ProcessFactory;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
-use App\Tests\TestDockerComposeTrait;
+use App\Tests\TestDockerTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -17,12 +17,12 @@ use Symfony\Component\Process\Process;
 /**
  * @internal
  *
- * @covers \App\Middleware\Binary\DockerCompose
+ * @covers \App\Middleware\Binary\Docker
  */
-final class DockerComposeDefaultTest extends WebTestCase
+final class DockerDefaultTest extends WebTestCase
 {
     use CustomProphecyTrait;
-    use TestDockerComposeTrait;
+    use TestDockerTrait;
     use TestLocationTrait;
 
     public function testItDefinesTheActiveEnvironmentWithInternals(): void
@@ -31,10 +31,10 @@ final class DockerComposeDefaultTest extends WebTestCase
 
         [$processFactory] = $this->prophesizeObjectArguments();
 
-        $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($environment);
+        $docker = new Docker($processFactory->reveal());
+        $docker->refreshEnvironmentVariables($environment);
 
-        $variables = $dockerCompose->getRequiredVariables($environment);
+        $variables = $docker->getRequiredVariables($environment);
 
         static::assertArrayHasKey('COMPOSE_FILE', $variables);
         static::assertSame($this->location.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml', $variables['COMPOSE_FILE']);
@@ -52,8 +52,8 @@ final class DockerComposeDefaultTest extends WebTestCase
     public function testItPreparesTheEnvironmentServices(): void
     {
         $commands = [
-            ['docker-compose', 'pull'],
-            ['docker-compose', 'build', '--pull', '--parallel'],
+            ['docker', 'compose', 'pull'],
+            ['docker', 'compose', 'build', '--pull', '--parallel'],
         ];
 
         [$processFactory] = $this->prophesizeObjectArguments();
@@ -63,58 +63,58 @@ final class DockerComposeDefaultTest extends WebTestCase
         $processFactory->runForegroundProcess($commands[0], Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
         $processFactory->runForegroundProcess($commands[1], Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
 
-        $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($this->createEnvironment());
+        $docker = new Docker($processFactory->reveal());
+        $docker->refreshEnvironmentVariables($this->createEnvironment());
 
-        static::assertTrue($dockerCompose->prepareServices());
+        static::assertTrue($docker->prepareServices());
     }
 
     public function testItShowsResourcesUsage(): void
     {
-        $command = 'docker-compose ps -q | xargs docker stats';
-        $dockerCompose = $this->prepareForegroundFromShellCommand($command);
+        $command = 'docker compose ps -q | xargs docker stats';
+        $docker = $this->prepareForegroundFromShellCommand($command);
 
-        static::assertTrue($dockerCompose->showResourcesUsage());
+        static::assertTrue($docker->showResourcesUsage());
     }
 
     public function testItShowsServicesStatus(): void
     {
-        $command = ['docker-compose', 'ps'];
-        $dockerCompose = $this->prepareForegroundCommand($command);
+        $command = ['docker', 'compose', 'ps'];
+        $docker = $this->prepareForegroundCommand($command);
 
-        static::assertTrue($dockerCompose->showServicesStatus());
+        static::assertTrue($docker->showServicesStatus());
     }
 
     public function testItRestartsServicesStatus(): void
     {
-        $command = ['docker-compose', 'restart'];
-        $dockerCompose = $this->prepareForegroundCommand($command);
+        $command = ['docker', 'compose', 'restart'];
+        $docker = $this->prepareForegroundCommand($command);
 
-        static::assertTrue($dockerCompose->restartServices());
+        static::assertTrue($docker->restartServices());
     }
 
     public function testItStartsServicesStatus(): void
     {
-        $command = ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'];
-        $dockerCompose = $this->prepareForegroundCommand($command);
+        $command = ['docker', 'compose', 'up', '--build', '--detach', '--remove-orphans'];
+        $docker = $this->prepareForegroundCommand($command);
 
-        static::assertTrue($dockerCompose->startServices());
+        static::assertTrue($docker->startServices());
     }
 
     public function testItStopsServicesStatus(): void
     {
-        $command = ['docker-compose', 'stop'];
-        $dockerCompose = $this->prepareForegroundCommand($command);
+        $command = ['docker', 'compose', 'stop'];
+        $docker = $this->prepareForegroundCommand($command);
 
-        static::assertTrue($dockerCompose->stopServices());
+        static::assertTrue($docker->stopServices());
     }
 
     public function testItRemovesServicesStatus(): void
     {
-        $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
-        $dockerCompose = $this->prepareForegroundCommand($command);
+        $command = ['docker', 'compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $docker = $this->prepareForegroundCommand($command);
 
-        static::assertTrue($dockerCompose->removeServices());
+        static::assertTrue($docker->removeServices());
     }
 
     /**

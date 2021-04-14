@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -19,14 +19,14 @@ class DataCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:data';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
 
-    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
+    public function __construct(CurrentContext $currentContext, Docker $docker, ?string $name = null)
     {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
     }
 
     /**
@@ -52,7 +52,7 @@ class DataCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->dockerCompose->showResourcesUsage()) {
+            if (!$this->docker->showResourcesUsage()) {
                 throw new InvalidEnvironmentException('An error occurred while checking the resources usage.');
             }
         } catch (OrigamiExceptionInterface $exception) {

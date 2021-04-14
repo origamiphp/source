@@ -8,7 +8,7 @@ use App\Command\UninstallCommand;
 use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Environment\EnvironmentEntity;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -39,15 +39,15 @@ final class UninstallCommandTest extends WebTestCase
         $environment->deactivate();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->removeServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
         $uninstaller->uninstall($environment)->shouldBeCalledOnce();
 
-        $command = new UninstallCommand($currentContext->reveal(), $dockerCompose->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
+        $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -63,15 +63,15 @@ final class UninstallCommandTest extends WebTestCase
         $environment->activate();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment(Argument::type(EnvironmentEntity::class))->shouldNotBeCalled();
-        $dockerCompose->removeServices()->shouldNotBeCalled();
+        $docker->removeServices()->shouldNotBeCalled();
         $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
         $uninstaller->uninstall($environment)->shouldNotBeCalled();
 
-        $command = new UninstallCommand($currentContext->reveal(), $dockerCompose->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
+        $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -86,15 +86,15 @@ final class UninstallCommandTest extends WebTestCase
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $dockerCompose, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker, $uninstaller, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->removeServices()->shouldBeCalledOnce()->willReturn(false);
+        $docker->removeServices()->shouldBeCalledOnce()->willReturn(false);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
         $uninstaller->uninstall($environment)->shouldBeCalledOnce();
 
-        $command = new UninstallCommand($currentContext->reveal(), $dockerCompose->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
+        $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $uninstaller->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -112,7 +112,7 @@ final class UninstallCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
             $this->prophesize(ConfigurationUninstaller::class),
             $this->prophesize(EventDispatcher::class),
         ];

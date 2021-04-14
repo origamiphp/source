@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\RestartCommand;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -33,14 +33,14 @@ final class RestartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->restartServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
 
-        $command = new RestartCommand($currentContext->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
+        $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
@@ -48,14 +48,14 @@ final class RestartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(false);
+        $docker->restartServices()->shouldBeCalledOnce()->willReturn(false);
         $eventDispatcher->dispatch()->shouldNotBeCalled();
 
-        $command = new RestartCommand($currentContext->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
+        $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertExceptionIsHandled($command);
     }
 
@@ -66,7 +66,7 @@ final class RestartCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
             $this->prophesize(EventDispatcherInterface::class),
         ];
     }

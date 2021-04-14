@@ -11,7 +11,7 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
 use App\Helper\Validator;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Middleware\Database;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestLocationTrait;
@@ -36,12 +36,12 @@ final class CurrentContextTest extends TestCase
     {
         $environment = $this->createEnvironment();
 
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
         $input = $this->prophesize(InputInterface::class);
 
         $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         static::assertSame($environment, $currentContext->getEnvironment($input->reveal()));
     }
 
@@ -53,7 +53,7 @@ final class CurrentContextTest extends TestCase
     {
         $environment = $this->createEnvironment();
 
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
         $input = $this->prophesize(InputInterface::class);
 
         $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
@@ -61,7 +61,7 @@ final class CurrentContextTest extends TestCase
         $input->getArgument('environment')->shouldBeCalledOnce()->willReturn('origami');
         $database->getEnvironmentByName('origami')->shouldBeCalledOnce()->willReturn($environment);
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         static::assertSame($environment, $currentContext->getEnvironment($input->reveal()));
     }
 
@@ -73,7 +73,7 @@ final class CurrentContextTest extends TestCase
     {
         $environment = $this->createEnvironment();
 
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
         $input = $this->prophesize(InputInterface::class);
 
         $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
@@ -83,7 +83,7 @@ final class CurrentContextTest extends TestCase
         $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('.');
         $database->getEnvironmentByLocation('.')->shouldBeCalledOnce()->willReturn($environment);
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         static::assertSame($environment, $currentContext->getEnvironment($input->reveal()));
     }
 
@@ -93,11 +93,11 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithoutEnvironment(): void
     {
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
 
         $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('.');
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         $this->expectException(InvalidEnvironmentException::class);
         $currentContext->getEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
@@ -110,13 +110,13 @@ final class CurrentContextTest extends TestCase
         $environment = $this->createEnvironment();
         touch($this->location.ConfigurationInstaller::INSTALLATION_DIRECTORY.'.env');
 
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
 
         $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(true);
         $validator->validateConfigurationFiles($environment)->shouldBeCalledOnce()->willReturn(true);
-        $dockerCompose->refreshEnvironmentVariables($environment)->shouldBeCalledOnce();
+        $docker->refreshEnvironmentVariables($environment)->shouldBeCalledOnce();
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         $currentContext->setActiveEnvironment($environment);
     }
 
@@ -127,13 +127,13 @@ final class CurrentContextTest extends TestCase
     {
         $environment = $this->createEnvironment();
 
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
 
         $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(false);
         $validator->validateConfigurationFiles($environment)->shouldNotBeCalled();
         $this->expectException(InvalidConfigurationException::class);
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         $currentContext->setActiveEnvironment($environment);
     }
 
@@ -145,13 +145,13 @@ final class CurrentContextTest extends TestCase
         $environment = $this->createEnvironment();
         touch($this->location.ConfigurationInstaller::INSTALLATION_DIRECTORY.'.env');
 
-        [$database, $processProxy, $dockerCompose, $validator] = $this->prophesizeObjectArguments();
+        [$database, $processProxy, $docker, $validator] = $this->prophesizeObjectArguments();
 
         $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(true);
         $validator->validateConfigurationFiles($environment)->shouldBeCalledOnce()->willReturn(false);
         $this->expectException(InvalidConfigurationException::class);
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $validator->reveal());
+        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $docker->reveal(), $validator->reveal());
         $currentContext->setActiveEnvironment($environment);
     }
 
@@ -163,7 +163,7 @@ final class CurrentContextTest extends TestCase
         return [
             $this->prophesize(Database::class),
             $this->prophesize(ProcessProxy::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
             $this->prophesize(Validator::class),
         ];
     }

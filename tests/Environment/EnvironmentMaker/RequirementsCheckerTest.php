@@ -23,8 +23,7 @@ final class RequirementsCheckerTest extends TestCase
         [$executableFinder] = $this->prophesizeObjectArguments();
 
         $executableFinder->find('docker')->shouldBeCalledOnce()->willReturn('/usr/local/bin/docker');
-        $executableFinder->find('docker-compose')->shouldBeCalledOnce()->willReturn(null);
-        $executableFinder->find('mutagen')->shouldBeCalledOnce()->willReturn('/usr/local/bin/mutagen');
+        $executableFinder->find('mutagen')->shouldBeCalledOnce()->willReturn(null);
 
         $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
         static::assertSame([
@@ -34,14 +33,9 @@ final class RequirementsCheckerTest extends TestCase
                 'status' => true,
             ],
             [
-                'name' => 'docker-compose',
-                'description' => 'Define and run multi-container applications with Docker.',
-                'status' => false,
-            ],
-            [
                 'name' => 'mutagen',
                 'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-                'status' => true,
+                'status' => false,
             ],
         ], $requirementsChecker->checkMandatoryRequirements());
     }

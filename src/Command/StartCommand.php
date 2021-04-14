@@ -10,7 +10,7 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
 use App\Helper\OrigamiStyle;
 use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,13 +24,13 @@ class StartCommand extends AbstractBaseCommand
 
     private CurrentContext $currentContext;
     private ProcessProxy $processProxy;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,
         ProcessProxy $processProxy,
-        DockerCompose $dockerCompose,
+        Docker $docker,
         EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
@@ -38,7 +38,7 @@ class StartCommand extends AbstractBaseCommand
 
         $this->currentContext = $currentContext;
         $this->processProxy = $processProxy;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
         $this->eventDispatcher = $eventDispatcher;
     }
 
@@ -68,7 +68,7 @@ class StartCommand extends AbstractBaseCommand
             $this->currentContext->setActiveEnvironment($environment);
 
             if (!$environment->isActive() || $environment->getLocation() === $this->processProxy->getWorkingDirectory()) {
-                if (!$this->dockerCompose->startServices()) {
+                if (!$this->docker->startServices()) {
                     throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
                 }
 
