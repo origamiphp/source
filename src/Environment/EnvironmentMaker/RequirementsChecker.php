@@ -27,11 +27,6 @@ class RequirementsChecker
                 'status' => $this->isDockerInstalled(),
             ],
             [
-                'name' => 'docker-compose',
-                'description' => 'Define and run multi-container applications with Docker.',
-                'status' => $this->isDockerComposeInstalled(),
-            ],
-            [
                 'name' => 'mutagen',
                 'description' => 'Fast and efficient way to synchronize code to Docker containers.',
                 'status' => $this->isMutagenInstalled(),
@@ -67,14 +62,6 @@ class RequirementsChecker
     private function isDockerInstalled(): bool
     {
         return $this->executableFinder->find('docker') !== null;
-    }
-
-    /**
-     * Checks whether Docker Composer is available in the system.
-     */
-    private function isDockerComposeInstalled(): bool
-    {
-        return $this->executableFinder->find('docker-compose') !== null;
     }
 
     /**

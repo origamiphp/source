@@ -8,7 +8,7 @@ use App\Event\EnvironmentRestartedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,19 +21,19 @@ class RestartCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:restart';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,
-        DockerCompose $dockerCompose,
+        Docker $docker,
         EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
         $this->eventDispatcher = $eventDispatcher;
     }
 
@@ -60,7 +60,7 @@ class RestartCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->dockerCompose->restartServices()) {
+            if (!$this->docker->restartServices()) {
                 throw new InvalidEnvironmentException('An error occurred while restarting the Docker services.');
             }
 

@@ -7,7 +7,7 @@ namespace App\Tests\Command;
 use App\Command\StartCommand;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -36,14 +36,14 @@ final class StartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->startServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
 
-        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
+        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
@@ -58,15 +58,15 @@ final class StartCommandTest extends WebTestCase
         $environment = $this->createEnvironment();
         $environment->activate();
 
-        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
         $processProxy->getWorkingDirectory()->willReturn('');
-        $dockerCompose->startServices()->shouldNotBeCalled();
+        $docker->startServices()->shouldNotBeCalled();
         $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
 
-        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
+        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
@@ -79,14 +79,14 @@ final class StartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $processProxy, $dockerCompose, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->startServices()->shouldBeCalledOnce()->willReturn(false);
+        $docker->startServices()->shouldBeCalledOnce()->willReturn(false);
         $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
 
-        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $dockerCompose->reveal(), $eventDispatcher->reveal());
+        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
@@ -103,7 +103,7 @@ final class StartCommandTest extends WebTestCase
         return [
             $this->prophesize(CurrentContext::class),
             $this->prophesize(ProcessProxy::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
             $this->prophesize(EventDispatcher::class),
         ];
     }

@@ -8,7 +8,7 @@ use App\Command\AbstractBaseCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,16 +17,16 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 abstract class AbstractServiceCommand extends AbstractBaseCommand implements ServiceCommandInterface
 {
     protected CurrentContext $currentContext;
-    protected DockerCompose $dockerCompose;
+    protected Docker $docker;
     protected string $serviceName;
     protected string $username;
 
-    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
+    public function __construct(CurrentContext $currentContext, Docker $docker, ?string $name = null)
     {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->dockerCompose->openTerminal($this->serviceName, $this->username)) {
+            if (!$this->docker->openTerminal($this->serviceName, $this->username)) {
                 throw new InvalidEnvironmentException('An error occurred while opening a terminal.');
             }
         } catch (OrigamiExceptionInterface $exception) {

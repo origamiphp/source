@@ -7,8 +7,9 @@ namespace App\Middleware\Binary;
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Helper\ProcessFactory;
+use Symfony\Component\Process\Process;
 
-class DockerCompose
+class Docker
 {
     private const DATABASE_BACKUP_CMD = 'tar cvf /tmp/database_backup.tar /var/lib/mysql/';
     private const DATABASE_FLUSH_CMD = 'rm -rf /var/lib/mysql/*';
@@ -49,10 +50,10 @@ class DockerCompose
      */
     public function prepareServices(): bool
     {
-        $command = ['docker-compose', 'pull'];
+        $command = ['docker', 'compose', 'pull'];
         $pullProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
-        $command = ['docker-compose', 'build', '--pull', '--parallel'];
+        $command = ['docker', 'compose', 'build', '--pull', '--parallel'];
         $buildProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $pullProcess->isSuccessful() && $buildProcess->isSuccessful();
@@ -63,7 +64,7 @@ class DockerCompose
      */
     public function showResourcesUsage(): bool
     {
-        $command = 'docker-compose ps -q | xargs docker stats';
+        $command = 'docker compose ps -q | xargs docker stats';
         $process = $this->processFactory->runForegroundProcessFromShellCommandLine($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -74,7 +75,7 @@ class DockerCompose
      */
     public function showServicesLogs(?int $tail = null, ?string $service = null): bool
     {
-        $command = ['docker-compose', 'logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
+        $command = ['docker', 'compose', 'logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
 
         if ($service) {
             $command[] = $service;
@@ -90,7 +91,7 @@ class DockerCompose
      */
     public function showServicesStatus(): bool
     {
-        $command = ['docker-compose', 'ps'];
+        $command = ['docker', 'compose', 'ps'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -101,7 +102,7 @@ class DockerCompose
      */
     public function restartServices(): bool
     {
-        $command = ['docker-compose', 'restart'];
+        $command = ['docker', 'compose', 'restart'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -112,7 +113,7 @@ class DockerCompose
      */
     public function startServices(): bool
     {
-        $command = ['docker-compose', 'up', '--build', '--detach', '--remove-orphans'];
+        $command = ['docker', 'compose', 'up', '--build', '--detach', '--remove-orphans'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -123,7 +124,7 @@ class DockerCompose
      */
     public function stopServices(): bool
     {
-        $command = ['docker-compose', 'stop'];
+        $command = ['docker', 'compose', 'stop'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -134,7 +135,7 @@ class DockerCompose
      */
     public function fixPermissionsOnSharedSSHAgent(): bool
     {
-        $command = ['docker-compose', 'exec', 'php', 'sh', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
+        $command = ['docker', 'compose', 'exec', '-T', 'php', 'bash', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -145,15 +146,14 @@ class DockerCompose
      */
     public function openTerminal(string $service, string $user = ''): bool
     {
-        $command = ['docker-compose', 'exec'];
+        // There is an issue when allocating a TTY with the "docker compose exec" instruction.
+        $container = $this->environmentVariables['COMPOSE_PROJECT_NAME']."_{$service}_1";
 
-        if ($user !== '') {
-            $command = array_merge($command, ['-u', $user, $service, 'sh', '-l']);
-        } else {
-            $command = array_merge($command, [$service, 'sh', '-l']);
-        }
-
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $command = $user !== ''
+            ? "docker exec -it --user={$user} {$container} bash --login"
+            : "docker exec -it {$container} bash --login"
+        ;
+        $process = $this->processFactory->runForegroundProcessFromShellCommandLine($command, $this->environmentVariables);
 
         return $process->isSuccessful();
     }
@@ -163,7 +163,7 @@ class DockerCompose
      */
     public function removeServices(): bool
     {
-        $command = ['docker-compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $command = ['docker', 'compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
         $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
 
         return $process->isSuccessful();
@@ -216,7 +216,7 @@ class DockerCompose
      */
     private function getDatabaseContainerId(): string
     {
-        $command = ['docker-compose', 'ps', '--quiet', 'database'];
+        $command = ['docker', 'compose', 'ps', '--quiet', 'database'];
         $output = $this->processFactory->runBackgroundProcess($command, $this->environmentVariables)->getOutput();
 
         return trim($output);

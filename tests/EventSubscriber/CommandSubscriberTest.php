@@ -53,7 +53,7 @@ final class CommandSubscriberTest extends WebTestCase
 
         $mandatoryRequirementsStatus = [
             ['name' => 'docker', 'description' => '', 'status' => true],
-            ['name' => 'docker-compose', 'description' => '', 'status' => false],
+            ['name' => 'mutagen', 'description' => '', 'status' => false],
         ];
         $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => true]];
         $command = $this->prophesize(Command::class);
@@ -80,7 +80,7 @@ final class CommandSubscriberTest extends WebTestCase
 
         $mandatoryRequirementsStatus = [
             ['name' => 'docker', 'description' => '', 'status' => true],
-            ['name' => 'docker-compose', 'description' => '', 'status' => true],
+            ['name' => 'mutagen', 'description' => '', 'status' => true],
         ];
         $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => false]];
         $command = $this->prophesize(Command::class);

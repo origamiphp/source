@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Middleware\Binary;
 
 use App\Helper\ProcessFactory;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
-use App\Tests\TestDockerComposeTrait;
+use App\Tests\TestDockerTrait;
 use App\Tests\TestLocationTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -16,30 +16,30 @@ use Symfony\Component\Process\Process;
 /**
  * @internal
  *
- * @covers \App\Middleware\Binary\DockerCompose
+ * @covers \App\Middleware\Binary\Docker
  */
-final class DockerComposeDatabaseTest extends WebTestCase
+final class DockerDatabaseTest extends WebTestCase
 {
     use CustomProphecyTrait;
-    use TestDockerComposeTrait;
+    use TestDockerTrait;
     use TestLocationTrait;
 
     public function testItBackupsTheDatabaseVolume(): void
     {
-        $dockerCompose = $this->prophesizeCommonInstructions();
-        static::assertTrue($dockerCompose->backupDatabaseVolume());
+        $docker = $this->prophesizeCommonInstructions();
+        static::assertTrue($docker->backupDatabaseVolume());
     }
 
     public function testItResetsTheDatabaseVolume(): void
     {
-        $dockerCompose = $this->prophesizeCommonInstructions();
-        static::assertTrue($dockerCompose->resetDatabaseVolume());
+        $docker = $this->prophesizeCommonInstructions();
+        static::assertTrue($docker->resetDatabaseVolume());
     }
 
     public function testItRestoresTheDatabaseVolume(): void
     {
-        $dockerCompose = $this->prophesizeCommonInstructions();
-        static::assertTrue($dockerCompose->restoreDatabaseVolume());
+        $docker = $this->prophesizeCommonInstructions();
+        static::assertTrue($docker->restoreDatabaseVolume());
     }
 
     /**
@@ -52,7 +52,7 @@ final class DockerComposeDatabaseTest extends WebTestCase
         ];
     }
 
-    private function prophesizeCommonInstructions(): DockerCompose
+    private function prophesizeCommonInstructions(): Docker
     {
         [$processFactory] = $this->prophesizeObjectArguments();
 
@@ -64,9 +64,9 @@ final class DockerComposeDatabaseTest extends WebTestCase
         $actionProcess->isSuccessful()->willReturn(true);
         $processFactory->runForegroundProcess(Argument::type('array'), Argument::type('array'))->shouldBeCalledOnce()->willReturn($actionProcess->reveal());
 
-        $dockerCompose = new DockerCompose($processFactory->reveal());
-        $dockerCompose->refreshEnvironmentVariables($this->createEnvironment());
+        $docker = new Docker($processFactory->reveal());
+        $docker->refreshEnvironmentVariables($this->createEnvironment());
 
-        return $dockerCompose;
+        return $docker;
     }
 }

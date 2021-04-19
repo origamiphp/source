@@ -9,7 +9,7 @@ use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -41,24 +41,24 @@ final class RootCommandTest extends WebTestCase
             'PROJECT_LOCATION' => $environment->getLocation(),
         ];
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->getRequiredVariables($environment)->willReturn($environmentVariables);
+        $docker->getRequiredVariables($environment)->willReturn($environmentVariables);
 
-        $command = new RootCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new RootCommand($currentContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
         $currentContext->setActiveEnvironment(Argument::type(EnvironmentEntity::class))->shouldNotBeCalled();
 
-        $command = new RootCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new RootCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 
@@ -69,7 +69,7 @@ final class RootCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

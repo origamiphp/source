@@ -7,7 +7,7 @@ namespace App\Tests\Command\Database;
 use App\Command\Database\RestoreCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -30,28 +30,28 @@ final class RestoreCommandTest extends WebTestCase
     public function testItTriggersTheRestoreProcess(): void
     {
         $environment = $this->createEnvironment();
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
 
-        $dockerCompose->resetDatabaseVolume()->shouldBeCalledOnce()->willReturn(true);
-        $dockerCompose->restoreDatabaseVolume()->shouldBeCalledOnce()->willReturn(true);
-        $dockerCompose->restartServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->resetDatabaseVolume()->shouldBeCalledOnce()->willReturn(true);
+        $docker->restoreDatabaseVolume()->shouldBeCalledOnce()->willReturn(true);
+        $docker->restartServices()->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new RestoreCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new RestoreCommand($currentContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
 
-        $command = new RestoreCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new RestoreCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 
@@ -62,7 +62,7 @@ final class RestoreCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

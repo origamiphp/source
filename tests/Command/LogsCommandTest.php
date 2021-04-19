@@ -7,7 +7,7 @@ namespace App\Tests\Command;
 use App\Command\LogsCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestLocationTrait;
@@ -40,13 +40,13 @@ final class LogsCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willReturn(true);
+        $docker->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willReturn(true);
 
-        $command = new LogsCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new LogsCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
@@ -66,13 +66,13 @@ final class LogsCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
 
-        [$currentContext, $dockerCompose] = $this->prophesizeObjectArguments();
+        [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
         $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
         $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $dockerCompose->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
+        $docker->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
 
-        $command = new LogsCommand($currentContext->reveal(), $dockerCompose->reveal());
+        $command = new LogsCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
@@ -100,7 +100,7 @@ final class LogsCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(DockerCompose::class),
+            $this->prophesize(Docker::class),
         ];
     }
 }

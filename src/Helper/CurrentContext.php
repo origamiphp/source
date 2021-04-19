@@ -9,7 +9,7 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use App\Middleware\Database;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Dotenv\Dotenv;
@@ -20,14 +20,14 @@ class CurrentContext
 
     private Database $database;
     private ProcessProxy $processProxy;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
     private Validator $validator;
 
-    public function __construct(Database $database, ProcessProxy $processProxy, DockerCompose $dockerCompose, Validator $validator)
+    public function __construct(Database $database, ProcessProxy $processProxy, Docker $docker, Validator $validator)
     {
         $this->database = $database;
         $this->processProxy = $processProxy;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
         $this->validator = $validator;
     }
 
@@ -75,7 +75,7 @@ class CurrentContext
     public function setActiveEnvironment(EnvironmentEntity $environment): void
     {
         $this->checkEnvironmentConfiguration($environment);
-        $this->dockerCompose->refreshEnvironmentVariables($environment);
+        $this->docker->refreshEnvironmentVariables($environment);
     }
 
     /**

@@ -6,7 +6,7 @@ namespace App\Command;
 
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Middleware\Binary\DockerCompose;
+use App\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -20,14 +20,14 @@ class LogsCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:logs';
 
     private CurrentContext $currentContext;
-    private DockerCompose $dockerCompose;
+    private Docker $docker;
 
-    public function __construct(CurrentContext $currentContext, DockerCompose $dockerCompose, ?string $name = null)
+    public function __construct(CurrentContext $currentContext, Docker $docker, ?string $name = null)
     {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->dockerCompose = $dockerCompose;
+        $this->docker = $docker;
     }
 
     /**
@@ -69,7 +69,7 @@ class LogsCommand extends AbstractBaseCommand
             $tail = $input->getOption('tail');
             $service = $input->getArgument('service');
 
-            $this->dockerCompose->showServicesLogs((int) $tail, $service);
+            $this->docker->showServicesLogs((int) $tail, $service);
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
             $exitCode = Command::FAILURE;
