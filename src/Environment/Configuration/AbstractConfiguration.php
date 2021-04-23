@@ -32,7 +32,7 @@ class AbstractConfiguration
     }
 
     /**
-     * Prepare the project directory with environment files.
+     * Prepares the project directory with environment files.
      */
     protected function copyEnvironmentFiles(string $source, string $destination): void
     {
@@ -46,6 +46,9 @@ class AbstractConfiguration
 
         // Copy the common dotenv file into the project directory
         $filesystem->copy("{$source}/../.env", "{$destination}/.env", true);
+
+        // Create the directory where Mkcert will store locally-trusted development certificate for Nginx
+        $filesystem->mkdir("{$destination}/nginx/certs");
     }
 
     /**
