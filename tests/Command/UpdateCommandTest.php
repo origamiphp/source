@@ -7,7 +7,7 @@ namespace App\Tests\Command;
 use App\Command\UpdateCommand;
 use App\Environment\Configuration\ConfigurationUpdater;
 use App\Environment\EnvironmentMaker;
-use App\Exception\InvalidConfigurationException;
+use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
@@ -42,9 +42,8 @@ final class UpdateCommandTest extends WebTestCase
         $environment = $this->createEnvironment();
         [$currentContext, $environmentMaker, $updater] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_PHP_VERSION);
         $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_DATABASE_VERSION);
         $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $environment->getName())->shouldBeCalledOnce()->willReturn(self::DEFAULT_DOMAINS);
@@ -62,13 +61,10 @@ final class UpdateCommandTest extends WebTestCase
 
     public function testItAbortsGracefullyTheUpdate(): void
     {
-        $environment = $this->createEnvironment();
         [$currentContext, $environmentMaker, $updater] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce()->willThrow(InvalidConfigurationException::class);
-
-        $updater->update($environment, self::DEFAULT_PHP_VERSION, self::DEFAULT_DATABASE_VERSION, self::DEFAULT_DOMAINS)->shouldNotBeCalled();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
+        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
 
         $command = new UpdateCommand($currentContext->reveal(), $environmentMaker->reveal(), $updater->reveal());
         $commandTester = new CommandTester($command);

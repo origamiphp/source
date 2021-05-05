@@ -32,11 +32,10 @@ final class RestartCommandTest extends WebTestCase
     public function testItExecutesProcessSuccessfully(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->restartServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
 
@@ -47,13 +46,11 @@ final class RestartCommandTest extends WebTestCase
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->restartServices()->shouldBeCalledOnce()->willReturn(false);
-        $eventDispatcher->dispatch()->shouldNotBeCalled();
 
         $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertExceptionIsHandled($command);

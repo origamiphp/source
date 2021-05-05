@@ -64,8 +64,8 @@ class StartCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            $environment = $this->currentContext->getEnvironment($input);
-            $this->currentContext->setActiveEnvironment($environment);
+            $this->currentContext->loadEnvironment($input);
+            $environment = $this->currentContext->getActiveEnvironment();
 
             if (!$environment->isActive() || $environment->getLocation() === $this->processProxy->getWorkingDirectory()) {
                 if (!$this->docker->startServices()) {
@@ -83,14 +83,14 @@ class StartCommand extends AbstractBaseCommand
                     ($domains !== null ? "https://{$domains}" : 'https://127.0.0.1')
                 ));
             } else {
-                $io->error('Unable to start an environment when there is already a running one.');
-                $exitCode = Command::FAILURE;
+                throw new InvalidEnvironmentException('Unable to start an environment when there is already a running one.');
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = Command::FAILURE;
+
+            return Command::FAILURE;
         }
 
-        return $exitCode ?? Command::SUCCESS;
+        return Command::SUCCESS;
     }
 }

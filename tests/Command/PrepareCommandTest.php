@@ -34,12 +34,12 @@ final class PrepareCommandTest extends WebTestCase
     public function testItPreparesTheActiveEnvironment(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $docker->prepareServices()->shouldBeCalledOnce()->willReturn(true);
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $docker->pullServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->buildServices()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
@@ -55,12 +55,12 @@ final class PrepareCommandTest extends WebTestCase
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $docker->prepareServices()->shouldBeCalledOnce()->willReturn(false);
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $docker->pullServices()->shouldBeCalledOnce()->willReturn(true);
+        $docker->buildServices()->shouldBeCalledOnce()->willReturn(false);
 
         $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);

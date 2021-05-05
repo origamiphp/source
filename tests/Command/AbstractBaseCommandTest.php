@@ -34,10 +34,10 @@ final class AbstractBaseCommandTest extends WebTestCase
     public function testItDoesPrintDetailsWhenVerbose(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext] = $this->prophesizeObjectArguments();
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
         $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
@@ -49,10 +49,10 @@ final class AbstractBaseCommandTest extends WebTestCase
     public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext] = $this->prophesizeObjectArguments();
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
         $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
@@ -110,8 +110,8 @@ final class AbstractBaseCommandTest extends WebTestCase
                 $io = new SymfonyStyle($input, $output);
 
                 try {
-                    $environment = $this->currentContext->getEnvironment($input);
-                    $this->currentContext->setActiveEnvironment($environment);
+                    $this->currentContext->loadEnvironment($input);
+                    $environment = $this->currentContext->getActiveEnvironment();
 
                     if ($output->isVerbose()) {
                         $this->printEnvironmentDetails($environment, $io);

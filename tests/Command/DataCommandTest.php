@@ -29,11 +29,11 @@ final class DataCommandTest extends WebTestCase
     public function testItExecutesProcessSuccessfully(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+
         $docker->showResourcesUsage()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new DataCommand($currentContext->reveal(), $docker->reveal());
@@ -43,14 +43,14 @@ final class DataCommandTest extends WebTestCase
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $command = new DataCommand($currentContext->reveal(), $docker->reveal());
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+
         $docker->showResourcesUsage()->shouldBeCalledOnce()->willReturn(false);
 
+        $command = new DataCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 

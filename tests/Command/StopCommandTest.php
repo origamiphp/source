@@ -33,11 +33,10 @@ final class StopCommandTest extends WebTestCase
     public function testItExecutesProcessSuccessfully(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->stopServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->willReturn(new stdClass());
 
@@ -48,11 +47,10 @@ final class StopCommandTest extends WebTestCase
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->stopServices()->shouldBeCalledOnce()->willReturn(false);
 
         $command = new StopCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());

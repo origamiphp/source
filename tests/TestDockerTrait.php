@@ -15,16 +15,14 @@ trait TestDockerTrait
      */
     protected function prepareForegroundCommand(array $command): Docker
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
-        $process = $this->prophesize(Process::class);
+        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
 
+        $process = $this->prophesize(Process::class);
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+
         $processFactory->runForegroundProcess($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
 
-        $docker = new Docker($processFactory->reveal());
-        $docker->refreshEnvironmentVariables($this->createEnvironment());
-
-        return $docker;
+        return new Docker($currentContext->reveal(), $processFactory->reveal());
     }
 
     /**
@@ -32,15 +30,13 @@ trait TestDockerTrait
      */
     protected function prepareForegroundFromShellCommand(string $command): Docker
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
-        $process = $this->prophesize(Process::class);
+        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
 
+        $process = $this->prophesize(Process::class);
         $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+
         $processFactory->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
 
-        $docker = new Docker($processFactory->reveal());
-        $docker->refreshEnvironmentVariables($this->createEnvironment());
-
-        return $docker;
+        return new Docker($currentContext->reveal(), $processFactory->reveal());
     }
 }

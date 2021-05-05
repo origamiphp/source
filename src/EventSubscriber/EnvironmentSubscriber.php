@@ -87,8 +87,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('An error occurred while trying to fix the permissions on the shared SSH agent.');
         }
 
-        $environmentVariables = $this->docker->getRequiredVariables($environment);
-        if (!$this->mutagen->startDockerSynchronization($environmentVariables)) {
+        if (!$this->mutagen->startDockerSynchronization()) {
             $io->error('An error occurred while starting the Docker synchronization.');
         }
 
@@ -104,8 +103,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        $environmentVariables = $this->docker->getRequiredVariables($environment);
-        if (!$this->mutagen->stopDockerSynchronization($environmentVariables)) {
+        if (!$this->mutagen->stopDockerSynchronization()) {
             $io->error('An error occurred while stopping the Docker synchronization.');
         }
 
@@ -118,13 +116,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      */
     public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
     {
-        $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        $environmentVariables = $this->docker->getRequiredVariables($environment);
-        if (!$this->mutagen->stopDockerSynchronization($environmentVariables)
-            || !$this->mutagen->startDockerSynchronization($environmentVariables)
-        ) {
+        if (!$this->mutagen->stopDockerSynchronization() || !$this->mutagen->startDockerSynchronization()) {
             $io->error('An error occurred while restarting the Docker synchronization.');
         }
     }
@@ -137,8 +131,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         $environment = $event->getEnvironment();
         $io = $event->getSymfonyStyle();
 
-        $environmentVariables = $this->docker->getRequiredVariables($environment);
-        if (!$this->mutagen->removeDockerSynchronization($environmentVariables)) {
+        if (!$this->mutagen->removeDockerSynchronization()) {
             $io->error('An error occurred while removing the Docker synchronization.');
         }
 

@@ -77,9 +77,10 @@ class InstallCommand extends AbstractBaseCommand
             );
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = Command::FAILURE;
+
+            return Command::FAILURE;
         }
 
-        return $exitCode ?? Command::SUCCESS;
+        return Command::SUCCESS;
     }
 }

@@ -125,8 +125,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
         $docker->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce();
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
 
         $environment->activate()->shouldBeCalledOnce();
         $database->save()->shouldBeCalledOnce();
@@ -145,8 +144,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
 
         $docker->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(false);
         $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
 
         $environment->activate()->shouldBeCalledOnce();
         $database->save()->shouldBeCalledOnce();
@@ -164,8 +162,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
         $docker->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(true);
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
         $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
 
         $environment->activate()->shouldBeCalledOnce();
@@ -183,8 +180,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
 
         $environment->deactivate()->shouldBeCalledOnce();
         $database->save()->shouldBeCalledOnce();
@@ -201,8 +197,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
         $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
 
         $environment->deactivate()->shouldBeCalledOnce();
@@ -220,9 +215,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
-        $mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
 
         $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
         $subscriber->onEnvironmentRestart($event);
@@ -236,9 +230,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
-        $mutagen->startDockerSynchronization([])->shouldNotBeCalled();
+        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
+        $mutagen->startDockerSynchronization()->shouldNotBeCalled();
         $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
 
         $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
@@ -253,9 +246,8 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->stopDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
-        $mutagen->startDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
         $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
 
         $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
@@ -270,8 +262,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->removeDockerSynchronization([])->shouldBeCalledOnce()->willReturn(true);
+        $mutagen->removeDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
 
         $database->remove($environment)->shouldBeCalledOnce();
         $database->save()->shouldBeCalledOnce();
@@ -288,8 +279,7 @@ final class EnvironmentSubscriberTest extends WebTestCase
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->getRequiredVariables($environment)->shouldBeCalledOnce()->willReturn([]);
-        $mutagen->removeDockerSynchronization([])->shouldBeCalledOnce()->willReturn(false);
+        $mutagen->removeDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
         $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
 
         $database->remove($environment)->shouldBeCalledOnce();

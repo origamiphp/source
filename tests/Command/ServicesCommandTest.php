@@ -10,6 +10,7 @@ use App\Command\Services\MysqlCommand;
 use App\Command\Services\NginxCommand;
 use App\Command\Services\PhpCommand;
 use App\Command\Services\RedisCommand;
+use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
@@ -53,11 +54,10 @@ final class ServicesCommandTest extends WebTestCase
         }
 
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(true);
 
         $command = new $classname($currentContext->reveal(), $docker->reveal());
@@ -70,19 +70,16 @@ final class ServicesCommandTest extends WebTestCase
     /**
      * @dataProvider provideServiceDetails
      */
-    public function testItGracefullyExitsWhenAnExceptionOccurred(string $classname, string $service, string $user): void
+    public function testItGracefullyExitsWhenAnExceptionOccurred(string $classname): void
     {
         if (!is_subclass_of($classname, AbstractServiceCommand::class)) {
             throw new RuntimeException("{$classname} is not a subclass of AbstractServiceCommand.");
         }
 
-        $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $docker->openTerminal($service, $user)->shouldBeCalledOnce()->willReturn(false);
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
+        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
 
         $command = new $classname($currentContext->reveal(), $docker->reveal());
         self::assertExceptionIsHandled($command);
