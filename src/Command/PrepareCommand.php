@@ -55,23 +55,24 @@ class PrepareCommand extends AbstractBaseCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $environment = $this->currentContext->getEnvironment($input);
-            $this->currentContext->setActiveEnvironment($environment);
+            $this->currentContext->loadEnvironment($input);
+            $environment = $this->currentContext->getActiveEnvironment();
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->docker->prepareServices()) {
+            if (!$this->docker->pullServices() || !$this->docker->buildServices()) {
                 throw new InvalidEnvironmentException('An error occurred while preparing the Docker services.');
             }
 
             $io->success('Docker services successfully prepared.');
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = Command::FAILURE;
+
+            return Command::FAILURE;
         }
 
-        return $exitCode ?? Command::SUCCESS;
+        return Command::SUCCESS;
     }
 }

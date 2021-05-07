@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\PsCommand;
+use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
@@ -29,11 +30,10 @@ final class PsCommandTest extends WebTestCase
     public function testItExecutesProcessSuccessfully(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->showServicesStatus()->shouldBeCalledOnce()->willReturn(true);
 
         $command = new PsCommand($currentContext->reveal(), $docker->reveal());
@@ -42,13 +42,10 @@ final class PsCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $docker->showServicesStatus()->shouldBeCalledOnce()->willReturn(false);
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
+        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
 
         $command = new PsCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);

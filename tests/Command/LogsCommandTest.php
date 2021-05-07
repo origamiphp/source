@@ -39,11 +39,10 @@ final class LogsCommandTest extends WebTestCase
     public function testItShowsServicesLogs(?int $tail, ?string $service): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willReturn(true);
 
         $command = new LogsCommand($currentContext->reveal(), $docker->reveal());
@@ -64,13 +63,10 @@ final class LogsCommandTest extends WebTestCase
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(?int $tail, ?string $service): void
     {
-        $environment = $this->createEnvironment();
-
         [$currentContext, $docker] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
-        $docker->showServicesLogs($tail ?? 0, $service)->shouldBeCalledOnce()->willThrow(InvalidEnvironmentException::class);
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
+        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
 
         $command = new LogsCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);

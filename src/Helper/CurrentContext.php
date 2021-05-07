@@ -9,25 +9,21 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
-use App\Middleware\Binary\Docker;
 use App\Middleware\Database;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
 class CurrentContext
 {
-    private const INVALID_CONFIGURATION_MESSAGE = 'The environment is not configured, consider executing the "install" command.';
-
     private Database $database;
     private ProcessProxy $processProxy;
-    private Docker $docker;
     private Validator $validator;
+    private EnvironmentEntity $environment;
 
-    public function __construct(Database $database, ProcessProxy $processProxy, Docker $docker, Validator $validator)
+    public function __construct(Database $database, ProcessProxy $processProxy, Validator $validator)
     {
         $this->database = $database;
         $this->processProxy = $processProxy;
-        $this->docker = $docker;
         $this->validator = $validator;
     }
 
@@ -35,9 +31,10 @@ class CurrentContext
      * Attempts to load the environment to manage in different ways and throws an exception if this is not possible.
      *
      * @throws FilesystemException
+     * @throws InvalidConfigurationException
      * @throws InvalidEnvironmentException
      */
-    public function getEnvironment(InputInterface $input): EnvironmentEntity
+    public function loadEnvironment(InputInterface $input): void
     {
         // 1. Try to load the currently running environment.
         $environment = $this->database->getActiveEnvironment();
@@ -64,18 +61,24 @@ class CurrentContext
             );
         }
 
-        return $environment;
+        $this->checkEnvironmentConfiguration($environment);
+        $this->environment = $environment;
     }
 
     /**
-     * Defines the active environment, after checking the configuration if it's not a custom environment.
-     *
-     * @throws InvalidConfigurationException
+     * Retrieves the currently active environment.
      */
-    public function setActiveEnvironment(EnvironmentEntity $environment): void
+    public function getActiveEnvironment(): EnvironmentEntity
     {
-        $this->checkEnvironmentConfiguration($environment);
-        $this->docker->refreshEnvironmentVariables($environment);
+        return $this->environment;
+    }
+
+    /**
+     * Retrieves the project name based on the currently active environment data.
+     */
+    public function getProjectName(): string
+    {
+        return "{$this->environment->getType()}_{$this->environment->getName()}";
     }
 
     /**
@@ -90,11 +93,11 @@ class CurrentContext
             $dotenv->usePutenv(true);
             $dotenv->overload($environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'.env');
         } else {
-            throw new InvalidConfigurationException(self::INVALID_CONFIGURATION_MESSAGE);
+            throw new InvalidConfigurationException('The environment is not configured, consider executing the "install" command.');
         }
 
         if (!$this->validator->validateConfigurationFiles($environment)) {
-            throw new InvalidConfigurationException(self::INVALID_CONFIGURATION_MESSAGE);
+            throw new InvalidConfigurationException('The environment is not configured, consider executing the "install" command.');
         }
     }
 }

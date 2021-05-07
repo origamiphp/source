@@ -35,11 +35,10 @@ final class StartCommandTest extends WebTestCase
     public function testItStartsTheEnvironment(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $docker->startServices()->shouldBeCalledOnce()->willReturn(true);
         $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
 
@@ -57,11 +56,10 @@ final class StartCommandTest extends WebTestCase
     {
         $environment = $this->createEnvironment();
         $environment->activate();
-
         [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $processProxy->getWorkingDirectory()->willReturn('');
         $docker->startServices()->shouldNotBeCalled();
         $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
@@ -78,13 +76,14 @@ final class StartCommandTest extends WebTestCase
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
         $environment = $this->createEnvironment();
-
         [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->getEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->setActiveEnvironment($environment)->shouldBeCalledOnce();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $processProxy->getWorkingDirectory()->willReturn('');
         $docker->startServices()->shouldBeCalledOnce()->willReturn(false);
-        $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
 
         $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);

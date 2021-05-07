@@ -58,8 +58,8 @@ class UpdateCommand extends AbstractBaseCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $environment = $this->currentContext->getEnvironment($input);
-            $this->currentContext->setActiveEnvironment($environment);
+            $this->currentContext->loadEnvironment($input);
+            $environment = $this->currentContext->getActiveEnvironment();
 
             $question = sprintf(
                 'Are you sure you want to update the "%s" environment?',
@@ -80,9 +80,10 @@ class UpdateCommand extends AbstractBaseCommand
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = Command::FAILURE;
+
+            return Command::FAILURE;
         }
 
-        return $exitCode ?? Command::SUCCESS;
+        return Command::SUCCESS;
     }
 }

@@ -6,52 +6,46 @@ namespace App\Middleware\Binary;
 
 use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
+use App\Helper\CurrentContext;
 use App\Helper\ProcessFactory;
 
 class Docker
 {
+    private CurrentContext $currentContext;
     private ProcessFactory $processFactory;
-    private array $environmentVariables = [];
 
-    public function __construct(ProcessFactory $processFactory)
+    public function __construct(CurrentContext $currentContext, ProcessFactory $processFactory)
     {
+        $this->currentContext = $currentContext;
         $this->processFactory = $processFactory;
     }
 
     /**
-     * Loads the environment variables associated to the given environment.
+     * Pulls the Docker images associated to the current environment.
      */
-    public function refreshEnvironmentVariables(EnvironmentEntity $environment): void
+    public function pullServices(): bool
     {
-        $this->environmentVariables = $this->getRequiredVariables($environment);
+        $environment = $this->currentContext->getActiveEnvironment();
+
+        $action = ['pull'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
-     * Retrieves environment variables required to run processes.
+     * Builds the Docker images associated to the current environment.
      */
-    public function getRequiredVariables(EnvironmentEntity $environment): array
+    public function buildServices(): bool
     {
-        return [
-            'COMPOSE_FILE' => $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
-            'COMPOSE_PROJECT_NAME' => "{$environment->getType()}_{$environment->getName()}",
-            'DOCKER_DATABASE_IMAGE' => getenv('DOCKER_DATABASE_IMAGE'),
-            'DOCKER_PHP_IMAGE' => getenv('DOCKER_PHP_IMAGE'),
-            'PROJECT_LOCATION' => $environment->getLocation(),
-        ];
-    }
+        $environment = $this->currentContext->getActiveEnvironment();
 
-    /**
-     * Pulls/Builds the Docker images associated to the current environment.
-     */
-    public function prepareServices(): bool
-    {
-        $command = ['docker', 'compose', 'pull'];
-        $pullProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $action = ['build', '--pull', '--parallel'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
 
-        $command = ['docker', 'compose', 'build', '--pull', '--parallel'];
-        $buildProcess = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
-
-        return $pullProcess->isSuccessful() && $buildProcess->isSuccessful();
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -59,10 +53,13 @@ class Docker
      */
     public function showResourcesUsage(): bool
     {
-        $command = 'docker compose ps -q | xargs docker stats';
-        $process = $this->processFactory->runForegroundProcessFromShellCommandLine($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $defaultOptions = implode(' ', $this->getDefaultComposeOptions($environment));
+        $command = "docker compose {$defaultOptions} ps --quiet | xargs docker stats";
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcessFromShellCommandLine($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -70,15 +67,16 @@ class Docker
      */
     public function showServicesLogs(?int $tail = null, ?string $service = null): bool
     {
-        $command = ['docker', 'compose', 'logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
+        $environment = $this->currentContext->getActiveEnvironment();
 
+        $action = ['logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
         if ($service) {
-            $command[] = $service;
+            $action[] = $service;
         }
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
 
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
-
-        return $process->isSuccessful();
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -86,10 +84,13 @@ class Docker
      */
     public function showServicesStatus(): bool
     {
-        $command = ['docker', 'compose', 'ps'];
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $action = ['ps'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -97,10 +98,13 @@ class Docker
      */
     public function restartServices(): bool
     {
-        $command = ['docker', 'compose', 'restart'];
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $action = ['restart'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -108,10 +112,13 @@ class Docker
      */
     public function startServices(): bool
     {
-        $command = ['docker', 'compose', 'up', '--build', '--detach', '--remove-orphans'];
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $action = ['up', '--build', '--detach', '--remove-orphans'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -119,10 +126,13 @@ class Docker
      */
     public function stopServices(): bool
     {
-        $command = ['docker', 'compose', 'stop'];
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $action = ['stop'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -130,10 +140,13 @@ class Docker
      */
     public function fixPermissionsOnSharedSSHAgent(): bool
     {
-        $command = ['docker', 'compose', 'exec', '-T', 'php', 'bash', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $action = ['exec', '-T', 'php', 'bash', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -141,16 +154,18 @@ class Docker
      */
     public function openTerminal(string $service, string $user = ''): bool
     {
+        $environment = $this->currentContext->getActiveEnvironment();
+
         // There is an issue when allocating a TTY with the "docker compose exec" instruction.
-        $container = $this->environmentVariables['COMPOSE_PROJECT_NAME']."_{$service}_1";
+        $container = $environment->getType().'_'.$environment->getName()."_{$service}_1";
 
         $command = $user !== ''
             ? "docker exec -it --user={$user} {$container} bash --login"
             : "docker exec -it {$container} bash --login"
         ;
-        $process = $this->processFactory->runForegroundProcessFromShellCommandLine($command, $this->environmentVariables);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
 
-        return $process->isSuccessful();
+        return $this->processFactory->runForegroundProcessFromShellCommandLine($command, $environmentVariables)->isSuccessful();
     }
 
     /**
@@ -158,9 +173,41 @@ class Docker
      */
     public function removeServices(): bool
     {
-        $command = ['docker', 'compose', 'down', '--rmi', 'local', '--volumes', '--remove-orphans'];
-        $process = $this->processFactory->runForegroundProcess($command, $this->environmentVariables);
+        $environment = $this->currentContext->getActiveEnvironment();
 
-        return $process->isSuccessful();
+        $action = ['down', '--rmi', 'local', '--volumes', '--remove-orphans'];
+        $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
+     * Retrieves the options required by the "docker compose" commands when working in different directories.
+     */
+    private function getDefaultComposeOptions(EnvironmentEntity $environment): array
+    {
+        $location = $environment->getLocation();
+
+        return [
+            '--file='.$location.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
+            '--project-directory='.$location,
+            '--project-name='.$this->currentContext->getProjectName(),
+        ];
+    }
+
+    /**
+     * Retrieves environment variables required to run processes.
+     */
+    private function getEnvironmentVariables(EnvironmentEntity $environment): array
+    {
+        $projectName = $this->currentContext->getProjectName();
+
+        return [
+            'PROJECT_NAME' => $projectName,
+            'PROJECT_LOCATION' => $environment->getLocation(),
+            // @deprecated
+            'COMPOSE_PROJECT_NAME' => $projectName,
+        ];
     }
 }

@@ -64,7 +64,8 @@ class UninstallCommand extends AbstractBaseCommand
         $io = new SymfonyStyle($input, $output);
 
         try {
-            $environment = $this->currentContext->getEnvironment($input);
+            $this->currentContext->loadEnvironment($input);
+            $environment = $this->currentContext->getActiveEnvironment();
 
             $question = sprintf(
                 'Are you sure you want to uninstall the "%s" environment?',
@@ -72,12 +73,7 @@ class UninstallCommand extends AbstractBaseCommand
             );
 
             if ($io->confirm($question, false)) {
-                if ($environment->isActive()) {
-                    throw new InvalidEnvironmentException('Unable to uninstall a running environment.');
-                }
-
                 try {
-                    $this->currentContext->setActiveEnvironment($environment);
                     if (!$this->docker->removeServices()) {
                         throw new InvalidEnvironmentException('An error occurred while removing the Docker services.');
                     }
@@ -94,9 +90,10 @@ class UninstallCommand extends AbstractBaseCommand
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
-            $exitCode = Command::FAILURE;
+
+            return Command::FAILURE;
         }
 
-        return $exitCode ?? Command::SUCCESS;
+        return Command::SUCCESS;
     }
 }

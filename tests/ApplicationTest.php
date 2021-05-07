@@ -19,7 +19,6 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\LogsCommand
  * @uses \App\Command\PsCommand
  * @uses \App\Command\RestartCommand
- * @uses \App\Command\RootCommand
  * @uses \App\Command\Services\AbstractServiceCommand
  * @uses \App\Command\Services\ElasticsearchCommand
  * @uses \App\Command\Services\MysqlCommand
