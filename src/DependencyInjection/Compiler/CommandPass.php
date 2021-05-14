@@ -25,7 +25,11 @@ class CommandPass implements CompilerPassInterface
                 continue;
             }
 
-            $alias = str_replace('origami:', '', $id::getDefaultName());
+            if (!$defaultName = $id::getDefaultName()) {
+                continue;
+            }
+
+            $alias = str_replace('origami:', '', $defaultName);
             $container->findDefinition($id)
                 ->addTag('console.command', ['command' => $alias])
             ;
