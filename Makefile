@@ -17,11 +17,11 @@ box: ## Compiles the project into a PHAR archive
 .PHONY: box
 
 phpcsfixer-audit: ## Executes the code style analysis in dry-run mode on all PHP files
-	PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix --dry-run --verbose --ansi
+	./vendor/bin/php-cs-fixer fix --dry-run --verbose --ansi
 .PHONY: phpcsfixer
 
 phpcsfixer-fix: ## Executes the code style analysis on all PHP files
-	PHP_CS_FIXER_IGNORE_ENV=1 ./vendor/bin/php-cs-fixer fix --verbose --ansi
+	./vendor/bin/php-cs-fixer fix --verbose --ansi
 .PHONY: phpcsfixer
 
 psalm: ## Executes a static analysis on all PHP files

@@ -14,31 +14,28 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @covers \App\Application
  *
- * @uses \App\Command\RegistryCommand
+ * @uses \App\Command\AbstractBaseCommand
  * @uses \App\Command\DataCommand
- * @uses \App\Command\LogsCommand
- * @uses \App\Command\PsCommand
- * @uses \App\Command\RestartCommand
- * @uses \App\Command\Services\AbstractServiceCommand
- * @uses \App\Command\Services\ElasticsearchCommand
- * @uses \App\Command\Services\MysqlCommand
- * @uses \App\Command\Services\NginxCommand
- * @uses \App\Command\Services\PhpCommand
- * @uses \App\Command\Services\RedisCommand
- * @uses \App\Command\StopCommand
+ * @uses \App\Command\DefaultCommand
  * @uses \App\Command\InstallCommand
+ * @uses \App\Command\LogsCommand
+ * @uses \App\Command\PhpCommand
  * @uses \App\Command\PrepareCommand
+ * @uses \App\Command\PsCommand
+ * @uses \App\Command\RegistryCommand
+ * @uses \App\Command\RestartCommand
  * @uses \App\Command\StartCommand
+ * @uses \App\Command\StopCommand
  * @uses \App\Command\UninstallCommand
  * @uses \App\Command\UpdateCommand
- * @uses \App\Command\AbstractBaseCommand
- * @uses \App\Command\DefaultCommand
- * @uses \App\Helper\ProcessFactory
  * @uses \App\Helper\CurrentContext
+ * @uses \App\Helper\ProcessFactory
  * @uses \App\Helper\Validator
  * @uses \App\Middleware\Binary\Docker
  * @uses \App\Middleware\Binary\Mkcert
+ * @uses \App\Middleware\Binary\Mutagen
  * @uses \App\Middleware\Database
+ * @uses \App\Middleware\Hosts
  * @uses \App\Service\ApplicationRequirements
  * @uses \App\Service\ConfigurationFiles
  * @uses \App\Service\EnvironmentBuilder

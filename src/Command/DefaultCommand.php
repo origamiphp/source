@@ -13,9 +13,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DefaultCommand extends Command
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:default';
 
     /**
