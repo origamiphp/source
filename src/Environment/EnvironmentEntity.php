@@ -15,6 +15,14 @@ class EnvironmentEntity
     public const TYPE_SYLIUS = 'sylius';
     public const TYPE_SYMFONY = 'symfony';
 
+    public const AVAILABLE_TYPES = [
+        self::TYPE_DRUPAL,
+        self::TYPE_MAGENTO2,
+        self::TYPE_OROCOMMERCE,
+        self::TYPE_SYLIUS,
+        self::TYPE_SYMFONY,
+    ];
+
     private string $name;
     private string $location;
     private string $type;

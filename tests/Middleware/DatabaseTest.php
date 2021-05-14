@@ -9,7 +9,7 @@ use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 
@@ -20,7 +20,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class DatabaseTest extends TestCase
 {
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     /**
      * @throws InvalidEnvironmentException
@@ -127,8 +127,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-1',
                 '/fake/location/1',
                 'magento',
-                'magento.localhost',
-                false
+                'magento.localhost'
             ),
             $database->getEnvironmentByName('fake-environment-1')
         );
@@ -152,8 +151,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-1',
                 '/fake/location/1',
                 'magento',
-                'magento.localhost',
-                false
+                'magento.localhost'
             ),
             $database->getEnvironmentByLocation('/fake/location/1')
         );
@@ -176,8 +174,7 @@ final class DatabaseTest extends TestCase
             'fake-environment-3',
             '/fake/location/3',
             'sylius',
-            'sylius.localhost',
-            false
+            'sylius.localhost'
         );
 
         $database->add($environment);
@@ -202,8 +199,7 @@ final class DatabaseTest extends TestCase
             'fake-environment-1',
             '/fake/location/1',
             'magento',
-            'magento.localhost',
-            false
+            'magento.localhost'
         );
 
         $database->remove($environment);

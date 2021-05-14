@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
-use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
+use App\Service\ConfigurationFiles;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Dotenv\Dotenv;
 
@@ -91,7 +91,7 @@ class CurrentContext
         if ($this->validator->validateDotEnvExistence($environment)) {
             $dotenv = new Dotenv();
             $dotenv->usePutenv(true);
-            $dotenv->overload($environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'.env');
+            $dotenv->overload($environment->getLocation().ConfigurationFiles::INSTALLATION_DIRECTORY.'.env');
         } else {
             throw new InvalidConfigurationException('The environment is not configured, consider executing the "install" command.');
         }

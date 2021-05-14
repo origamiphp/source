@@ -8,7 +8,7 @@ services:
       - php
 
   database:
-    image: mariadb:${DOCKER_DATABASE_IMAGE}
+    image: ${DOCKER_DATABASE_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - 3306:3306
@@ -17,7 +17,7 @@ services:
     tty: true
 
   elasticsearch:
-    image: library/elasticsearch:7.10.1
+    image: ${DOCKER_ELASTICSEARCH_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - discovery.type=single-node
@@ -50,7 +50,7 @@ services:
     tty: true
 
   php:
-    image: ajardin/php:${DOCKER_PHP_IMAGE}
+    image: ${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
@@ -65,7 +65,7 @@ services:
     tty: true
 
   rabbitmq:
-    image: ajardin/orocommerce-rabbitmq:3.8
+    image: ${DOCKER_RABBITMQ_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - 15672:15672
@@ -74,7 +74,7 @@ services:
     tty: true
 
   redis:
-    image: library/redis:6.0-alpine
+    image: ${DOCKER_REDIS_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     volumes:
       - redis:/data

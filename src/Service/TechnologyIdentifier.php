@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Environment\EnvironmentMaker;
+namespace App\Service;
 
 use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
+use App\ValueObject\TechnologyDetails;
 use JsonException;
 
 class TechnologyIdentifier
@@ -13,7 +14,7 @@ class TechnologyIdentifier
     private const REQUIRED_TECHNOLOGY_PACKAGE = [
         EnvironmentEntity::TYPE_DRUPAL => ['drupal/core', 'drupal/core-recommended', 'drupal/recommended-project'],
         EnvironmentEntity::TYPE_MAGENTO2 => ['magento/product-community-edition', 'magento/product-enterprise-edition'],
-        EnvironmentEntity::TYPE_OROCOMMERCE => ['oro/commerce'],
+        EnvironmentEntity::TYPE_OROCOMMERCE => ['oro/commerce', 'oro/commerce-enterprise'],
         EnvironmentEntity::TYPE_SYLIUS => ['sylius/sylius'],
         EnvironmentEntity::TYPE_SYMFONY => ['symfony/framework-bundle'],
     ];
@@ -21,7 +22,7 @@ class TechnologyIdentifier
     /**
      * Executes the technology identification process on the given location.
      */
-    public function identify(string $location): ?string
+    public function identify(string $location): ?TechnologyDetails
     {
         $file = "{$location}/composer.json";
 
@@ -35,7 +36,7 @@ class TechnologyIdentifier
             foreach (self::REQUIRED_TECHNOLOGY_PACKAGE as $technology => $packages) {
                 foreach ($packages as $package) {
                     if (isset($configuration['require'][$package])) {
-                        return $technology;
+                        return new TechnologyDetails($technology, $configuration['require'][$package]);
                     }
                 }
             }

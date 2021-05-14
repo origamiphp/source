@@ -7,11 +7,10 @@ namespace App\Tests\Command;
 use App\Command\RegistryCommand;
 use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
-use App\Exception\InvalidEnvironmentException;
 use App\Middleware\Database;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use Generator;
+use App\Tests\TestEnvironmentTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -25,6 +24,7 @@ final class RegistryCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
+    use TestEnvironmentTrait;
 
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
@@ -40,13 +40,16 @@ final class RegistryCommandTest extends WebTestCase
     }
 
     /**
-     * @dataProvider provideEnvironmentList
-     *
-     * @throws InvalidEnvironmentException
+     * @dataProvider provideMultipleInstallContexts
      */
-    public function testItPrintsEnvironmentDetailsInTable(EnvironmentEntity $environment): void
-    {
+    public function testItPrintsEnvironmentDetailsInTable(
+        string $name,
+        string $type,
+        ?string $domains = null
+    ): void {
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         [$database] = $this->prophesizeObjectArguments();
+
         $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection([$environment]));
 
         $command = new RegistryCommand($database->reveal());
@@ -73,29 +76,6 @@ final class RegistryCommandTest extends WebTestCase
         } else {
             static::assertStringContainsString('Stopped', $display);
         }
-    }
-
-    public function provideEnvironmentList(): Generator
-    {
-        yield 'inactive environment without domains' => [
-            new EnvironmentEntity(
-                'POC',
-                '~/Sites/poc-symfony',
-                EnvironmentEntity::TYPE_SYMFONY,
-                null,
-                false
-            ),
-        ];
-
-        yield 'active environment with domains' => [
-            new EnvironmentEntity(
-                'Origami',
-                '~/Sites/origami',
-                EnvironmentEntity::TYPE_SYMFONY,
-                'origami.localhost',
-                true
-            ),
-        ];
     }
 
     /**

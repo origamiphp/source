@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\UpdateCommand;
-use App\Environment\Configuration\ConfigurationUpdater;
-use App\Environment\EnvironmentMaker;
-use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
+use App\Service\ConfigurationFiles;
+use App\Service\EnvironmentBuilder;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
+use App\ValueObject\PrepareAnswers;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
@@ -31,25 +31,21 @@ final class UpdateCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
-    use TestLocationTrait;
-
-    private const DEFAULT_PHP_VERSION = '8.0';
-    private const DEFAULT_DATABASE_VERSION = '10.5';
-    private const DEFAULT_DOMAINS = 'origami.localhost';
+    use TestEnvironmentTrait;
 
     public function testItSuccessfullyUpdatesTheCurrentEnvironment(): void
     {
         $environment = $this->createEnvironment();
-        [$currentContext, $environmentMaker, $updater] = $this->prophesizeObjectArguments();
+        [$currentContext, $environmentBuilder, $configurationFiles] = $this->prophesizeObjectArguments();
 
         $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
         $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_PHP_VERSION);
-        $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn(self::DEFAULT_DATABASE_VERSION);
-        $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $environment->getName())->shouldBeCalledOnce()->willReturn(self::DEFAULT_DOMAINS);
-        $updater->update($environment, self::DEFAULT_PHP_VERSION, self::DEFAULT_DATABASE_VERSION, self::DEFAULT_DOMAINS)->shouldBeCalledOnce();
 
-        $command = new UpdateCommand($currentContext->reveal(), $environmentMaker->reveal(), $updater->reveal());
+        $answers = new PrepareAnswers($environment->getName(), $environment->getLocation(), $environment->getType(), null, []);
+        $environmentBuilder->prepare(Argument::type(SymfonyStyle::class), $environment)->shouldBeCalledOnce()->willReturn($answers);
+        $configurationFiles->install($environment, $answers->getSettings())->shouldBeCalledOnce();
+
+        $command = new UpdateCommand($currentContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -61,12 +57,14 @@ final class UpdateCommandTest extends WebTestCase
 
     public function testItAbortsGracefullyTheUpdate(): void
     {
-        [$currentContext, $environmentMaker, $updater] = $this->prophesizeObjectArguments();
+        $environment = $this->createEnvironment();
+        $environment->activate();
+        [$currentContext, $environmentBuilder, $configurationFiles] = $this->prophesizeObjectArguments();
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
-        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
+        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
+        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
 
-        $command = new UpdateCommand($currentContext->reveal(), $environmentMaker->reveal(), $updater->reveal());
+        $command = new UpdateCommand($currentContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -83,8 +81,8 @@ final class UpdateCommandTest extends WebTestCase
     {
         return [
             $this->prophesize(CurrentContext::class),
-            $this->prophesize(EnvironmentMaker::class),
-            $this->prophesize(ConfigurationUpdater::class),
+            $this->prophesize(EnvironmentBuilder::class),
+            $this->prophesize(ConfigurationFiles::class),
         ];
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Environment\Configuration\ConfigurationUninstaller;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
+use App\Service\ConfigurationFiles;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -24,13 +24,13 @@ class UninstallCommand extends AbstractBaseCommand
 
     private CurrentContext $currentContext;
     private Docker $docker;
-    private ConfigurationUninstaller $uninstaller;
+    private ConfigurationFiles $uninstaller;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         CurrentContext $currentContext,
         Docker $docker,
-        ConfigurationUninstaller $uninstaller,
+        ConfigurationFiles $uninstaller,
         EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {

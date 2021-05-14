@@ -9,7 +9,7 @@ use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
@@ -29,7 +29,7 @@ final class PrepareCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     public function testItPreparesTheActiveEnvironment(): void
     {

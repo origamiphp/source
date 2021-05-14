@@ -12,7 +12,7 @@ use App\Helper\ProcessProxy;
 use App\Helper\Validator;
 use App\Middleware\Database;
 use App\Tests\CustomProphecyTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -24,7 +24,7 @@ use Symfony\Component\Console\Input\InputInterface;
 final class CurrentContextTest extends TestCase
 {
     use CustomProphecyTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     /**
      * @throws FilesystemException

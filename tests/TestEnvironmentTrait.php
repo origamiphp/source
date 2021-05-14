@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
+use App\Service\ConfigurationFiles;
+use Generator;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
-trait TestLocationTrait
+trait TestEnvironmentTrait
 {
     private string $location = '';
 
@@ -26,7 +27,7 @@ trait TestLocationTrait
             .\DIRECTORY_SEPARATOR.(new ReflectionClass(static::class))->getShortName()
         ;
 
-        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
+        $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
         mkdir($destination, 0777, true);
     }
 
@@ -45,6 +46,23 @@ trait TestLocationTrait
         $this->location = '';
     }
 
+    public function provideMultipleInstallContexts(): Generator
+    {
+        yield 'Symfony environment and custom domain' => [
+            'symfony-project',
+            EnvironmentEntity::TYPE_SYMFONY,
+            'symfony.test',
+            ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'],
+        ];
+
+        yield 'Symfony environment and no custom domain' => [
+            'symfony-project',
+            EnvironmentEntity::TYPE_SYMFONY,
+            null,
+            ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'],
+        ];
+    }
+
     /**
      * Retrieves a new fake Environment instance.
      */
@@ -54,8 +72,7 @@ trait TestLocationTrait
             'origami',
             $this->location,
             EnvironmentEntity::TYPE_SYMFONY,
-            'origami.localhost',
-            false
+            'origami.localhost'
         );
     }
 
@@ -65,7 +82,7 @@ trait TestLocationTrait
     private function installEnvironmentConfiguration(EnvironmentEntity $environment): void
     {
         $filesystem = new Filesystem();
-        $destination = $this->location.AbstractConfiguration::INSTALLATION_DIRECTORY;
+        $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
 
         if (is_dir(__DIR__.'/../src')) {
             $source = __DIR__."/../src/Resources/{$environment->getType()}/";

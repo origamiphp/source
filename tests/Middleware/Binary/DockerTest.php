@@ -8,7 +8,7 @@ use App\Helper\CurrentContext;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -22,7 +22,7 @@ use Symfony\Component\Process\Process;
 final class DockerTest extends TestCase
 {
     use CustomProphecyTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     /**
      * @dataProvider provideDockerComposeScenarios

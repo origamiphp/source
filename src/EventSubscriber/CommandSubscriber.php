@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\Exception\MissingRequirementException;
+use App\Service\ApplicationRequirements;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -13,9 +13,9 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    private RequirementsChecker $requirementsChecker;
+    private ApplicationRequirements $requirementsChecker;
 
-    public function __construct(RequirementsChecker $binaryChecker)
+    public function __construct(ApplicationRequirements $binaryChecker)
     {
         $this->requirementsChecker = $binaryChecker;
     }
