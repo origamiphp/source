@@ -6,7 +6,7 @@ namespace App\Tests\Helper;
 
 use App\Helper\Validator;
 use App\Tests\CustomProphecyTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Symfony\Component\Validator\Constraints\Hostname;
@@ -22,7 +22,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final class ValidatorTest extends TestCase
 {
     use CustomProphecyTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     public function testItValidatesConfiguration(): void
     {

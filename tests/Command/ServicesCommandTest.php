@@ -15,7 +15,7 @@ use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use Generator;
 use Prophecy\Argument;
 use RuntimeException;
@@ -42,7 +42,7 @@ final class ServicesCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     /**
      * @dataProvider provideServiceDetails

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Environment\EnvironmentMaker;
+namespace App\Tests\Service;
 
-use App\Environment\EnvironmentMaker\RequirementsChecker;
+use App\Service\ApplicationRequirements;
 use App\Tests\CustomProphecyTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Process\ExecutableFinder;
@@ -12,7 +12,7 @@ use Symfony\Component\Process\ExecutableFinder;
 /**
  * @internal
  *
- * @covers \App\Environment\EnvironmentMaker\RequirementsChecker
+ * @covers \App\Service\ApplicationRequirements
  */
 final class RequirementsCheckerTest extends TestCase
 {
@@ -25,7 +25,7 @@ final class RequirementsCheckerTest extends TestCase
         $executableFinder->find('docker')->shouldBeCalledOnce()->willReturn('/usr/local/bin/docker');
         $executableFinder->find('mutagen')->shouldBeCalledOnce()->willReturn(null);
 
-        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
+        $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
         static::assertSame([
             [
                 'name' => 'docker',
@@ -45,7 +45,7 @@ final class RequirementsCheckerTest extends TestCase
         [$executableFinder] = $this->prophesizeObjectArguments();
         $executableFinder->find('mkcert')->shouldBeCalledOnce()->willReturn('/usr/local/bin/mkcert');
 
-        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
+        $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
         static::assertSame([
             [
                 'name' => 'mkcert',
@@ -60,7 +60,7 @@ final class RequirementsCheckerTest extends TestCase
         [$executableFinder] = $this->prophesizeObjectArguments();
         $executableFinder->find('mkcert')->shouldBeCalledOnce()->willReturn(null);
 
-        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
+        $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
         static::assertSame([
             [
                 'name' => 'mkcert',

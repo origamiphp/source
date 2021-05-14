@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Environment\Configuration\ConfigurationUpdater;
-use App\Environment\EnvironmentMaker;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
+use App\Helper\OrigamiStyle;
+use App\Service\ConfigurationFiles;
+use App\Service\EnvironmentBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class UpdateCommand extends AbstractBaseCommand
 {
@@ -20,20 +21,20 @@ class UpdateCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:update';
 
     private CurrentContext $currentContext;
-    private EnvironmentMaker $configurator;
-    private ConfigurationUpdater $updater;
+    private EnvironmentBuilder $builder;
+    private ConfigurationFiles $configuration;
 
     public function __construct(
         CurrentContext $currentContext,
-        EnvironmentMaker $configurator,
-        ConfigurationUpdater $updater,
+        EnvironmentBuilder $builder,
+        ConfigurationFiles $configuration,
         ?string $name = null
     ) {
         parent::__construct($name);
 
         $this->currentContext = $currentContext;
-        $this->configurator = $configurator;
-        $this->updater = $updater;
+        $this->builder = $builder;
+        $this->configuration = $configuration;
     }
 
     /**
@@ -55,11 +56,15 @@ class UpdateCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = new OrigamiStyle($input, $output);
 
         try {
             $this->currentContext->loadEnvironment($input);
             $environment = $this->currentContext->getActiveEnvironment();
+
+            if ($environment->isActive()) {
+                throw new InvalidEnvironmentException('Unable to update a running environment.');
+            }
 
             $question = sprintf(
                 'Are you sure you want to update the "%s" environment?',
@@ -67,14 +72,8 @@ class UpdateCommand extends AbstractBaseCommand
             );
 
             if ($io->confirm($question, false)) {
-                $name = $environment->getName();
-
-                $this->updater->update(
-                    $environment,
-                    $this->configurator->askPhpVersion($io),
-                    $this->configurator->askDatabaseVersion($io),
-                    $this->configurator->askDomains($io, $name)
-                );
+                $userInputs = $this->builder->prepare($io, $environment);
+                $this->configuration->install($environment, $userInputs->getSettings());
 
                 $io->success('Environment successfully updated.');
             }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\EventSubscriber;
 
-use App\Environment\EnvironmentMaker\RequirementsChecker;
 use App\EventSubscriber\CommandSubscriber;
 use App\Exception\MissingRequirementException;
+use App\Service\ApplicationRequirements;
 use App\Tests\CustomProphecyTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
@@ -103,7 +103,7 @@ final class CommandSubscriberTest extends WebTestCase
     protected function prophesizeObjectArguments(): array
     {
         return [
-            $this->prophesize(RequirementsChecker::class),
+            $this->prophesize(ApplicationRequirements::class),
         ];
     }
 }

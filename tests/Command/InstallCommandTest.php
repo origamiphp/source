@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\InstallCommand;
-use App\Environment\Configuration\ConfigurationInstaller;
 use App\Environment\EnvironmentEntity;
-use App\Environment\EnvironmentMaker;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\FilesystemException;
-use App\Helper\ProcessProxy;
+use App\Service\ConfigurationFiles;
+use App\Service\EnvironmentBuilder;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use Generator;
+use App\Tests\TestEnvironmentTrait;
+use App\ValueObject\PrepareAnswers;
 use Prophecy\Argument;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
@@ -27,39 +27,28 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\InstallCommand
  *
+ * @uses \App\Environment\EnvironmentFactory
  * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class InstallCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
+    use TestEnvironmentTrait;
 
-    /**
-     * @dataProvider provideEnvironmentConfigurations
-     */
-    public function testItInstallTheRequestedEnvironment(string $name, string $type, string $phpVersion, string $databaseVersion, ?string $domains): void
+    public function testItInstallTheRequestedEnvironment(): void
     {
-        $fakeLocation = '/fake/directory';
+        [$environmentBuilder, $configurationFiles, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        [$processProxy, $environmentMaker, $installer, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $answers = new PrepareAnswers('name', 'location', 'type', null, []);
+        $environment = new EnvironmentEntity('name', 'location', 'type', null);
 
-        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn($fakeLocation);
-        $environmentMaker->askEnvironmentName(Argument::type(SymfonyStyle::class), basename($fakeLocation))->shouldBeCalledOnce()->willReturn($name);
-        $environmentMaker->askEnvironmentType(Argument::type(SymfonyStyle::class), $fakeLocation)->shouldBeCalledOnce()->willReturn($type);
-        $environmentMaker->askPhpVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn($phpVersion);
-        $environmentMaker->askDatabaseVersion(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn($databaseVersion);
-        $environmentMaker->askDomains(Argument::type(SymfonyStyle::class), $name)->shouldBeCalledOnce()->willReturn($domains ?? null);
-
-        $installer->install($fakeLocation, $name, $type, $phpVersion, $databaseVersion, $domains)->shouldBeCalledOnce()->willReturn($this->prophesize(EnvironmentEntity::class)->reveal());
+        $environmentBuilder->prepare(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willReturn($answers);
+        $configurationFiles->install($environment, $answers->getSettings())->shouldBeCalledOnce();
         $eventDispatcher->dispatch(Argument::type(EnvironmentInstalledEvent::class))->shouldBeCalledOnce();
 
-        $command = new InstallCommand($processProxy->reveal(), $environmentMaker->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $command = new InstallCommand($environmentBuilder->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
-        if ($domains) {
-            $commandTester->setInputs([$name, $type, $phpVersion, 'yes', $domains]);
-        } else {
-            $commandTester->setInputs([$name, $type, $phpVersion, 'no']);
-        }
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
@@ -68,42 +57,13 @@ final class InstallCommandTest extends WebTestCase
         static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
-    public function provideEnvironmentConfigurations(): Generator
-    {
-        $technologies = [
-            EnvironmentEntity::TYPE_DRUPAL,
-            EnvironmentEntity::TYPE_MAGENTO2,
-            EnvironmentEntity::TYPE_OROCOMMERCE,
-            EnvironmentEntity::TYPE_SYLIUS,
-            EnvironmentEntity::TYPE_SYMFONY,
-        ];
-
-        foreach ($technologies as $technology) {
-            yield "{$technology} environment with domain" => [
-                "fake-{$technology}",
-                $technology,
-                'latest',
-                'latest',
-                "{$technology}.localhost",
-            ];
-
-            yield "{$technology} environment without domain" => [
-                "fake-{$technology}",
-                $technology,
-                'latest',
-                'latest',
-                null,
-            ];
-        }
-    }
-
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        [$processProxy, $configurator, $installer, $eventDispatcher] = $this->prophesizeObjectArguments();
+        [$environmentBuilder, $configurationFiles, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willThrow(FilesystemException::class);
+        $environmentBuilder->prepare(Argument::type(SymfonyStyle::class))->shouldBeCalledOnce()->willThrow(FilesystemException::class);
 
-        $command = new InstallCommand($processProxy->reveal(), $configurator->reveal(), $installer->reveal(), $eventDispatcher->reveal());
+        $command = new InstallCommand($environmentBuilder->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['', EnvironmentEntity::TYPE_SYMFONY, 'no']);
         $commandTester->execute([]);
@@ -119,9 +79,8 @@ final class InstallCommandTest extends WebTestCase
     protected function prophesizeObjectArguments(): array
     {
         return [
-            $this->prophesize(ProcessProxy::class),
-            $this->prophesize(EnvironmentMaker::class),
-            $this->prophesize(ConfigurationInstaller::class),
+            $this->prophesize(EnvironmentBuilder::class),
+            $this->prophesize(ConfigurationFiles::class),
             $this->prophesize(EventDispatcher::class),
         ];
     }

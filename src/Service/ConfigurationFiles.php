@@ -2,19 +2,18 @@
 
 declare(strict_types=1);
 
-namespace App\Environment\Configuration;
+namespace App\Service;
 
+use App\Environment\EnvironmentEntity;
 use App\Exception\FilesystemException;
+use App\Exception\MkcertException;
 use App\Middleware\Binary\Mkcert;
 use Ergebnis\Environment\Variables;
 use Symfony\Component\Filesystem\Filesystem;
 
-class AbstractConfiguration
+class ConfigurationFiles
 {
     public const INSTALLATION_DIRECTORY = '/var/docker/';
-
-    protected const DATABASE_IMAGE_OPTION_NAME = 'DOCKER_DATABASE_IMAGE';
-    protected const PHP_IMAGE_OPTION_NAME = 'DOCKER_PHP_IMAGE';
     protected const BLACKFIRE_PARAMETERS = [
         'BLACKFIRE_CLIENT_ID',
         'BLACKFIRE_CLIENT_TOKEN',
@@ -32,9 +31,45 @@ class AbstractConfiguration
     }
 
     /**
-     * Prepares the project directory with environment files.
+     * Installs the Docker environment configuration.
+     *
+     * @throws FilesystemException|MkcertException
      */
-    protected function copyEnvironmentFiles(string $source, string $destination): void
+    public function install(EnvironmentEntity $environment, array $settings): void
+    {
+        $source = __DIR__."/../Resources/{$environment->getType()}";
+        $destination = $environment->getLocation().self::INSTALLATION_DIRECTORY;
+
+        $this->copyConfiguration($source, $destination);
+        $configuration = "{$destination}/.env";
+
+        foreach ($settings as $key => $value) {
+            $this->fillDotEnvFile($configuration, 'DOCKER_'.strtoupper($key).'_IMAGE', $value);
+        }
+
+        $this->loadBlackfireParameters($destination);
+
+        if ($domains = $environment->getDomains()) {
+            $certificate = "{$destination}/nginx/certs/custom.pem";
+            $privateKey = "{$destination}/nginx/certs/custom.key";
+
+            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+        }
+    }
+
+    /**
+     * Uninstalls the Docker environment configuration.
+     */
+    public function uninstall(EnvironmentEntity $environment): void
+    {
+        $filesystem = new Filesystem();
+        $filesystem->remove($environment->getLocation().self::INSTALLATION_DIRECTORY);
+    }
+
+    /**
+     * Copies the common configuration into the project directory.
+     */
+    private function copyConfiguration(string $source, string $destination): void
     {
         $filesystem = new Filesystem();
 
@@ -56,22 +91,22 @@ class AbstractConfiguration
      *
      * @throws FilesystemException
      */
-    protected function loadBlackfireParameters(string $destination): void
+    private function loadBlackfireParameters(string $destination): void
     {
         $filename = "{$destination}/.env";
         foreach (self::BLACKFIRE_PARAMETERS as $parameter) {
             if ($this->systemVariables->has($parameter)) {
-                $this->updateEnvironment($filename, $parameter, $this->systemVariables->get($parameter));
+                $this->fillDotEnvFile($filename, $parameter, $this->systemVariables->get($parameter));
             }
         }
     }
 
     /**
-     * Updates the environment dotenv file with the given parameter/value pair.
+     * Fills the environment dotenv file with the given parameter/value pair.
      *
      * @throws FilesystemException
      */
-    protected function updateEnvironment(string $filename, string $parameter, string $value): void
+    private function fillDotEnvFile(string $filename, string $parameter, string $value): void
     {
         if (!$configuration = file_get_contents($filename)) {
             // @codeCoverageIgnoreStart

@@ -36,18 +36,14 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Helper\ProcessFactory
  * @uses \App\Helper\CurrentContext
  * @uses \App\Helper\Validator
- * @uses \App\Environment\EnvironmentMaker\DockerHub
- * @uses \App\Environment\EnvironmentMaker\RequirementsChecker
- * @uses \App\Environment\EnvironmentMaker\TechnologyIdentifier
- * @uses \App\Environment\EnvironmentMaker
- * @uses \App\Kernel
  * @uses \App\Middleware\Binary\Docker
  * @uses \App\Middleware\Binary\Mkcert
- * @uses \App\Environment\Configuration\AbstractConfiguration
- * @uses \App\Environment\Configuration\ConfigurationInstaller
- * @uses \App\Environment\Configuration\ConfigurationUninstaller
- * @uses \App\Environment\Configuration\ConfigurationUpdater
  * @uses \App\Middleware\Database
+ * @uses \App\Service\ApplicationRequirements
+ * @uses \App\Service\ConfigurationFiles
+ * @uses \App\Service\EnvironmentBuilder
+ * @uses \App\Service\TechnologyIdentifier
+ * @uses \App\Kernel
  */
 final class ApplicationTest extends WebTestCase
 {

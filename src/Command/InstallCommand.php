@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Environment\Configuration\ConfigurationInstaller;
-use App\Environment\EnvironmentMaker;
+use App\Environment\EnvironmentFactory;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\OrigamiStyle;
-use App\Helper\ProcessProxy;
+use App\Service\ConfigurationFiles;
+use App\Service\EnvironmentBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,23 +20,20 @@ class InstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:install';
 
-    private ProcessProxy $processProxy;
-    private EnvironmentMaker $configurator;
-    private ConfigurationInstaller $installer;
+    private EnvironmentBuilder $builder;
+    private ConfigurationFiles $configuration;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
-        ProcessProxy $processProxy,
-        EnvironmentMaker $configurator,
-        ConfigurationInstaller $installer,
+        EnvironmentBuilder $builder,
+        ConfigurationFiles $configuration,
         EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->processProxy = $processProxy;
-        $this->configurator = $configurator;
-        $this->installer = $installer;
+        $this->builder = $builder;
+        $this->configuration = $configuration;
         $this->eventDispatcher = $eventDispatcher;
     }
 
@@ -54,17 +51,12 @@ class InstallCommand extends AbstractBaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new OrigamiStyle($input, $output);
-        $io->note('The environment will be installed in the current directory.');
 
         try {
-            $environment = $this->installer->install(
-                $location = $this->processProxy->getWorkingDirectory(),
-                $name = $this->configurator->askEnvironmentName($io, basename($location)),
-                $this->configurator->askEnvironmentType($io, $location),
-                $this->configurator->askPhpVersion($io),
-                $this->configurator->askDatabaseVersion($io),
-                $this->configurator->askDomains($io, $name)
-            );
+            $userInputs = $this->builder->prepare($io);
+            $environment = EnvironmentFactory::createEntityFromUserInputs($userInputs);
+
+            $this->configuration->install($environment, $userInputs->getSettings());
 
             $event = new EnvironmentInstalledEvent($environment, $io);
             $this->eventDispatcher->dispatch($event);
@@ -72,8 +64,8 @@ class InstallCommand extends AbstractBaseCommand
             $io->success('Environment successfully installed.');
             $io->info(
                 "You can now use the following commands to start the environment.\n"
-                ."  * \"origami start {$name}\" from any location.\n"
-                ."  * \"origami start\" from this location ({$location})."
+                .'  * "origami start '.$environment->getName()."\" from any location.\n"
+                .'  * "origami start" from this location ('.$environment->getLocation().').'
             );
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Middleware\Binary;
 
-use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessFactory;
+use App\Service\ConfigurationFiles;
 
 class Docker
 {
@@ -190,7 +190,7 @@ class Docker
         $location = $environment->getLocation();
 
         return [
-            '--file='.$location.AbstractConfiguration::INSTALLATION_DIRECTORY.'docker-compose.yml',
+            '--file='.$location.ConfigurationFiles::INSTALLATION_DIRECTORY.'docker-compose.yml',
             '--project-directory='.$location,
             '--project-name='.$this->currentContext->getProjectName(),
         ];

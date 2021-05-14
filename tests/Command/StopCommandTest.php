@@ -9,7 +9,7 @@ use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use Prophecy\Argument;
 use stdClass;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -28,7 +28,7 @@ final class StopCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     public function testItExecutesProcessSuccessfully(): void
     {

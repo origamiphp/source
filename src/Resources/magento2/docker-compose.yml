@@ -8,7 +8,7 @@ services:
       - php
 
   elasticsearch:
-    image: ajardin/magento2-elasticsearch:7
+    image: ${DOCKER_ELASTICSEARCH_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - discovery.type=single-node
@@ -17,7 +17,7 @@ services:
       - elasticsearch:/usr/share/elasticsearch/data
 
   database:
-    image: mariadb:${DOCKER_DATABASE_IMAGE}
+    image: ${DOCKER_DATABASE_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - 3306:3306
@@ -50,7 +50,7 @@ services:
     tty: true
 
   php:
-    image: ajardin/php:${DOCKER_PHP_IMAGE}
+    image: ${DOCKER_PHP_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
@@ -65,7 +65,7 @@ services:
     tty: true
 
   redis:
-    image: redis:3.2-alpine
+    image: ${DOCKER_REDIS_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     volumes:
       - redis:/data

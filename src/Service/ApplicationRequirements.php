@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Environment\EnvironmentMaker;
+namespace App\Service;
 
 use Symfony\Component\Process\ExecutableFinder;
 
-class RequirementsChecker
+class ApplicationRequirements
 {
     private ExecutableFinder $executableFinder;
 

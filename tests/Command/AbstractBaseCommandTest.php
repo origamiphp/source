@@ -9,7 +9,7 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
 use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
-use App\Tests\TestLocationTrait;
+use App\Tests\TestEnvironmentTrait;
 use Prophecy\Argument;
 use Prophecy\Prophecy\ObjectProphecy;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -29,7 +29,7 @@ final class AbstractBaseCommandTest extends WebTestCase
 {
     use CustomProphecyTrait;
     use TestCommandTrait;
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     public function testItDoesPrintDetailsWhenVerbose(): void
     {

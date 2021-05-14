@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
-use App\Environment\Configuration\AbstractConfiguration;
 use App\Environment\EnvironmentEntity;
+use App\Service\ConfigurationFiles;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Validator\Constraints\Hostname;
@@ -29,7 +29,7 @@ class Validator
     {
         $filesystem = new Filesystem();
 
-        $configuration = $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.'.env';
+        $configuration = $environment->getLocation().ConfigurationFiles::INSTALLATION_DIRECTORY.'.env';
         if (!$filesystem->exists($configuration)) {
             return false;
         }
@@ -51,7 +51,7 @@ class Validator
             $filename = str_replace(
                 'custom-',
                 '',
-                $environment->getLocation().AbstractConfiguration::INSTALLATION_DIRECTORY.$file->getFilename(),
+                $environment->getLocation().ConfigurationFiles::INSTALLATION_DIRECTORY.$file->getFilename(),
             );
 
             if (!$filesystem->exists($filename)) {

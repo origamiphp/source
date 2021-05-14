@@ -2,31 +2,38 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Environment\EnvironmentMaker;
+namespace App\Tests\Service;
 
-use App\Environment\EnvironmentMaker\TechnologyIdentifier;
-use App\Tests\TestLocationTrait;
+use App\Service\TechnologyIdentifier;
+use App\Tests\TestEnvironmentTrait;
+use App\ValueObject\TechnologyDetails;
 use Generator;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
  *
- * @covers \App\Environment\EnvironmentMaker\TechnologyIdentifier
+ * @covers \App\Service\TechnologyIdentifier
+ *
+ * @uses \App\ValueObject\TechnologyDetails
  */
 final class TechnologyIdentifierTest extends TestCase
 {
-    use TestLocationTrait;
+    use TestEnvironmentTrait;
 
     /**
      * @dataProvider provideSupportedTechnologies
      */
-    public function testItIdentifiesSupportedTechnology(string $technology, string $configuration): void
+    public function testItIdentifiesSupportedTechnology(string $technologyName, string $configuration): void
     {
         file_put_contents("{$this->location}/composer.json", $configuration);
 
         $technologyIdentifier = new TechnologyIdentifier();
-        static::assertSame($technology, $technologyIdentifier->identify($this->location));
+        $technology = $technologyIdentifier->identify($this->location);
+
+        static::assertInstanceOf(TechnologyDetails::class, $technology);
+        static::assertSame($technologyName, $technology->getName());
+        static::assertSame('dev-master', $technology->getVersion());
     }
 
     public function testItReturnsNullWithUnknownTechnology(): void
