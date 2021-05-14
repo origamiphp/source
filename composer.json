@@ -45,7 +45,7 @@
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
-        "friendsofphp/php-cs-fixer": "^2.17",
+        "friendsofphp/php-cs-fixer": "^3.0",
         "phpspec/prophecy": "^1.11",
         "phpspec/prophecy-phpunit": "^2.0",
         "psalm/plugin-phpunit": "^0.15.0",
@@ -56,6 +56,9 @@
         "vimeo/psalm": "^4.3"
     },
     "config": {
+        "platform": {
+            "php": "7.4"
+        },
         "preferred-install": {
             "*": "dist"
         },
