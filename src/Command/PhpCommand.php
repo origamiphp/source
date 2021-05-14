@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace App\Command\Services;
+namespace App\Command;
 
-use App\Command\AbstractBaseCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
@@ -14,12 +13,16 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-abstract class AbstractServiceCommand extends AbstractBaseCommand implements ServiceCommandInterface
+class PhpCommand extends AbstractBaseCommand
 {
-    protected CurrentContext $currentContext;
-    protected Docker $docker;
-    protected string $serviceName;
-    protected string $username;
+    private const COMMAND_SERVICE_NAME = 'php';
+    private const COMMAND_USERNAME = 'www-data:www-data';
+
+    /** {@inheritdoc} */
+    protected static $defaultName = 'origami:php';
+
+    private CurrentContext $currentContext;
+    private Docker $docker;
 
     public function __construct(CurrentContext $currentContext, Docker $docker, ?string $name = null)
     {
@@ -34,10 +37,7 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
      */
     protected function configure(): void
     {
-        $this->serviceName = $this->getServiceName();
-        $this->username = $this->getUsername();
-
-        $this->setDescription(sprintf('Opens a terminal on the "%s" service', $this->serviceName));
+        $this->setDescription('Opens a terminal on the "php" service');
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class AbstractServiceCommand extends AbstractBaseCommand implements Ser
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->docker->openTerminal($this->serviceName, $this->username)) {
+            if (!$this->docker->openTerminal(self::COMMAND_SERVICE_NAME, self::COMMAND_USERNAME)) {
                 throw new InvalidEnvironmentException('An error occurred while opening a terminal.');
             }
         } catch (OrigamiExceptionInterface $exception) {
