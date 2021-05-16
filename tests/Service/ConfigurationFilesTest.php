@@ -7,11 +7,11 @@ namespace App\Tests\Service;
 use App\Environment\EnvironmentEntity;
 use App\Middleware\Binary\Mkcert;
 use App\Service\ConfigurationFiles;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestEnvironmentTrait;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Finder\Finder;
 
 /**
@@ -21,8 +21,15 @@ use Symfony\Component\Finder\Finder;
  */
 final class ConfigurationFilesTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestEnvironmentTrait;
+
+    private const FAKE_BLACKFIRE_CREDENTIALS = [
+        'BLACKFIRE_SERVER_ID' => 'server_foo',
+        'BLACKFIRE_SERVER_TOKEN' => 'server_bar',
+        'BLACKFIRE_CLIENT_ID' => 'client_foo',
+        'BLACKFIRE_CLIENT_TOKEN' => 'client_bar',
+    ];
 
     /**
      * @dataProvider provideMultipleInstallContexts
@@ -33,27 +40,33 @@ final class ConfigurationFilesTest extends TestCase
         ?string $domains = null,
         array $settings = []
     ): void {
-        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $mkcert = $this->prophesize(Mkcert::class);
+        $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
 
+        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
-        [$mkcert] = $this->prophesizeObjectArguments();
 
         if ($domains = $environment->getDomains()) {
             $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
             $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
-            $mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))->shouldBeCalledOnce()->willReturn(true);
+            $mkcert
+                ->generateCertificate($certificate, $privateKey, explode(' ', $domains))
+                ->shouldBeCalledOnce()
+                ->willReturn(true)
+            ;
         } else {
-            $mkcert->generateCertificate(Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
+            $mkcert
+                ->generateCertificate(Argument::any(), Argument::any(), Argument::any())
+                ->shouldNotBeCalled()
+            ;
         }
 
-        $credentials = $this->getFakeBlackfireCredentials();
-
-        $installer = new ConfigurationFiles($mkcert->reveal(), FakeVariables::fromArray($credentials));
+        $installer = new ConfigurationFiles($mkcert->reveal(), $environmentVariables);
         $installer->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination, $settings);
-        $this->assertConfigurationContainsBlackfireCredentials($destination, $credentials);
+        $this->assertConfigurationContainsBlackfireCredentials($destination);
     }
 
     /**
@@ -65,28 +78,34 @@ final class ConfigurationFilesTest extends TestCase
         ?string $domains = null,
         array $settings = []
     ): void {
+        $mkcert = $this->prophesize(Mkcert::class);
+        $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
+
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
-
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
-        [$mkcert, $environmentVariables] = $this->prophesizeObjectArguments();
 
         if ($domains = $environment->getDomains()) {
             $certificate = sprintf('%s/nginx/certs/custom.pem', $destination);
             $privateKey = sprintf('%s/nginx/certs/custom.key', $destination);
 
-            $mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains))->shouldBeCalledOnce()->willReturn(true);
+            $mkcert
+                ->generateCertificate($certificate, $privateKey, explode(' ', $domains))
+                ->shouldBeCalledOnce()
+                ->willReturn(true)
+            ;
         } else {
-            $mkcert->generateCertificate(Argument::any(), Argument::any(), Argument::any())->shouldNotBeCalled();
+            $mkcert
+                ->generateCertificate(Argument::any(), Argument::any(), Argument::any())
+                ->shouldNotBeCalled()
+            ;
         }
-
-        $credentials = $this->getFakeBlackfireCredentials();
 
         $updater = new ConfigurationFiles($mkcert->reveal(), $environmentVariables);
         $updater->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination, $settings);
-        $this->assertConfigurationContainsBlackfireCredentials($destination, $credentials);
+        $this->assertConfigurationContainsBlackfireCredentials($destination);
     }
 
     /**
@@ -97,13 +116,14 @@ final class ConfigurationFilesTest extends TestCase
         string $type,
         ?string $domains = null
     ): void {
+        $mkcert = $this->prophesize(Mkcert::class);
+        $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
+
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
-
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
-        static::assertDirectoryExists($destination);
 
-        [$mkcert, $environmentVariables] = $this->prophesizeObjectArguments();
+        static::assertDirectoryExists($destination);
 
         $uninstaller = new ConfigurationFiles($mkcert->reveal(), $environmentVariables);
         $uninstaller->uninstall($environment);
@@ -111,17 +131,7 @@ final class ConfigurationFilesTest extends TestCase
         static::assertDirectoryDoesNotExist($destination);
     }
 
-    protected function getFakeBlackfireCredentials(): array
-    {
-        return [
-            'BLACKFIRE_SERVER_ID' => 'server_foo',
-            'BLACKFIRE_SERVER_TOKEN' => 'server_bar',
-            'BLACKFIRE_CLIENT_ID' => 'client_foo',
-            'BLACKFIRE_CLIENT_TOKEN' => 'client_bar',
-        ];
-    }
-
-    protected function assertConfigurationIsInstalled(EnvironmentEntity $environment, string $destination, array $settings): void
+    private function assertConfigurationIsInstalled(EnvironmentEntity $environment, string $destination, array $settings): void
     {
         $type = $environment->getType();
 
@@ -144,26 +154,13 @@ final class ConfigurationFilesTest extends TestCase
         }
     }
 
-    protected function assertConfigurationContainsBlackfireCredentials(string $destination, array $credentials): void
+    private function assertConfigurationContainsBlackfireCredentials(string $destination): void
     {
         /** @var string $projectConfiguration */
         $projectConfiguration = file_get_contents("{$destination}/.env");
 
-        foreach ($credentials as $key => $value) {
+        foreach (self::FAKE_BLACKFIRE_CREDENTIALS as $key => $value) {
             static::assertStringContainsString("{$key}={$value}\n", $projectConfiguration);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        $credentials = $this->getFakeBlackfireCredentials();
-
-        return [
-            $this->prophesize(Mkcert::class),
-            FakeVariables::fromArray($credentials),
-        ];
     }
 }

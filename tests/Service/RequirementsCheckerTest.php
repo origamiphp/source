@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Service\ApplicationRequirements;
-use App\Tests\CustomProphecyTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\ExecutableFinder;
 
 /**
@@ -16,14 +16,23 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 final class RequirementsCheckerTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
 
     public function testItDetectsMandatoryBinaryStatus(): void
     {
-        [$executableFinder] = $this->prophesizeObjectArguments();
+        $executableFinder = $this->prophesize(ExecutableFinder::class);
 
-        $executableFinder->find('docker')->shouldBeCalledOnce()->willReturn('/usr/local/bin/docker');
-        $executableFinder->find('mutagen')->shouldBeCalledOnce()->willReturn(null);
+        $executableFinder
+            ->find('docker')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/docker')
+        ;
+
+        $executableFinder
+            ->find('mutagen')
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
 
         $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
         static::assertSame([
@@ -42,8 +51,13 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsCertificatesBinaryFoundStatus(): void
     {
-        [$executableFinder] = $this->prophesizeObjectArguments();
-        $executableFinder->find('mkcert')->shouldBeCalledOnce()->willReturn('/usr/local/bin/mkcert');
+        $executableFinder = $this->prophesize(ExecutableFinder::class);
+
+        $executableFinder
+            ->find('mkcert')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/mkcert')
+        ;
 
         $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
         static::assertSame([
@@ -57,8 +71,13 @@ final class RequirementsCheckerTest extends TestCase
 
     public function testItDetectsCertificatesBinaryNotFoundStatus(): void
     {
-        [$executableFinder] = $this->prophesizeObjectArguments();
-        $executableFinder->find('mkcert')->shouldBeCalledOnce()->willReturn(null);
+        $executableFinder = $this->prophesize(ExecutableFinder::class);
+
+        $executableFinder
+            ->find('mkcert')
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
 
         $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
         static::assertSame([
@@ -68,15 +87,5 @@ final class RequirementsCheckerTest extends TestCase
                 'status' => false,
             ],
         ], $requirementsChecker->checkNonMandatoryRequirements());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(ExecutableFinder::class),
-        ];
     }
 }

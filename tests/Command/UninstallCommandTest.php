@@ -9,11 +9,11 @@ use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
 use App\Service\ConfigurationFiles;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -27,25 +27,49 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class UninstallCommandTest extends WebTestCase
+final class UninstallCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItUninstallsTheCurrentEnvironment(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $configurationFiles = $this->prophesize(ConfigurationFiles::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+
         $environment = $this->createEnvironment();
         $environment->deactivate();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $docker, $configurationFiles, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->removeServices()->shouldBeCalledOnce()->willReturn(true);
-        $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
-        $configurationFiles->uninstall($environment)->shouldBeCalledOnce();
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->removeServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $eventDispatcher
+            ->dispatch(Argument::any())
+            ->shouldBeCalledOnce()
+        ;
+
+        $configurationFiles
+            ->uninstall($environment)
+            ->shouldBeCalledOnce()
+        ;
 
         $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
@@ -59,17 +83,41 @@ final class UninstallCommandTest extends WebTestCase
 
     public function testItDisplaysWarningWithError(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $configurationFiles = $this->prophesize(ConfigurationFiles::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+
         $environment = $this->createEnvironment();
         $environment->deactivate();
         $this->installEnvironmentConfiguration($environment);
 
-        [$currentContext, $docker, $configurationFiles, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->removeServices()->shouldBeCalledOnce()->willReturn(false);
-        $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
-        $configurationFiles->uninstall($environment)->shouldBeCalledOnce();
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->removeServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        $eventDispatcher
+            ->dispatch(Argument::any())
+            ->shouldBeCalledOnce()
+        ;
+
+        $configurationFiles
+            ->uninstall($environment)
+            ->shouldBeCalledOnce()
+        ;
 
         $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
@@ -84,10 +132,20 @@ final class UninstallCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        [$currentContext, $docker, $configurationFiles, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $configurationFiles = $this->prophesize(ConfigurationFiles::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
-        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->willThrow(InvalidEnvironmentException::class)
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldNotBeCalled()
+        ;
 
         $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
@@ -97,18 +155,5 @@ final class UninstallCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(Docker::class),
-            $this->prophesize(ConfigurationFiles::class),
-            $this->prophesize(EventDispatcher::class),
-        ];
     }
 }

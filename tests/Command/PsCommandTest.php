@@ -8,11 +8,11 @@ use App\Command\PsCommand;
 use App\Exception\InvalidEnvironmentException;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
@@ -21,20 +21,35 @@ use Symfony\Component\Console\Input\InputInterface;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\PsCommand
  */
-final class PsCommandTest extends WebTestCase
+final class PsCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $docker] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->showServicesStatus()->shouldBeCalledOnce()->willReturn(true);
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->showServicesStatus()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $command = new PsCommand($currentContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
@@ -42,23 +57,20 @@ final class PsCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        [$currentContext, $docker] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->willThrow(InvalidEnvironmentException::class);
-        $currentContext->getActiveEnvironment()->shouldNotBeCalled();
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->willThrow(InvalidEnvironmentException::class)
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldNotBeCalled()
+        ;
 
         $command = new PsCommand($currentContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(Docker::class),
-        ];
     }
 }

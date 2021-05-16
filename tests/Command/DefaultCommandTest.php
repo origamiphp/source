@@ -48,6 +48,7 @@ final class DefaultCommandTest extends WebTestCase
     private function createFakeOrigamiCommand(): Command
     {
         return new class() extends Command {
+            /** {@inheritdoc} */
             protected static $defaultName = 'origami:test';
 
             /**

@@ -51,7 +51,7 @@ trait TestEnvironmentTrait
         yield 'Symfony environment and custom domain' => [
             'symfony-project',
             EnvironmentEntity::TYPE_SYMFONY,
-            'symfony.test',
+            'mydomain.test',
             ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'],
         ];
 
@@ -72,7 +72,7 @@ trait TestEnvironmentTrait
             'origami',
             $this->location,
             EnvironmentEntity::TYPE_SYMFONY,
-            'origami.localhost'
+            'mydomain.test'
         );
     }
 

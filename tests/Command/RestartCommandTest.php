@@ -7,11 +7,11 @@ namespace App\Tests\Command;
 use App\Command\RestartCommand;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -23,21 +23,41 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class RestartCommandTest extends WebTestCase
+final class RestartCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->restartServices()->shouldBeCalledOnce()->willReturn(true);
-        $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->restartServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $eventDispatcher
+            ->dispatch(Argument::any())
+            ->shouldBeCalledOnce()
+        ;
 
         $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertResultIsSuccessful($command, $environment);
@@ -45,26 +65,30 @@ final class RestartCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->restartServices()->shouldBeCalledOnce()->willReturn(false);
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->restartServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertExceptionIsHandled($command);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(Docker::class),
-            $this->prophesize(EventDispatcherInterface::class),
-        ];
     }
 }

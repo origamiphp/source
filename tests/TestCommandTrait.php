@@ -30,7 +30,6 @@ trait TestCommandTrait
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
-
         static::assertStringContainsString('[OK] ', $display);
         static::assertStringContainsString(sprintf('Environment location: %s', $environment->getLocation()), $display);
         static::assertStringContainsString(sprintf('Environment type: %s', $environment->getType()), $display);
@@ -46,7 +45,6 @@ trait TestCommandTrait
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
-
         static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }

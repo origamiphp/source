@@ -7,9 +7,9 @@ namespace App\Tests\Middleware;
 use App\Exception\UnsupportedOperatingSystemException;
 use App\Helper\ProcessFactory;
 use App\Middleware\Hosts;
-use App\Tests\CustomProphecyTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 
 /**
  * @internal
@@ -18,16 +18,16 @@ use Prophecy\Argument;
  */
 final class HostsTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
 
     /**
      * @throws UnsupportedOperatingSystemException
      */
     public function testItFindsExistingDomains(): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
-        $hosts = new Hosts($processFactory->reveal());
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
+        $hosts = new Hosts($processFactory->reveal());
         static::assertTrue($hosts->hasDomains('localhost'));
     }
 
@@ -36,9 +36,9 @@ final class HostsTest extends TestCase
      */
     public function testItDoesNotFindExistingDomains(): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
-        $hosts = new Hosts($processFactory->reveal());
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
+        $hosts = new Hosts($processFactory->reveal());
         static::assertFalse($hosts->hasDomains('azertyuiopqsdfghjklmwxcvbn'));
     }
 
@@ -47,20 +47,14 @@ final class HostsTest extends TestCase
      */
     public function testItTriggersTheFixingProcess(): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
-        $processFactory->runForegroundProcessFromShellCommandLine(Argument::type('string'))->shouldBeCalledOnce();
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
 
         $hosts = new Hosts($processFactory->reveal());
-        $hosts->fixHostsFile('origami.localhost');
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(ProcessFactory::class),
-        ];
+        $hosts->fixHostsFile('mydomain.test');
     }
 }

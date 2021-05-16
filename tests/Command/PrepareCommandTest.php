@@ -7,11 +7,11 @@ namespace App\Tests\Command;
 use App\Command\PrepareCommand;
 use App\Helper\CurrentContext;
 use App\Middleware\Binary\Docker;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -25,28 +25,47 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class PrepareCommandTest extends WebTestCase
+final class PrepareCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItPreparesTheActiveEnvironment(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $docker] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->pullServices()->shouldBeCalledOnce()->willReturn(true);
-        $docker->buildServices()->shouldBeCalledOnce()->willReturn(true);
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->pullServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $docker
+            ->buildServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         $display = $commandTester->getDisplay();
-
         static::assertDisplayIsVerbose($environment, $display);
         static::assertStringContainsString('[OK] ', $display);
         static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
@@ -54,13 +73,33 @@ final class PrepareCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $docker] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->pullServices()->shouldBeCalledOnce()->willReturn(true);
-        $docker->buildServices()->shouldBeCalledOnce()->willReturn(false);
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->pullServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $docker
+            ->buildServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
@@ -69,16 +108,5 @@ final class PrepareCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(Docker::class),
-        ];
     }
 }

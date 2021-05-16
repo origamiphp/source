@@ -54,9 +54,9 @@ final class DatabaseTest extends TestCase
     public function testItRetrievesTheEnvironmentList(): void
     {
         file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
-
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
+
         $environments = $database->getAllEnvironments();
 
         static::assertEquals(
@@ -66,14 +66,14 @@ final class DatabaseTest extends TestCase
                         'fake-environment-1',
                         '/fake/location/1',
                         'magento',
-                        'magento.localhost',
+                        'magento.test',
                         false
                     ),
                     new EnvironmentEntity(
                         'fake-environment-2',
                         '/fake/location/2',
                         'symfony',
-                        'symfony.localhost',
+                        'symfony.test',
                         true
                     ),
                 ]
@@ -98,7 +98,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-2',
                 '/fake/location/2',
                 'symfony',
-                'symfony.localhost',
+                'symfony.test',
                 true
             ),
             $database->getActiveEnvironment()
@@ -118,7 +118,6 @@ final class DatabaseTest extends TestCase
     public function testItRetrievesAnEnvironmentByName(): void
     {
         file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
-
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -127,7 +126,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-1',
                 '/fake/location/1',
                 'magento',
-                'magento.localhost'
+                'magento.test'
             ),
             $database->getEnvironmentByName('fake-environment-1')
         );
@@ -142,7 +141,6 @@ final class DatabaseTest extends TestCase
     public function testItRetrievesAnEnvironmentByLocation(): void
     {
         file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
-
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -151,7 +149,7 @@ final class DatabaseTest extends TestCase
                 'fake-environment-1',
                 '/fake/location/1',
                 'magento',
-                'magento.localhost'
+                'magento.test'
             ),
             $database->getEnvironmentByLocation('/fake/location/1')
         );
@@ -166,7 +164,6 @@ final class DatabaseTest extends TestCase
     public function testItAddsAnEnvironment(): void
     {
         file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
-
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -174,7 +171,7 @@ final class DatabaseTest extends TestCase
             'fake-environment-3',
             '/fake/location/3',
             'sylius',
-            'sylius.localhost'
+            'sylius.test'
         );
 
         $database->add($environment);
@@ -191,7 +188,6 @@ final class DatabaseTest extends TestCase
     public function testItRemovesAnEnvironment(): void
     {
         file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
-
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -199,7 +195,7 @@ final class DatabaseTest extends TestCase
             'fake-environment-1',
             '/fake/location/1',
             'magento',
-            'magento.localhost'
+            'magento.test'
         );
 
         $database->remove($environment);
@@ -228,14 +224,14 @@ final class DatabaseTest extends TestCase
       "name":"fake-environment-1",
       "location":"\/fake\/location\/1",
       "type":"magento",
-      "domains":"magento.localhost",
+      "domains":"magento.test",
       "active":false
    },
    {
       "name":"fake-environment-2",
       "location":"\/fake\/location\/2",
       "type":"symfony",
-      "domains":"symfony.localhost",
+      "domains":"symfony.test",
       "active":true
    }
 ]
@@ -247,7 +243,7 @@ EOT;
      */
     private function getFakeDatabaseContentAfterAddition(): string
     {
-        return '[{"name":"fake-environment-1","location":"\/fake\/location\/1","type":"magento","domains":"magento.localhost","active":false},{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.localhost","active":true},{"name":"fake-environment-3","location":"\/fake\/location\/3","type":"sylius","domains":"sylius.localhost","active":false}]';
+        return '[{"name":"fake-environment-1","location":"\/fake\/location\/1","type":"magento","domains":"magento.test","active":false},{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.test","active":true},{"name":"fake-environment-3","location":"\/fake\/location\/3","type":"sylius","domains":"sylius.test","active":false}]';
     }
 
     /**
@@ -255,6 +251,6 @@ EOT;
      */
     private function getFakeDatabaseContentAfterDeletion(): string
     {
-        return '[{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.localhost","active":true}]';
+        return '[{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.test","active":true}]';
     }
 }

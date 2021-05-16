@@ -7,8 +7,8 @@ namespace App\Tests\EventSubscriber;
 use App\EventSubscriber\CommandSubscriber;
 use App\Exception\MissingRequirementException;
 use App\Service\ApplicationRequirements;
-use App\Tests\CustomProphecyTrait;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Input\ArgvInput;
@@ -21,24 +21,36 @@ use Symfony\Component\Console\Output\OutputInterface;
  *
  * @covers \App\EventSubscriber\CommandSubscriber
  */
-final class CommandSubscriberTest extends WebTestCase
+final class CommandSubscriberTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
 
     /**
      * @throws MissingRequirementException
      */
     public function testItDoesNotCheckRequirementsWithSymfonyCommands(): void
     {
-        [$requirementsChecker] = $this->prophesizeObjectArguments();
+        $requirementsChecker = $this->prophesize(ApplicationRequirements::class);
 
         $command = $this->prophesize(Command::class);
         $input = $this->prophesize(InputInterface::class);
         $output = $this->prophesize(OutputInterface::class);
 
-        $requirementsChecker->checkMandatoryRequirements()->shouldNotBeCalled();
-        $requirementsChecker->checkNonMandatoryRequirements()->shouldNotBeCalled();
-        $command->getName()->shouldBeCalledOnce()->willReturn('app:fake-command');
+        $requirementsChecker
+            ->checkMandatoryRequirements()
+            ->shouldNotBeCalled()
+        ;
+
+        $requirementsChecker
+            ->checkNonMandatoryRequirements()
+            ->shouldNotBeCalled()
+        ;
+
+        $command
+            ->getName()
+            ->shouldBeCalledOnce()
+            ->willReturn('app:fake-command')
+        ;
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input->reveal(), $output->reveal()));
@@ -49,7 +61,7 @@ final class CommandSubscriberTest extends WebTestCase
      */
     public function testItDetectsMissingMandatoryBinaryWithOrigamiCommands(): void
     {
-        [$requirementsChecker] = $this->prophesizeObjectArguments();
+        $requirementsChecker = $this->prophesize(ApplicationRequirements::class);
 
         $mandatoryRequirementsStatus = [
             ['name' => 'docker', 'description' => '', 'status' => true],
@@ -58,9 +70,24 @@ final class CommandSubscriberTest extends WebTestCase
         $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => true]];
         $command = $this->prophesize(Command::class);
 
-        $requirementsChecker->checkMandatoryRequirements()->shouldBeCalledOnce()->willReturn($mandatoryRequirementsStatus);
-        $requirementsChecker->checkNonMandatoryRequirements()->shouldBeCalledOnce()->willReturn($nonMandatoryRequirementsStatus);
-        $command->getName()->shouldBeCalledOnce()->willReturn('origami:fake-command');
+        $requirementsChecker
+            ->checkMandatoryRequirements()
+            ->shouldBeCalledOnce()
+            ->willReturn($mandatoryRequirementsStatus)
+        ;
+
+        $requirementsChecker
+            ->checkNonMandatoryRequirements()
+            ->shouldBeCalledOnce()
+            ->willReturn($nonMandatoryRequirementsStatus)
+        ;
+
+        $command
+            ->getName()
+            ->shouldBeCalledOnce()
+            ->willReturn('origami:fake-command')
+        ;
+
         $this->expectException(MissingRequirementException::class);
 
         $input = new ArgvInput();
@@ -76,7 +103,7 @@ final class CommandSubscriberTest extends WebTestCase
      */
     public function testItDetectsMissingNonMandatoryBinaryWithOrigamiCommands(): void
     {
-        [$requirementsChecker] = $this->prophesizeObjectArguments();
+        $requirementsChecker = $this->prophesize(ApplicationRequirements::class);
 
         $mandatoryRequirementsStatus = [
             ['name' => 'docker', 'description' => '', 'status' => true],
@@ -85,9 +112,23 @@ final class CommandSubscriberTest extends WebTestCase
         $nonMandatoryRequirementsStatus = [['name' => 'mkcert', 'description' => '', 'status' => false]];
         $command = $this->prophesize(Command::class);
 
-        $requirementsChecker->checkMandatoryRequirements()->shouldBeCalledOnce()->willReturn($mandatoryRequirementsStatus);
-        $requirementsChecker->checkNonMandatoryRequirements()->shouldBeCalledOnce()->willReturn($nonMandatoryRequirementsStatus);
-        $command->getName()->shouldBeCalledOnce()->willReturn('origami:fake-command');
+        $requirementsChecker
+            ->checkMandatoryRequirements()
+            ->shouldBeCalledOnce()
+            ->willReturn($mandatoryRequirementsStatus)
+        ;
+
+        $requirementsChecker
+            ->checkNonMandatoryRequirements()
+            ->shouldBeCalledOnce()
+            ->willReturn($nonMandatoryRequirementsStatus)
+        ;
+
+        $command
+            ->getName()
+            ->shouldBeCalledOnce()
+            ->willReturn('origami:fake-command')
+        ;
 
         $input = new ArgvInput();
         $output = new BufferedOutput();
@@ -95,15 +136,5 @@ final class CommandSubscriberTest extends WebTestCase
 
         $subscriber = new CommandSubscriber($requirementsChecker->reveal());
         $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input, $output));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(ApplicationRequirements::class),
-        ];
     }
 }

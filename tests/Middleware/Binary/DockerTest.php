@@ -7,11 +7,11 @@ namespace App\Tests\Middleware\Binary;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Docker;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestEnvironmentTrait;
 use Generator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
 /**
@@ -21,7 +21,7 @@ use Symfony\Component\Process\Process;
  */
 final class DockerTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestEnvironmentTrait;
 
     /**
@@ -29,23 +29,37 @@ final class DockerTest extends TestCase
      */
     public function testItExecutesDockerComposeInstruction(string $function, array $action): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
         $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
-
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalledTimes(2)->willReturn($projectName);
-
-        $defaultDockerComposeOptions = [
-            "--file={$this->location}/var/docker/docker-compose.yml",
-            "--project-directory={$this->location}",
-            "--project-name={$projectName}",
-        ];
-        $command = array_merge(['docker', 'compose'], $defaultDockerComposeOptions, $action);
-
         $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runForegroundProcess($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext->getProjectName()
+            ->shouldBeCalledTimes(2)
+            ->willReturn($projectName)
+        ;
+
+        $command = array_merge(['docker', 'compose'], $this->getDefaultDockerComposeOptions($projectName), $action);
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcess($command, Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $docker = new Docker($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($docker->{$function}());
@@ -104,23 +118,39 @@ final class DockerTest extends TestCase
 
     public function testItDisplaysResourceUsage(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
         $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
-
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalledTimes(2)->willReturn($projectName);
-
-        $defaultDockerComposeOptions = [
-            "--file={$this->location}/var/docker/docker-compose.yml",
-            "--project-directory={$this->location}",
-            "--project-name={$projectName}",
-        ];
-        $command = implode(' ', array_merge(['docker', 'compose'], $defaultDockerComposeOptions, ['ps --quiet | xargs docker stats']));
-
         $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledTimes(2)
+            ->willReturn($projectName)
+        ;
+
+        $action = ['ps --quiet | xargs docker stats'];
+        $command = implode(' ', array_merge(['docker', 'compose'], $this->getDefaultDockerComposeOptions($projectName), $action));
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $docker = new Docker($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($docker->showResourcesUsage());
@@ -131,27 +161,42 @@ final class DockerTest extends TestCase
      */
     public function testItDisplaysLogs(?int $tail = null, ?string $service = null): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
         $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
-
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalledTimes(2)->willReturn($projectName);
+        $process = $this->prophesize(Process::class);
 
-        $defaultDockerComposeOptions = [
-            "--file={$this->location}/var/docker/docker-compose.yml",
-            "--project-directory={$this->location}",
-            "--project-name={$projectName}",
-        ];
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledTimes(2)
+            ->willReturn($projectName)
+        ;
+
         $action = ['logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
         if ($service) {
             $action[] = $service;
         }
-        $command = array_merge(['docker', 'compose'], $defaultDockerComposeOptions, $action);
+        $command = array_merge(['docker', 'compose'], $this->getDefaultDockerComposeOptions($projectName), $action);
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runForegroundProcess($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcess($command, Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $docker = new Docker($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($docker->showServicesLogs($tail, $service));
@@ -167,18 +212,38 @@ final class DockerTest extends TestCase
 
     public function testItOpensTerminalWithSpecificUser(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $environment = $this->createEnvironment();
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalledOnce()->willReturn($projectName);
+        $process = $this->prophesize(Process::class);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
 
         $command = "docker exec -it --user=www-data:www-data {$projectName}_php_1 bash --login";
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $docker = new Docker($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($docker->openTerminal('php', 'www-data:www-data'));
@@ -186,31 +251,49 @@ final class DockerTest extends TestCase
 
     public function testItOpensTerminalWithoutSpecificUser(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $environment = $this->createEnvironment();
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalledOnce()->willReturn($projectName);
+        $process = $this->prophesize(Process::class);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
 
         $command = "docker exec -it {$projectName}_php_1 bash --login";
 
-        $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $processFactory->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))->shouldBeCalledOnce()->willReturn($process->reveal());
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $docker = new Docker($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($docker->openTerminal('php'));
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
+    private function getDefaultDockerComposeOptions(string $projectName): array
     {
         return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(ProcessFactory::class),
+            "--file={$this->location}/var/docker/docker-compose.yml",
+            "--project-directory={$this->location}",
+            "--project-name={$projectName}",
         ];
     }
 }
