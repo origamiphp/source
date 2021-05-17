@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\Helper;
 
 use App\Helper\Validator;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Validator\Constraints\Hostname;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -21,14 +21,15 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class ValidatorTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestEnvironmentTrait;
 
     public function testItValidatesConfiguration(): void
     {
-        $environment = $this->createEnvironment();
-        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
+        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
+        $projectDir = __DIR__.'/../../';
 
+        $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
@@ -37,8 +38,10 @@ final class ValidatorTest extends TestCase
 
     public function testItInvalidatesMissingConfiguration(): void
     {
+        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
+        $projectDir = __DIR__.'/../../';
+
         $environment = $this->createEnvironment();
-        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertFalse($validator->validateConfigurationFiles($environment));
@@ -46,9 +49,11 @@ final class ValidatorTest extends TestCase
 
     public function testItValidatesAnExistingDotEnvFile(): void
     {
+        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
+        $projectDir = __DIR__.'/../../';
+
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
-        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertTrue($validator->validateDotEnvExistence($environment));
@@ -56,8 +61,10 @@ final class ValidatorTest extends TestCase
 
     public function testItInvalidatesAMissingDotEnvFile(): void
     {
+        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
+        $projectDir = __DIR__.'/../../';
+
         $environment = $this->createEnvironment();
-        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertFalse($validator->validateDotEnvExistence($environment));
@@ -65,36 +72,34 @@ final class ValidatorTest extends TestCase
 
     public function testItValidatesAnAcceptableHostname(): void
     {
-        $noErrors = new ConstraintViolationList();
+        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
+        $projectDir = __DIR__.'/../../';
 
-        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
-        $symfonyValidator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($noErrors);
+        $symfonyValidator
+            ->validate(Argument::type('string'), Argument::type(Hostname::class))
+            ->shouldBeCalledOnce()
+            ->willReturn(new ConstraintViolationList())
+        ;
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
-        static::assertTrue($validator->validateHostname('symfony.localhost'));
+        static::assertTrue($validator->validateHostname('mydomain.test'));
     }
 
     public function testItInvalidatesAnUnacceptableHostname(): void
     {
-        $violation = $this->prophesize(ConstraintViolation::class);
-        $errors = new ConstraintViolationList();
-        $errors->add($violation->reveal());
+        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
+        $projectDir = __DIR__.'/../../';
 
-        [$symfonyValidator, $projectDir] = $this->prophesizeObjectArguments();
-        $symfonyValidator->validate(Argument::type('string'), Argument::type(Hostname::class))->shouldBeCalledOnce()->willReturn($errors);
+        $errors = new ConstraintViolationList();
+        $errors->add($this->prophesize(ConstraintViolation::class)->reveal());
+
+        $symfonyValidator
+            ->validate(Argument::type('string'), Argument::type(Hostname::class))
+            ->shouldBeCalledOnce()
+            ->willReturn($errors)
+        ;
 
         $validator = new Validator($symfonyValidator->reveal(), $projectDir);
         static::assertFalse($validator->validateHostname('azerty'));
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(ValidatorInterface::class),
-            __DIR__.'/../../',
-        ];
     }
 }

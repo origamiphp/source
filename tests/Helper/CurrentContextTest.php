@@ -11,9 +11,9 @@ use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
 use App\Helper\Validator;
 use App\Middleware\Database;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Input\InputInterface;
 
 /**
@@ -23,7 +23,7 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 final class CurrentContextTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestEnvironmentTrait;
 
     /**
@@ -33,18 +33,33 @@ final class CurrentContextTest extends TestCase
      */
     public function testItRetrieveTheActiveEnvironment(): void
     {
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $validator = $this->prophesize(Validator::class);
+
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        [$database, $processProxy, $validator] = $this->prophesizeObjectArguments();
-        $input = $this->prophesize(InputInterface::class);
+        $database
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(true);
-        $validator->validateConfigurationFiles($environment)->shouldBeCalledOnce()->willReturn(true);
+        $validator
+            ->validateDotEnvExistence($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $validator
+            ->validateConfigurationFiles($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($input->reveal());
+        $currentContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
         static::assertSame($environment, $currentContext->getActiveEnvironment());
         static::assertSame("{$environment->getType()}_{$environment->getName()}", $currentContext->getProjectName());
     }
@@ -56,18 +71,49 @@ final class CurrentContextTest extends TestCase
      */
     public function testItRetrieveTheEnvironmentFromInput(): void
     {
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $validator = $this->prophesize(Validator::class);
+
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
-
-        [$database, $processProxy, $validator] = $this->prophesizeObjectArguments();
         $input = $this->prophesize(InputInterface::class);
 
-        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
-        $input->hasArgument('environment')->shouldBeCalledOnce()->willReturn(true);
-        $input->getArgument('environment')->shouldBeCalledOnce()->willReturn('origami');
-        $database->getEnvironmentByName('origami')->shouldBeCalledOnce()->willReturn($environment);
-        $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(true);
-        $validator->validateConfigurationFiles($environment)->shouldBeCalledOnce()->willReturn(true);
+        $database
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
+
+        $input
+            ->hasArgument('environment')
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $input
+            ->getArgument('environment')
+            ->shouldBeCalledOnce()
+            ->willReturn('origami')
+        ;
+
+        $database
+            ->getEnvironmentByName('origami')
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $validator
+            ->validateDotEnvExistence($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $validator
+            ->validateConfigurationFiles($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
         $currentContext->loadEnvironment($input->reveal());
@@ -82,20 +128,60 @@ final class CurrentContextTest extends TestCase
      */
     public function testItRetrieveTheEnvironmentFromLocation(): void
     {
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $validator = $this->prophesize(Validator::class);
+
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
-
-        [$database, $processProxy, $validator] = $this->prophesizeObjectArguments();
         $input = $this->prophesize(InputInterface::class);
 
-        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn(null);
-        $input->hasArgument('environment')->shouldBeCalledOnce()->willReturn(true);
-        $input->getArgument('environment')->shouldBeCalledOnce()->willReturn('origami');
-        $database->getEnvironmentByName('origami')->shouldBeCalledOnce()->willReturn(null);
-        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('.');
-        $database->getEnvironmentByLocation('.')->shouldBeCalledOnce()->willReturn($environment);
-        $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(true);
-        $validator->validateConfigurationFiles($environment)->shouldBeCalledOnce()->willReturn(true);
+        $database
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
+
+        $input
+            ->hasArgument('environment')
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $input
+            ->getArgument('environment')
+            ->shouldBeCalledOnce()
+            ->willReturn('origami')
+        ;
+
+        $database
+            ->getEnvironmentByName('origami')
+            ->shouldBeCalledOnce()
+            ->willReturn(null)
+        ;
+
+        $processProxy
+            ->getWorkingDirectory()
+            ->shouldBeCalledOnce()->willReturn('.')
+        ;
+
+        $database
+            ->getEnvironmentByLocation('.')
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $validator
+            ->validateDotEnvExistence($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $validator
+            ->validateConfigurationFiles($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
         $currentContext->loadEnvironment($input->reveal());
@@ -109,9 +195,15 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithoutEnvironment(): void
     {
-        [$database, $processProxy, $validator] = $this->prophesizeObjectArguments();
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $validator = $this->prophesize(Validator::class);
 
-        $processProxy->getWorkingDirectory()->shouldBeCalledOnce()->willReturn('.');
+        $processProxy
+            ->getWorkingDirectory()
+            ->shouldBeCalledOnce()
+            ->willReturn('.')
+        ;
 
         $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
         $this->expectException(InvalidEnvironmentException::class);
@@ -125,19 +217,34 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithMissingDotEnvFile(): void
     {
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $validator = $this->prophesize(Validator::class);
+
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        [$database, $processProxy, $validator] = $this->prophesizeObjectArguments();
-        $input = $this->prophesize(InputInterface::class);
+        $database
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(false);
-        $validator->validateConfigurationFiles($environment)->shouldNotBeCalled();
+        $validator
+            ->validateDotEnvExistence($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        $validator
+            ->validateConfigurationFiles($environment)
+            ->shouldNotBeCalled()
+        ;
+
         $this->expectException(InvalidConfigurationException::class);
 
         $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($input->reveal());
+        $currentContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
 
     /**
@@ -147,30 +254,34 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithMissingConfigurationFiles(): void
     {
+        $database = $this->prophesize(Database::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $validator = $this->prophesize(Validator::class);
+
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        [$database, $processProxy, $validator] = $this->prophesizeObjectArguments();
-        $input = $this->prophesize(InputInterface::class);
+        $database
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $database->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $validator->validateDotEnvExistence($environment)->shouldBeCalledOnce()->willReturn(true);
-        $validator->validateConfigurationFiles($environment)->shouldBeCalledOnce()->willReturn(false);
+        $validator
+            ->validateDotEnvExistence($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $validator
+            ->validateConfigurationFiles($environment)
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
         $this->expectException(InvalidConfigurationException::class);
 
         $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($input->reveal());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(Database::class),
-            $this->prophesize(ProcessProxy::class),
-            $this->prophesize(Validator::class),
-        ];
+        $currentContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
 }

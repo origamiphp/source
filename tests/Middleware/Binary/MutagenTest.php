@@ -7,9 +7,9 @@ namespace App\Tests\Middleware\Binary;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Mutagen;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
 /**
@@ -19,23 +19,48 @@ use Symfony\Component\Process\Process;
  */
 final class MutagenTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestEnvironmentTrait;
 
     public function testItStartsSynchronizationSession(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $environment = $this->createEnvironment();
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalled(2)->willReturn($projectName);
         $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $process->getOutput()->shouldBeCalledOnce()->willReturn('');
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalled()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $process
+            ->getOutput()
+            ->shouldBeCalledOnce()
+            ->willReturn('')
+        ;
 
         $command = ['mutagen', 'sync', 'list', "--label-selector=name={$projectName}"];
-        $processFactory->runBackgroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory
+            ->runBackgroundProcess($command)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $command = [
             'mutagen',
@@ -50,7 +75,11 @@ final class MutagenTest extends TestCase
             $environment->getLocation(),
             "docker://{$projectName}_synchro/var/www/html/",
         ];
-        $processFactory->runForegroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory
+            ->runForegroundProcess($command)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($mutagen->startDockerSynchronization());
@@ -58,21 +87,50 @@ final class MutagenTest extends TestCase
 
     public function testItResumesSynchronizationSession(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $environment = $this->createEnvironment();
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalled(2)->willReturn($projectName);
         $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
-        $process->getOutput()->shouldBeCalledOnce()->willReturn($projectName);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalled()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $process
+            ->getOutput()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
 
         $command = ['mutagen', 'sync', 'list', "--label-selector=name={$projectName}"];
-        $processFactory->runBackgroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory
+            ->runBackgroundProcess($command)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $command = ['mutagen', 'sync', 'resume', "--label-selector=name={$projectName}"];
-        $processFactory->runForegroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory
+            ->runForegroundProcess($command)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($mutagen->startDockerSynchronization());
@@ -80,16 +138,31 @@ final class MutagenTest extends TestCase
 
     public function testItStopsSynchronizationSession(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
+        $environment = $this->createEnvironment();
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalled(2)->willReturn($projectName);
         $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalled()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $command = ['mutagen', 'sync', 'pause', "--label-selector=name={$projectName}"];
-        $processFactory->runForegroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory
+            ->runForegroundProcess($command)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($mutagen->stopDockerSynchronization());
@@ -97,29 +170,33 @@ final class MutagenTest extends TestCase
 
     public function testItRemovesSynchronizationSession(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processFactory] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
+        $environment = $this->createEnvironment();
         $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $currentContext->getProjectName()->shouldBeCalled(2)->willReturn($projectName);
         $process = $this->prophesize(Process::class);
-        $process->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalled()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $command = ['mutagen', 'sync', 'terminate', "--label-selector=name={$projectName}"];
-        $processFactory->runForegroundProcess($command)->shouldBeCalledOnce()->willReturn($process->reveal());
+        $processFactory
+            ->runForegroundProcess($command)
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
 
         $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
         static::assertTrue($mutagen->removeDockerSynchronization());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(ProcessFactory::class),
-        ];
     }
 }

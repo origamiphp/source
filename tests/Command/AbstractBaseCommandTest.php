@@ -7,12 +7,12 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Helper\CurrentContext;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Prophecy\Prophecy\ObjectProphecy;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,19 +25,26 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @covers \App\Command\AbstractBaseCommand
  */
-final class AbstractBaseCommandTest extends WebTestCase
+final class AbstractBaseCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItDoesPrintDetailsWhenVerbose(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($this->createEnvironment())
+        ;
 
         $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
@@ -48,27 +55,24 @@ final class AbstractBaseCommandTest extends WebTestCase
 
     public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($this->createEnvironment())
+        ;
 
         $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
 
         static::assertStringNotContainsString('[OK] ', $commandTester->getDisplay());
         static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-        ];
     }
 
     /**

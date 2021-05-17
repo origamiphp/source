@@ -8,12 +8,12 @@ use App\Command\UpdateCommand;
 use App\Helper\CurrentContext;
 use App\Service\ConfigurationFiles;
 use App\Service\EnvironmentBuilder;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\PrepareAnswers;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -27,23 +27,42 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class UpdateCommandTest extends WebTestCase
+final class UpdateCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItSuccessfullyUpdatesTheCurrentEnvironment(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $environmentBuilder = $this->prophesize(EnvironmentBuilder::class);
+        $configurationFiles = $this->prophesize(ConfigurationFiles::class);
+
         $environment = $this->createEnvironment();
-        [$currentContext, $environmentBuilder, $configurationFiles] = $this->prophesizeObjectArguments();
-
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-
         $answers = new PrepareAnswers($environment->getName(), $environment->getLocation(), $environment->getType(), null, []);
-        $environmentBuilder->prepare(Argument::type(SymfonyStyle::class), $environment)->shouldBeCalledOnce()->willReturn($answers);
-        $configurationFiles->install($environment, $answers->getSettings())->shouldBeCalledOnce();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $environmentBuilder
+            ->prepare(Argument::type(SymfonyStyle::class), $environment)
+            ->shouldBeCalledOnce()
+            ->willReturn($answers)
+        ;
+
+        $configurationFiles
+            ->install($environment, $answers->getSettings())
+            ->shouldBeCalledOnce()
+        ;
 
         $command = new UpdateCommand($currentContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
         $commandTester = new CommandTester($command);
@@ -57,12 +76,23 @@ final class UpdateCommandTest extends WebTestCase
 
     public function testItAbortsGracefullyTheUpdate(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $environmentBuilder = $this->prophesize(EnvironmentBuilder::class);
+        $configurationFiles = $this->prophesize(ConfigurationFiles::class);
+
         $environment = $this->createEnvironment();
         $environment->activate();
-        [$currentContext, $environmentBuilder, $configurationFiles] = $this->prophesizeObjectArguments();
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $command = new UpdateCommand($currentContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
         $commandTester = new CommandTester($command);
@@ -72,17 +102,5 @@ final class UpdateCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(EnvironmentBuilder::class),
-            $this->prophesize(ConfigurationFiles::class),
-        ];
     }
 }

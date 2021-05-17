@@ -8,10 +8,10 @@ use App\Command\RegistryCommand;
 use App\Environment\EnvironmentCollection;
 use App\Environment\EnvironmentEntity;
 use App\Middleware\Database;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -20,16 +20,21 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\RegistryCommand
  */
-final class RegistryCommandTest extends WebTestCase
+final class RegistryCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
-        [$database] = $this->prophesizeObjectArguments();
-        $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection());
+        $database = $this->prophesize(Database::class);
+
+        $database
+            ->getAllEnvironments()
+            ->shouldBeCalledOnce()
+            ->willReturn(new EnvironmentCollection())
+        ;
 
         $command = new RegistryCommand($database->reveal());
         $commandTester = new CommandTester($command);
@@ -42,30 +47,25 @@ final class RegistryCommandTest extends WebTestCase
     /**
      * @dataProvider provideMultipleInstallContexts
      */
-    public function testItPrintsEnvironmentDetailsInTable(
-        string $name,
-        string $type,
-        ?string $domains = null
-    ): void {
+    public function testItPrintsEnvironmentDetailsInTable(string $name, string $type, ?string $domains = null): void
+    {
+        $database = $this->prophesize(Database::class);
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
-        [$database] = $this->prophesizeObjectArguments();
 
-        $database->getAllEnvironments()->shouldBeCalledOnce()->willReturn(new EnvironmentCollection([$environment]));
+        $database
+            ->getAllEnvironments()
+            ->shouldBeCalledOnce()
+            ->willReturn(new EnvironmentCollection([$environment]))
+        ;
 
         $command = new RegistryCommand($database->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
         $display = $commandTester->getDisplay();
-
-        $name = $environment->getName();
-        static::assertStringContainsString($name, $display);
-
-        $location = $environment->getLocation();
-        static::assertStringContainsString($location, $display);
-
-        $type = $environment->getType();
-        static::assertStringContainsString($type, $display);
+        static::assertStringContainsString($environment->getName(), $display);
+        static::assertStringContainsString($environment->getLocation(), $display);
+        static::assertStringContainsString($environment->getType(), $display);
 
         if ($domains = $environment->getDomains()) {
             static::assertStringContainsString($domains, $display);
@@ -76,15 +76,5 @@ final class RegistryCommandTest extends WebTestCase
         } else {
             static::assertStringContainsString('Stopped', $display);
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(Database::class),
-        ];
     }
 }

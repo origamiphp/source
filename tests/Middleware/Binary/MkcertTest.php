@@ -7,9 +7,9 @@ namespace App\Tests\Middleware\Binary;
 use App\Exception\MkcertException;
 use App\Helper\ProcessFactory;
 use App\Middleware\Binary\Mkcert;
-use App\Tests\CustomProphecyTrait;
 use Generator;
 use PHPUnit\Framework\TestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
 /**
@@ -19,20 +19,29 @@ use Symfony\Component\Process\Process;
  */
 final class MkcertTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
 
     /**
      * @dataProvider provideCertificateDomains
      */
     public function testItGeneratesCertificate(array $domains): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
         $installProcess = $this->prophesize(Process::class);
         $installCommand = ['mkcert', '-install'];
 
-        $processFactory->runBackgroundProcess($installCommand)->shouldBeCalledOnce()->willReturn($installProcess->reveal());
-        $installProcess->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory
+            ->runBackgroundProcess($installCommand)
+            ->shouldBeCalledOnce()
+            ->willReturn($installProcess->reveal())
+        ;
+
+        $installProcess
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $generateProcess = $this->prophesize(Process::class);
         $generateCommand = array_merge(
@@ -40,8 +49,17 @@ final class MkcertTest extends TestCase
             $domains
         );
 
-        $processFactory->runBackgroundProcess($generateCommand)->shouldBeCalledOnce()->willReturn($generateProcess->reveal());
-        $generateProcess->isSuccessful()->shouldBeCalledOnce()->willReturn(true);
+        $processFactory
+            ->runBackgroundProcess($generateCommand)
+            ->shouldBeCalledOnce()
+            ->willReturn($generateProcess->reveal())
+        ;
+
+        $generateProcess
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $mkcert = new Mkcert($processFactory->reveal());
         static::assertTrue($mkcert->generateCertificate('./custom.pem', './custom.key', $domains));
@@ -52,14 +70,27 @@ final class MkcertTest extends TestCase
      */
     public function testItThrowsAnExceptionWhenInstallFails(array $domains): void
     {
-        [$processFactory] = $this->prophesizeObjectArguments();
+        $processFactory = $this->prophesize(ProcessFactory::class);
 
         $installProcess = $this->prophesize(Process::class);
         $installCommand = ['mkcert', '-install'];
 
-        $processFactory->runBackgroundProcess($installCommand)->shouldBeCalledOnce()->willReturn($installProcess->reveal());
-        $installProcess->isSuccessful()->shouldBeCalledOnce()->willReturn(false);
-        $installProcess->getOutput()->shouldBeCalledOnce();
+        $processFactory
+            ->runBackgroundProcess($installCommand)
+            ->shouldBeCalledOnce()
+            ->willReturn($installProcess->reveal())
+        ;
+
+        $installProcess
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        $installProcess
+            ->getOutput()
+            ->shouldBeCalledOnce()
+        ;
 
         $this->expectException(MkcertException::class);
 
@@ -69,17 +100,7 @@ final class MkcertTest extends TestCase
 
     public function provideCertificateDomains(): Generator
     {
-        yield 'Single domain' => [['symfony.localhost']];
-        yield 'Multiple domains' => [['symfony.localhost', '*.symfony.localhost']];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(ProcessFactory::class),
-        ];
+        yield 'Single domain' => [['mydomain.test']];
+        yield 'Multiple domains' => [['mydomain.test', '*.mydomain.test']];
     }
 }

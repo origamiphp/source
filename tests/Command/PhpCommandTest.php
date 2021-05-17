@@ -34,20 +34,25 @@ final class PhpCommandTest extends TestCase
 
     public function testItOpensTerminalOnService(): void
     {
-        // PhpCommand::__construct arguments
         $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $environment = $this->createEnvironment();
-        $currentContext->getActiveEnvironment()
-            ->shouldBeCalledOnce()->willReturn($environment);
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($this->createEnvironment())
+        ;
 
-        $docker->openTerminal(Argument::type('string'), Argument::type('string'))
-            ->shouldBeCalledOnce()->willReturn(true);
+        $docker
+            ->openTerminal(Argument::type('string'), Argument::type('string'))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
         $command = new PhpCommand($currentContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
@@ -58,14 +63,16 @@ final class PhpCommandTest extends TestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        // PhpCommand::__construct arguments
         $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
             ->willThrow(InvalidEnvironmentException::class)
         ;
-        $currentContext->getActiveEnvironment()
+
+        $currentContext
+            ->getActiveEnvironment()
             ->shouldNotBeCalled()
         ;
 

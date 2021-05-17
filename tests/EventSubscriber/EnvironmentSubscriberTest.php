@@ -16,9 +16,9 @@ use App\Middleware\Binary\Docker;
 use App\Middleware\Binary\Mutagen;
 use App\Middleware\Database;
 use App\Middleware\Hosts;
-use App\Tests\CustomProphecyTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
@@ -30,275 +30,513 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * @covers \App\Event\EnvironmentUninstalledEvent
  * @covers \App\EventSubscriber\EnvironmentSubscriber
  */
-final class EnvironmentSubscriberTest extends WebTestCase
+final class EnvironmentSubscriberTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
 
     public function testItCreatesTheEnvironmentAfterInstall(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $database->add($environment->reveal())->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $database
+            ->add($environment->reveal())
+            ->shouldBeCalledOnce()
+        ;
 
-        $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentInstall($event);
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItCreatesTheEnvironmentAfterInstallEvenWithAnException(): void
     {
-        $domains = 'test.localhost';
-
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $domains = 'mydomain.test';
 
-        $environment->getDomains()->shouldBeCalledOnce()->willReturn($domains);
-        $hosts->hasDomains($domains)->shouldBeCalledOnce()->willThrow(UnsupportedOperatingSystemException::class);
-        $hosts->fixHostsFile($domains)->shouldNotBeCalled();
+        $environment
+            ->getDomains()
+            ->shouldBeCalledOnce()
+            ->willReturn($domains)
+        ;
 
-        $database->add($environment->reveal())->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $hosts
+            ->hasDomains($domains)
+            ->shouldBeCalledOnce()
+            ->willThrow(UnsupportedOperatingSystemException::class)
+        ;
 
-        $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentInstall($event);
+        $hosts
+            ->fixHostsFile($domains)
+            ->shouldNotBeCalled()
+        ;
+
+        $database
+            ->add($environment->reveal())
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItAnalyzesAndFixesSystemHostsFile(): void
     {
-        $domains = 'test.localhost';
-
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $domains = 'mydomain.test';
 
-        $environment->getDomains()->shouldBeCalledOnce()->willReturn($domains);
-        $hosts->hasDomains($domains)->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->warning(Argument::type('string'))->shouldBeCalledOnce();
-        $symfonyStyle->confirm(Argument::type('string'), false)->shouldBeCalledOnce()->willReturn(true);
-        $hosts->fixHostsFile($domains)->shouldBeCalledOnce();
+        $environment
+            ->getDomains()
+            ->shouldBeCalledOnce()
+            ->willReturn($domains)
+        ;
 
-        $database->add($environment->reveal())->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $hosts
+            ->hasDomains($domains)
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentInstall($event);
+        $symfonyStyle
+            ->warning(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $symfonyStyle
+            ->confirm(Argument::type('string'), false)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $hosts
+            ->fixHostsFile($domains)
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->add($environment->reveal())
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItAnalyzesAndDoesNotFixSystemHostsFile(): void
     {
-        $domains = 'test.localhost';
-
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $domains = 'mydomain.test';
 
-        $environment->getDomains()->shouldBeCalledOnce()->willReturn($domains);
-        $hosts->hasDomains($domains)->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->warning(Argument::type('string'))->shouldBeCalledOnce();
-        $symfonyStyle->confirm(Argument::type('string'), false)->shouldBeCalledOnce()->willReturn(false);
-        $hosts->fixHostsFile($domains)->shouldNotBeCalled();
+        $environment
+            ->getDomains()
+            ->shouldBeCalledOnce()
+            ->willReturn($domains)
+        ;
 
-        $database->add($environment->reveal())->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $hosts
+            ->hasDomains($domains)
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $event = new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentInstall($event);
+        $symfonyStyle
+            ->warning(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $symfonyStyle
+            ->confirm(Argument::type('string'), false)
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        $hosts
+            ->fixHostsFile($domains)
+            ->shouldNotBeCalled()
+        ;
+
+        $database
+            ->add($environment->reveal())
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItStartsTheEnvironmentSuccessfully(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce();
-        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $docker
+            ->fixPermissionsOnSharedSSHAgent()
+            ->shouldBeCalledOnce()
+        ;
 
-        $environment->activate()->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $mutagen
+            ->startDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentStart($event);
+        $environment
+            ->activate()
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItStartsTheEnvironmentWithOnSharedSSHAgent(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
-        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $docker
+            ->fixPermissionsOnSharedSSHAgent()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $environment->activate()->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $symfonyStyle
+            ->error(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
 
-        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentStart($event);
+        $mutagen
+            ->startDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $environment
+            ->activate()
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItStartsTheEnvironmentWithAnErrorWithMutagen(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $docker->fixPermissionsOnSharedSSHAgent()->shouldBeCalledOnce()->willReturn(true);
-        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
+        $docker
+            ->fixPermissionsOnSharedSSHAgent()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $environment->activate()->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $mutagen
+            ->startDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $event = new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentStart($event);
+        $symfonyStyle
+            ->error(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $environment
+            ->activate()
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItStopsTheEnvironmentSuccessfully(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $mutagen
+            ->stopDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $environment->deactivate()->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $environment
+            ->deactivate()
+            ->shouldBeCalledOnce()
+        ;
 
-        $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentStop($event);
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItStopsTheEnvironmentWithAnErrorOnMutagen(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
+        $mutagen
+            ->stopDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $environment->deactivate()->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $symfonyStyle
+            ->error(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
 
-        $event = new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentStop($event);
+        $environment
+            ->deactivate()
+            ->shouldBeCalledOnce()
+        ;
+
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItRestartsTheEnvironmentSuccessfully(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
-        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $mutagen
+            ->stopDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentRestart($event);
+        $mutagen
+            ->startDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItRestartsTheEnvironmentWithAnErrorOnMutagenStopping(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
-        $mutagen->startDockerSynchronization()->shouldNotBeCalled();
-        $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
+        $mutagen
+            ->stopDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentRestart($event);
+        $mutagen
+            ->startDockerSynchronization()
+            ->shouldNotBeCalled()
+        ;
+
+        $symfonyStyle
+            ->error(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItRestartsTheEnvironmentWithAnErrorOnMutagenStarting(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->stopDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
-        $mutagen->startDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
+        $mutagen
+            ->stopDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $event = new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentRestart($event);
+        $mutagen
+            ->startDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        $symfonyStyle
+            ->error(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentSuccessfully(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->removeDockerSynchronization()->shouldBeCalledOnce()->willReturn(true);
+        $mutagen
+            ->removeDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $database->remove($environment)->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $database
+            ->remove($environment)
+            ->shouldBeCalledOnce()
+        ;
 
-        $event = new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentUninstall($event);
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentWithAnErrorOnMutagen(): void
     {
-        [$hosts, $docker, $mutagen, $database] = $this->prophesizeObjectArguments();
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $hosts = $this->prophesize(Hosts::class);
+        $docker = $this->prophesize(Docker::class);
+        $mutagen = $this->prophesize(Mutagen::class);
+        $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $symfonyStyle = $this->prophesize(SymfonyStyle::class);
 
-        $mutagen->removeDockerSynchronization()->shouldBeCalledOnce()->willReturn(false);
-        $symfonyStyle->error(Argument::type('string'))->shouldBeCalledOnce();
+        $mutagen
+            ->removeDockerSynchronization()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
-        $database->remove($environment)->shouldBeCalledOnce();
-        $database->save()->shouldBeCalledOnce();
+        $symfonyStyle
+            ->error(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
 
-        $event = new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal());
-        $subscriber->onEnvironmentUninstall($event);
-    }
+        $database
+            ->remove($environment)
+            ->shouldBeCalledOnce()
+        ;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(Hosts::class),
-            $this->prophesize(Docker::class),
-            $this->prophesize(Mutagen::class),
-            $this->prophesize(Database::class),
-        ];
+        $database
+            ->save()
+            ->shouldBeCalledOnce()
+        ;
+
+        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
     }
 }

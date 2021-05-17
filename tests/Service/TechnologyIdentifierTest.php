@@ -27,7 +27,6 @@ final class TechnologyIdentifierTest extends TestCase
     public function testItIdentifiesSupportedTechnology(string $technologyName, string $configuration): void
     {
         file_put_contents("{$this->location}/composer.json", $configuration);
-
         $technologyIdentifier = new TechnologyIdentifier();
         $technology = $technologyIdentifier->identify($this->location);
 
@@ -39,22 +38,23 @@ final class TechnologyIdentifierTest extends TestCase
     public function testItReturnsNullWithUnknownTechnology(): void
     {
         file_put_contents("{$this->location}/composer.json", '{"require":{"foo/bar": "dev-master"}}');
-
         $technologyIdentifier = new TechnologyIdentifier();
+
         static::assertNull($technologyIdentifier->identify($this->location));
     }
 
     public function testItReturnsNullWithInvalidComposerConfiguration(): void
     {
         file_put_contents("{$this->location}/composer.json", '');
-
         $technologyIdentifier = new TechnologyIdentifier();
+
         static::assertNull($technologyIdentifier->identify($this->location));
     }
 
     public function testItReturnsNullWithoutComposerConfiguration(): void
     {
         $technologyIdentifier = new TechnologyIdentifier();
+
         static::assertNull($technologyIdentifier->identify($this->location));
     }
 

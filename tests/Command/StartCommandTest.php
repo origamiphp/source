@@ -8,11 +8,11 @@ use App\Command\StartCommand;
 use App\Helper\CurrentContext;
 use App\Helper\ProcessProxy;
 use App\Middleware\Binary\Docker;
-use App\Tests\CustomProphecyTrait;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -26,21 +26,42 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  *
  * @uses \App\Event\AbstractEnvironmentEvent
  */
-final class StartCommandTest extends WebTestCase
+final class StartCommandTest extends TestCase
 {
-    use CustomProphecyTrait;
+    use ProphecyTrait;
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
     public function testItStartsTheEnvironment(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $docker = $this->prophesize(Docker::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $docker->startServices()->shouldBeCalledOnce()->willReturn(true);
-        $eventDispatcher->dispatch(Argument::any())->shouldBeCalledOnce();
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->startServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $eventDispatcher
+            ->dispatch(Argument::any())
+            ->shouldBeCalledOnce()
+        ;
 
         $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
@@ -54,15 +75,39 @@ final class StartCommandTest extends WebTestCase
 
     public function testItDoesNotStartMultipleEnvironments(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $docker = $this->prophesize(Docker::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
+
         $environment = $this->createEnvironment();
         $environment->activate();
-        [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $processProxy->getWorkingDirectory()->willReturn('');
-        $docker->startServices()->shouldNotBeCalled();
-        $eventDispatcher->dispatch(Argument::any())->shouldNotBeCalled();
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $processProxy
+            ->getWorkingDirectory()
+            ->willReturn('')
+        ;
+
+        $docker
+            ->startServices()
+            ->shouldNotBeCalled()
+        ;
+
+        $eventDispatcher
+            ->dispatch(Argument::any())
+            ->shouldNotBeCalled()
+        ;
 
         $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
@@ -75,15 +120,45 @@ final class StartCommandTest extends WebTestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $environment = $this->createEnvironment();
-        [$currentContext, $processProxy, $docker, $eventDispatcher] = $this->prophesizeObjectArguments();
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processProxy = $this->prophesize(ProcessProxy::class);
+        $docker = $this->prophesize(Docker::class);
+        $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $currentContext->loadEnvironment(Argument::type(InputInterface::class))->shouldBeCalledOnce();
-        $currentContext->getActiveEnvironment()->shouldBeCalledOnce()->willReturn($environment);
-        $processProxy->getWorkingDirectory()->willReturn('');
-        $docker->startServices()->shouldBeCalledOnce()->willReturn(false);
+        $environment = $this->createEnvironment();
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $processProxy
+            ->getWorkingDirectory()
+            ->willReturn('')
+        ;
+
+        $docker
+            ->startServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
 
         $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
@@ -92,18 +167,5 @@ final class StartCommandTest extends WebTestCase
         $display = $commandTester->getDisplay();
         static::assertStringContainsString('[ERROR] ', $display);
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function prophesizeObjectArguments(): array
-    {
-        return [
-            $this->prophesize(CurrentContext::class),
-            $this->prophesize(ProcessProxy::class),
-            $this->prophesize(Docker::class),
-            $this->prophesize(EventDispatcher::class),
-        ];
     }
 }

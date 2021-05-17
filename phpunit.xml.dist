@@ -16,9 +16,6 @@
         <include>
             <directory suffix=".php">src</directory>
         </include>
-        <exclude>
-            <file>src/.preload.php</file>
-        </exclude>
         <report>
             <clover outputFile="var/clover.xml"/>
         </report>
