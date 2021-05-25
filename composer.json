@@ -17,6 +17,7 @@
         "ext-tokenizer": "*",
         "ext-xml": "*",
         "ext-zlib": "*",
+        "composer/semver": "^3.2",
         "ergebnis/environment-variables": "^1.0",
         "symfony/console": "5.2.*",
         "symfony/dotenv": "5.2.*",
