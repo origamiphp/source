@@ -110,25 +110,19 @@ class ConfigurationFiles
     {
         if (!$configuration = file_get_contents($filename)) {
             // @codeCoverageIgnoreStart
-            throw new FilesystemException(
-                sprintf("Unable to load the environment configuration.\n%s", $filename)
-            );
+            throw new FilesystemException(sprintf("Unable to load the environment configuration.\n%s", $filename));
             // @codeCoverageIgnoreEnd
         }
 
         if (!$updates = preg_replace("/{$parameter}=.*/", "{$parameter}={$value}", $configuration)) {
             // @codeCoverageIgnoreStart
-            throw new FilesystemException(
-                sprintf("Unable to parse the environment configuration.\n%s", $filename)
-            );
+            throw new FilesystemException(sprintf("Unable to parse the environment configuration.\n%s", $filename));
             // @codeCoverageIgnoreEnd
         }
 
         if (!file_put_contents($filename, $updates)) {
             // @codeCoverageIgnoreStart
-            throw new FilesystemException(
-                sprintf("Unable to update the environment configuration.\n%s", $filename)
-            );
+            throw new FilesystemException(sprintf("Unable to update the environment configuration.\n%s", $filename));
             // @codeCoverageIgnoreEnd
         }
     }

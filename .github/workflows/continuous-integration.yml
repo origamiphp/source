@@ -31,10 +31,16 @@ jobs:
           composer validate --strict --ansi
           composer install --optimize-autoloader --classmap-authoritative --ansi
 
+      - name: 'Executes the Symfony linters on configuration files and the container'
+        run: make lint
+
       - name: 'Executes the code style analysis in dry-run mode on all PHP files'
         run: make phpcsfixer-audit
 
-      - name: 'Executes the static analysis on all PHP files'
+      - name: 'Executes a static analysis on all PHP files with PHPStan'
+        run: make phpstan
+
+      - name: 'Executes a static analysis on all PHP files with Psalm'
         run: make psalm
 
       - name: 'Executes the security audit on all PHP dependencies'

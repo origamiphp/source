@@ -26,7 +26,11 @@ class Hosts
         $filename = $this->getHostsFile();
         $pattern = "/^127\\.0\\.0\\.1.+{$domains}$/m";
 
-        return (bool) preg_match($pattern, file_get_contents($filename));
+        if (!$content = file_get_contents($filename)) {
+            return false;
+        }
+
+        return (bool) preg_match($pattern, $content);
     }
 
     /**

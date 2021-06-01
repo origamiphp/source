@@ -16,15 +16,32 @@ box: ## Compiles the project into a PHAR archive
 	@rm .env.local.php
 .PHONY: box
 
+ci: ## Executes all the Continuous Integration tests
+	make composer lint phpcsfixer-audit phpstan psalm tests
+.PHONY: ci
+
+composer: ## Executes an analysis on the Composer files
+	composer validate --strict
+.PHONY: composer
+
+lint: ## Executes the Symfony linters on configuration files and the container
+	./bin/console lint:yaml config/
+	./bin/console lint:container
+.PHONY: lint
+
 phpcsfixer-audit: ## Executes the code style analysis in dry-run mode on all PHP files
 	./vendor/bin/php-cs-fixer fix --dry-run --verbose --ansi
-.PHONY: phpcsfixer
+.PHONY: phpcsfixer-audit
 
 phpcsfixer-fix: ## Executes the code style analysis on all PHP files
 	./vendor/bin/php-cs-fixer fix --verbose --ansi
-.PHONY: phpcsfixer
+.PHONY: phpcsfixer-fix
 
-psalm: ## Executes a static analysis on all PHP files
+phpstan: ## Executes a static analysis on all PHP files with PHPStan
+	./vendor/bin/phpstan analyse
+.PHONY: phpstan
+
+psalm: ## Executes a static analysis on all PHP files with Psalm
 	./vendor/bin/psalm --show-info=true --find-dead-code --no-cache
 .PHONY: psalm
 
