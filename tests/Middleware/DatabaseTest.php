@@ -53,7 +53,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesTheEnvironmentList(): void
     {
-        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -89,7 +89,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesTheActiveEnvironment(): void
     {
-        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -117,7 +117,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesAnEnvironmentByName(): void
     {
-        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -140,7 +140,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRetrievesAnEnvironmentByLocation(): void
     {
-        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -163,7 +163,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItAddsAnEnvironment(): void
     {
-        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -175,10 +175,10 @@ final class DatabaseTest extends TestCase
         );
 
         $database->add($environment);
-        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        static::assertJsonFileEqualsJsonFile($this->getFakeDatabasePath(), $this->getDatabasePath());
 
         $database->save();
-        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContentAfterAddition());
+        static::assertJsonFileEqualsJsonFile($this->getFakeDatabaseAfterAdditionPath(), $this->getDatabasePath());
     }
 
     /**
@@ -187,7 +187,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItRemovesAnEnvironment(): void
     {
-        file_put_contents($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new Database($fakeVariables);
 
@@ -199,10 +199,10 @@ final class DatabaseTest extends TestCase
         );
 
         $database->remove($environment);
-        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContent());
+        static::assertJsonFileEqualsJsonFile($this->getFakeDatabasePath(), $this->getDatabasePath());
 
         $database->save();
-        static::assertStringEqualsFile($this->getDatabasePath(), $this->getFakeDatabaseContentAfterDeletion());
+        static::assertJsonFileEqualsJsonFile($this->getFakeDatabaseAfterDeletionPath(), $this->getDatabasePath());
     }
 
     /**
@@ -214,43 +214,26 @@ final class DatabaseTest extends TestCase
     }
 
     /**
-     * Retrieves the fake database content used to perform the tests.
+     * Retrieves the path to the fixture database without changes.
      */
-    private function getFakeDatabaseContent(): string
+    private function getFakeDatabasePath(): string
     {
-        return <<<'EOT'
-[
-   {
-      "name":"fake-environment-1",
-      "location":"\/fake\/location\/1",
-      "type":"magento",
-      "domains":"magento.test",
-      "active":false
-   },
-   {
-      "name":"fake-environment-2",
-      "location":"\/fake\/location\/2",
-      "type":"symfony",
-      "domains":"symfony.test",
-      "active":true
-   }
-]
-EOT;
+        return __DIR__.'/../Fixtures/databases/fake_database.json';
     }
 
     /**
-     * Retrieves the fake database content once the addition test has been performed.
+     * Retrieves the path to the fixture database with an addition.
      */
-    private function getFakeDatabaseContentAfterAddition(): string
+    private function getFakeDatabaseAfterAdditionPath(): string
     {
-        return '[{"name":"fake-environment-1","location":"\/fake\/location\/1","type":"magento","domains":"magento.test","active":false},{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.test","active":true},{"name":"fake-environment-3","location":"\/fake\/location\/3","type":"sylius","domains":"sylius.test","active":false}]';
+        return __DIR__.'/../Fixtures/databases/fake_database_after_addition.json';
     }
 
     /**
-     * Retrieves the fake database content once the deletion test has been performed.
+     * Retrieves the path to the fixture database with a deletion.
      */
-    private function getFakeDatabaseContentAfterDeletion(): string
+    private function getFakeDatabaseAfterDeletionPath(): string
     {
-        return '[{"name":"fake-environment-2","location":"\/fake\/location\/2","type":"symfony","domains":"symfony.test","active":true}]';
+        return __DIR__.'/../Fixtures/databases/fake_database_after_deletion.json';
     }
 }

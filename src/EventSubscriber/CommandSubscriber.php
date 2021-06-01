@@ -64,9 +64,7 @@ class CommandSubscriber implements EventSubscriberInterface
         }
 
         if (\count($mandatoryRequirements) !== \count(array_filter(array_column($mandatoryRequirements, 'status')))) {
-            throw new MissingRequirementException(
-                'At least one mandatory binary uses an unsupported version or is missing from your system.'
-            );
+            throw new MissingRequirementException('At least one mandatory binary uses an unsupported version or is missing from your system.');
         }
     }
 }

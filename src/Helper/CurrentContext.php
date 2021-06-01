@@ -56,9 +56,7 @@ class CurrentContext
 
         // 4. Throw an exception is there is still no defined environment.
         if (!$environment instanceof EnvironmentEntity) {
-            throw new InvalidEnvironmentException(
-                'An environment must be given, please consider using the install command instead.'
-            );
+            throw new InvalidEnvironmentException('An environment must be given, please consider using the install command instead.');
         }
 
         $this->checkEnvironmentConfiguration($environment);

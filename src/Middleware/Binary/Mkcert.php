@@ -48,9 +48,7 @@ class Mkcert
         $process = $this->processFactory->runBackgroundProcess($command);
 
         if (!$process->isSuccessful()) {
-            throw new MkcertException(
-                sprintf("Unable to install the local certificate authority.\n%s", $process->getOutput())
-            );
+            throw new MkcertException(sprintf("Unable to install the local certificate authority.\n%s", $process->getOutput()));
         }
     }
 }

@@ -94,10 +94,12 @@ class Database
 
     /**
      * Adds a new environment to the list of registered environments without saving the state.
+     *
+     * @throws InvalidEnvironmentException
      */
     public function add(EnvironmentEntity $environment): void
     {
-        $this->environments[] = $environment;
+        $this->environments->add($environment);
     }
 
     /**
@@ -105,12 +107,7 @@ class Database
      */
     public function remove(EnvironmentEntity $environment): void
     {
-        foreach ($this->environments as $key => $item) {
-            if ($environment->getLocation() === $item->getLocation()) {
-                $this->environments->offsetUnset($key);
-            }
-        }
-        $this->environments->rewind();
+        $this->environments->remove($environment);
     }
 
     /**

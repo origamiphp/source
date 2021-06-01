@@ -5,6 +5,7 @@ return (new PhpCsFixer\Config())
         '@PhpCsFixer' => true,
         '@PhpCsFixer:risky' => true,
         '@DoctrineAnnotation' => true,
+        '@Symfony' => true,
         'php_unit_strict' => ['assertions' => ['assertAttributeEquals', 'assertAttributeNotEquals']],
         'yoda_style' => false,
     ])
@@ -14,5 +15,5 @@ return (new PhpCsFixer\Config())
             ->in([__DIR__.'/config', __DIR__.'/src', __DIR__.'/tests'])
             ->append([__FILE__, 'bin/console'])
     )
-    ->setCacheFile('.php-cs-fixer.cache')
+    ->setCacheFile(__DIR__.'/var/.php-cs-fixer.cache')
 ;

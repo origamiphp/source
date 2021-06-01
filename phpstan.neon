@@ -1,0 +1,14 @@
+includes:
+  - '%currentWorkingDirectory%/vendor/phpstan/phpstan-phpunit/extension.neon'
+  - '%currentWorkingDirectory%/vendor/phpstan/phpstan-symfony/extension.neon'
+
+parameters:
+  level: max
+  paths:
+    - '%currentWorkingDirectory%/src'
+  symfony:
+    console_application_loader: '%currentWorkingDirectory%/tests/console-loader.php'
+    container_xml_path: '%currentWorkingDirectory%/var/cache/dev/App_KernelDevDebugContainer.xml'
+  inferPrivatePropertyTypeFromConstructor: true
+  checkGenericClassInNonGenericObjectType: false
+  checkMissingIterableValueType: false

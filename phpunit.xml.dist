@@ -2,14 +2,15 @@
 
 <!-- https://phpunit.readthedocs.io/en/latest/configuration.html -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.4/phpunit.xsd"
-         bootstrap="config/bootstrap.php"
-         cacheResultFile="var/.phpunit.result.cache"
-         colors="true"
-         forceCoversAnnotation="true"
+         xsi:noNamespaceSchemaLocation="bin/.phpunit/phpunit.xsd"
+         bootstrap="tests/bootstrap.php"
          beStrictAboutCoversAnnotation="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTodoAnnotatedTests="true"
+         cacheResultFile="var/.phpunit.result.cache"
+         colors="true"
+         executionOrder="defects"
+         forceCoversAnnotation="true"
          verbose="true"
 >
     <coverage processUncoveredFiles="true">
