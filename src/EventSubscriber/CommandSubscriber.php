@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Exception\MissingRequirementException;
-use App\Service\ApplicationRequirements;
+use App\Helper\OrigamiStyle;
+use App\Service\ReleaseChecker;
+use App\Service\RequirementsChecker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    private ApplicationRequirements $requirementsChecker;
+    private RequirementsChecker $requirementsChecker;
+    private ReleaseChecker $releaseChecker;
 
-    public function __construct(ApplicationRequirements $binaryChecker)
+    public function __construct(RequirementsChecker $requirementsChecker, ReleaseChecker $releaseChecker)
     {
-        $this->requirementsChecker = $binaryChecker;
+        $this->requirementsChecker = $requirementsChecker;
+        $this->releaseChecker = $releaseChecker;
     }
 
     /**
@@ -35,7 +38,7 @@ class CommandSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Checks whether all required environment variables are set before executing any commands.
+     * Triggers several checks before executing any custom commands.
      *
      * @throws MissingRequirementException
      */
@@ -47,24 +50,9 @@ class CommandSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $mandatoryRequirements = $this->requirementsChecker->checkMandatoryRequirements();
-        $nonMandatoryRequirements = $this->requirementsChecker->checkNonMandatoryRequirements();
+        $io = new OrigamiStyle($event->getInput(), $event->getOutput());
 
-        if ($event->getOutput()->isVerbose()) {
-            $io = new SymfonyStyle($event->getInput(), $event->getOutput());
-            $io->title('Origami Requirements Checker');
-
-            $io->listing(
-                array_map(static function ($item) {
-                    $icon = $item['status'] ? '✅' : '❌';
-
-                    return "{$icon} {$item['name']} - {$item['description']}";
-                }, array_merge($mandatoryRequirements, $nonMandatoryRequirements))
-            );
-        }
-
-        if (\count($mandatoryRequirements) !== \count(array_filter(array_column($mandatoryRequirements, 'status')))) {
-            throw new MissingRequirementException('At least one mandatory binary uses an unsupported version or is missing from your system.');
-        }
+        $this->requirementsChecker->validate($io, $event->getOutput()->isVerbose());
+        $this->releaseChecker->validate($io);
     }
 }

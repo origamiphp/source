@@ -4,23 +4,64 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Service\ApplicationRequirements;
+use App\Exception\MissingRequirementException;
+use App\Helper\OrigamiStyle;
+use App\Service\RequirementsChecker;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\ExecutableFinder;
 
 /**
  * @internal
  *
- * @covers \App\Service\ApplicationRequirements
+ * @covers \App\Service\RequirementsChecker
  */
 final class RequirementsCheckerTest extends TestCase
 {
     use ProphecyTrait;
 
-    public function testItDetectsMandatoryBinaryStatus(): void
+    public function testItDisplaysNothingWithNormalOutput(): void
     {
         $executableFinder = $this->prophesize(ExecutableFinder::class);
+        $io = $this->prophesize(OrigamiStyle::class);
+
+        $executableFinder
+            ->find('docker')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/docker')
+        ;
+
+        $executableFinder
+            ->find('mutagen')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/mutagen')
+        ;
+
+        $executableFinder
+            ->find('mkcert')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/mkcert')
+        ;
+
+        $io
+            ->title(Argument::type('string'))
+            ->shouldNotBeCalled()
+        ;
+
+        $io
+            ->listing(Argument::type('array'))
+            ->shouldNotBeCalled()
+        ;
+
+        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
+        $requirementsChecker->validate($io->reveal(), false);
+    }
+
+    public function testItDetectsMissingMandatoryBinary(): void
+    {
+        $executableFinder = $this->prophesize(ExecutableFinder::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $executableFinder
             ->find('docker')
@@ -34,44 +75,48 @@ final class RequirementsCheckerTest extends TestCase
             ->willReturn(null)
         ;
 
-        $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
-        static::assertSame([
-            [
-                'name' => 'docker',
-                'description' => 'A self-sufficient runtime for containers.',
-                'status' => true,
-            ],
-            [
-                'name' => 'mutagen',
-                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-                'status' => false,
-            ],
-        ], $requirementsChecker->checkMandatoryRequirements());
-    }
-
-    public function testItDetectsCertificatesBinaryFoundStatus(): void
-    {
-        $executableFinder = $this->prophesize(ExecutableFinder::class);
-
         $executableFinder
             ->find('mkcert')
             ->shouldBeCalledOnce()
             ->willReturn('/usr/local/bin/mkcert')
         ;
 
-        $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
-        static::assertSame([
-            [
-                'name' => 'mkcert',
-                'description' => 'A simple zero-config tool to make locally trusted development certificates.',
-                'status' => true,
-            ],
-        ], $requirementsChecker->checkNonMandatoryRequirements());
+        $io
+            ->title(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $io
+            ->listing([
+                '✅ docker - A self-sufficient runtime for containers.',
+                '❌ mutagen - Fast and efficient way to synchronize code to Docker containers.',
+                '✅ mkcert - A simple zero-config tool to make locally trusted development certificates.',
+            ])
+            ->shouldBeCalledOnce()
+        ;
+
+        $this->expectException(MissingRequirementException::class);
+
+        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
+        $requirementsChecker->validate($io->reveal(), true);
     }
 
-    public function testItDetectsCertificatesBinaryNotFoundStatus(): void
+    public function testItDetectsMissingNonMandatoryBinary(): void
     {
         $executableFinder = $this->prophesize(ExecutableFinder::class);
+        $io = $this->prophesize(OrigamiStyle::class);
+
+        $executableFinder
+            ->find('docker')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/docker')
+        ;
+
+        $executableFinder
+            ->find('mutagen')
+            ->shouldBeCalledOnce()
+            ->willReturn('/usr/local/bin/mutagen')
+        ;
 
         $executableFinder
             ->find('mkcert')
@@ -79,13 +124,21 @@ final class RequirementsCheckerTest extends TestCase
             ->willReturn(null)
         ;
 
-        $requirementsChecker = new ApplicationRequirements($executableFinder->reveal());
-        static::assertSame([
-            [
-                'name' => 'mkcert',
-                'description' => 'A simple zero-config tool to make locally trusted development certificates.',
-                'status' => false,
-            ],
-        ], $requirementsChecker->checkNonMandatoryRequirements());
+        $io
+            ->title(Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
+
+        $io
+            ->listing([
+                '✅ docker - A self-sufficient runtime for containers.',
+                '✅ mutagen - Fast and efficient way to synchronize code to Docker containers.',
+                '❌ mkcert - A simple zero-config tool to make locally trusted development certificates.',
+            ])
+            ->shouldBeCalledOnce()
+        ;
+
+        $requirementsChecker = new RequirementsChecker($executableFinder->reveal());
+        $requirementsChecker->validate($io->reveal(), true);
     }
 }

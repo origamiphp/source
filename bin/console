@@ -4,6 +4,7 @@
 use App\Application;
 use App\Command\DefaultCommand;
 use App\Kernel;
+use App\ValueObject\ApplicationVersion;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
@@ -40,6 +41,6 @@ if ($_SERVER['APP_DEBUG']) {
 }
 
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
-$application = new Application($kernel);
+$application = new Application($kernel, new ApplicationVersion());
 $application->setDefaultCommand(DefaultCommand::getDefaultName());
 $application->run($input);

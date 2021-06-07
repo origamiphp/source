@@ -6,8 +6,8 @@ namespace App\Tests\Service;
 
 use App\Helper\ProcessProxy;
 use App\Helper\Validator;
-use App\Service\ApplicationRequirements;
 use App\Service\EnvironmentBuilder;
+use App\Service\RequirementsChecker;
 use App\Service\TechnologyIdentifier;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\PrepareAnswers;
@@ -40,7 +40,7 @@ final class EnvironmentBuilderTest extends TestCase
     {
         $processProxy = $this->prophesize(ProcessProxy::class);
         $technologyIdentifier = $this->prophesize(TechnologyIdentifier::class);
-        $applicationRequirements = $this->prophesize(ApplicationRequirements::class);
+        $applicationRequirements = $this->prophesize(RequirementsChecker::class);
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
@@ -125,7 +125,7 @@ final class EnvironmentBuilderTest extends TestCase
     {
         $processProxy = $this->prophesize(ProcessProxy::class);
         $technologyIdentifier = $this->prophesize(TechnologyIdentifier::class);
-        $applicationRequirements = $this->prophesize(ApplicationRequirements::class);
+        $applicationRequirements = $this->prophesize(RequirementsChecker::class);
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
@@ -205,7 +205,7 @@ final class EnvironmentBuilderTest extends TestCase
     {
         $processProxy = $this->prophesize(ProcessProxy::class);
         $technologyIdentifier = $this->prophesize(TechnologyIdentifier::class);
-        $applicationRequirements = $this->prophesize(ApplicationRequirements::class);
+        $applicationRequirements = $this->prophesize(RequirementsChecker::class);
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
@@ -283,7 +283,7 @@ final class EnvironmentBuilderTest extends TestCase
     {
         $processProxy = $this->prophesize(ProcessProxy::class);
         $technologyIdentifier = $this->prophesize(TechnologyIdentifier::class);
-        $applicationRequirements = $this->prophesize(ApplicationRequirements::class);
+        $applicationRequirements = $this->prophesize(RequirementsChecker::class);
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 

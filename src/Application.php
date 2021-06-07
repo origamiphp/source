@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App;
 
 use App\Command\DefaultCommand;
+use App\ValueObject\ApplicationVersion;
 use Symfony\Bundle\FrameworkBundle\Console\Application as SymfonyApplication;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -23,14 +24,17 @@ ASCII;
 
     public const CONSOLE_NAME = 'Origami';
 
+    private ApplicationVersion $version;
+
     /**
      * {@inheritdoc}
      *
      * @param Kernel $kernel
      */
-    public function __construct(KernelInterface $kernel)
+    public function __construct(KernelInterface $kernel, ApplicationVersion $version)
     {
         parent::__construct($kernel);
+        $this->version = $version;
 
         if ($defaultName = DefaultCommand::getDefaultName()) {
             $this->setDefaultCommand($defaultName);
@@ -58,7 +62,6 @@ ASCII;
      */
     public function getVersion(): string
     {
-        return preg_match('/^v\d+\.\d+\.\d+/', '@app_version@')
-            ? ltrim('@app_version@', 'v') : '@app_version@';
+        return $this->version->getValue();
     }
 }
