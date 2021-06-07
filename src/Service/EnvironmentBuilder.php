@@ -17,14 +17,14 @@ class EnvironmentBuilder
 {
     private TechnologyIdentifier $technologyIdentifier;
     private ProcessProxy $processProxy;
-    private ApplicationRequirements $requirementsChecker;
+    private RequirementsChecker $requirementsChecker;
     private Validator $validator;
     private array $requirements;
 
     public function __construct(
         ProcessProxy $processProxy,
         TechnologyIdentifier $technologyIdentifier,
-        ApplicationRequirements $requirementsChecker,
+        RequirementsChecker $requirementsChecker,
         Validator $validator,
         array $requirements
     ) {

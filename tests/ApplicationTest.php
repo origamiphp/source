@@ -6,6 +6,7 @@ namespace App\Tests;
 
 use App\Application;
 use App\Kernel;
+use App\ValueObject\ApplicationVersion;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Console\Tester\CommandTester;
 
@@ -36,7 +37,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Middleware\Binary\Mutagen
  * @uses \App\Middleware\Database
  * @uses \App\Middleware\Hosts
- * @uses \App\Service\ApplicationRequirements
+ * @uses \App\Service\RequirementsChecker
  * @uses \App\Service\ConfigurationFiles
  * @uses \App\Service\EnvironmentBuilder
  * @uses \App\Service\TechnologyIdentifier
@@ -48,25 +49,25 @@ final class ApplicationTest extends WebTestCase
     {
         /** @var Kernel $kernel */
         $kernel = self::bootKernel();
-        $application = new Application($kernel);
+        $application = new Application($kernel, new ApplicationVersion());
 
         $commandTester = new CommandTester($application->get('list'));
         $commandTester->execute([]);
 
         static::assertStringContainsString(Application::CONSOLE_LOGO, $commandTester->getDisplay());
-        static::assertStringContainsString(Application::CONSOLE_NAME.' @app_version@', $commandTester->getDisplay());
+        static::assertStringContainsString(Application::CONSOLE_NAME.' experimental', $commandTester->getDisplay());
     }
 
     public function testItDoesNotPrintTheApplicationHeader(): void
     {
         /** @var Kernel $kernel */
         $kernel = self::bootKernel();
-        $application = new Application($kernel);
+        $application = new Application($kernel, new ApplicationVersion());
 
         $commandTester = new CommandTester($application->get('registry'));
         $commandTester->execute([]);
 
         static::assertStringNotContainsString(Application::CONSOLE_LOGO, $commandTester->getDisplay());
-        static::assertStringNotContainsString(Application::CONSOLE_NAME.' @app_version@', $commandTester->getDisplay());
+        static::assertStringNotContainsString(Application::CONSOLE_NAME.' experimental', $commandTester->getDisplay());
     }
 }
