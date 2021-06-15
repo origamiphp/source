@@ -20,7 +20,7 @@ services:
     image: ${DOCKER_DATABASE_IMAGE}
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes:
       - database:/var/lib/mysql
     tty: true
@@ -31,13 +31,13 @@ services:
     depends_on:
       - php
     ports:
-      - 1080:80
+      - "1080:80"
 
   nginx:
     image: ajardin/magento2-nginx:latest
     env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
-      - 443:443
+      - "443:443"
     volumes:
       # Project files
       - code:/var/www/html:delegated
