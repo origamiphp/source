@@ -5,7 +5,8 @@
     ],
     "files": [
         "src/Resources/.env",
-        ".env.local.php"
+        ".env.local.php",
+        "autoload_runtime.template"
     ],
     "force-autodiscovery": true,
     "exclude-composer-files": false,
