@@ -111,7 +111,8 @@ class EnvironmentBuilder
     private function parseVersionAssumption(string $assumption): string
     {
         $versionParser = new VersionParser();
-        $version = $versionParser->normalize(str_replace('.*', '', $assumption));
+        $lowerBoundVersion = $versionParser->parseConstraints($assumption)->getLowerBound()->getVersion();
+        $version = $versionParser->normalize($lowerBoundVersion);
 
         $matches = [];
         if (preg_match('/(?<version>\d+.\d+)/', $version, $matches)) {

@@ -38,11 +38,19 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('app.requirements', [
         // https://www.drupal.org/docs/system-requirements
         EnvironmentEntity::TYPE_DRUPAL => [
-            '9' => [
+            '9.1' => [
                 'database' => ['mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mysql:8.0', 'mysql:5.7', 'postgres:10-alpine'],
                 'php' => array_merge($php80, $php74, $php73),
             ],
-            '8' => [
+            '9.0' => [
+                'database' => ['mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mysql:8.0', 'mysql:5.7', 'postgres:10-alpine'],
+                'php' => array_merge($php80, $php74, $php73),
+            ],
+            '8.9' => [
+                'database' => ['mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0', 'mysql:5.7', 'mysql:5.6', 'postgres:9-alpine'],
+                'php' => array_merge($php74, $php73),
+            ],
+            '8.8' => [
                 'database' => ['mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0', 'mysql:5.7', 'mysql:5.6', 'postgres:9-alpine'],
                 'php' => array_merge($php74, $php73),
             ],
@@ -103,6 +111,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
         // https://symfony.com/doc/current/setup.html#technical-requirements
         EnvironmentEntity::TYPE_SYMFONY => [
+            '5.3' => [
+                'database' => ['mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0', 'mysql:5.7', 'mysql:5.6', 'postgres:13-alpine', 'postgres:12-alpine', 'postgres:11-alpine', 'postgres:10-alpine', 'postgres:9-alpine'],
+                'php' => array_merge($php80, $php74, $php73),
+            ],
             '5.2' => [
                 'database' => ['mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0', 'mysql:5.7', 'mysql:5.6', 'postgres:13-alpine', 'postgres:12-alpine', 'postgres:11-alpine', 'postgres:10-alpine', 'postgres:9-alpine'],
                 'php' => array_merge($php80, $php74, $php73),
