@@ -99,7 +99,10 @@ TEXT;
             return null;
         }
 
-        return substr($releaseCommit, 0, \strlen($currentCommit));
+        $matches = [];
+        preg_match('/^Update to version v(?<version>\d\.\d\.\d)/', $releaseCommit, $matches);
+
+        return $matches['version'] ?? substr($releaseCommit, 0, \strlen($currentCommit));
     }
 
     /**
