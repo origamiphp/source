@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\PrepareCommand;
-use App\Helper\CurrentContext;
-use App\Middleware\Binary\Docker;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;

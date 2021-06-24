@@ -6,11 +6,11 @@ namespace App\Tests\Command;
 
 use App\Command\LogsCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Helper\CurrentContext;
-use App\Middleware\Binary\Docker;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
-use Generator;
+use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -102,7 +102,7 @@ final class LogsCommandTest extends TestCase
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
-    public function provideCommandModifiers(): Generator
+    public function provideCommandModifiers(): Iterator
     {
         yield 'no modifiers' => [null, null];
         yield 'tail only' => [50, null];

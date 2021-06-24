@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CurrentContext;
-use App\Middleware\Binary\Docker;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -16,7 +16,9 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 
 class LogsCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     protected static $defaultName = 'origami:logs';
 
     private CurrentContext $currentContext;

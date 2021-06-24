@@ -7,9 +7,9 @@ namespace App\Service;
 use App\Exception\GitHubException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Exception\PackagistException;
-use App\Helper\OrigamiStyle;
-use App\Middleware\Api\GitHub;
-use App\Middleware\Api\Packagist;
+use App\Service\Middleware\Api\GitHub;
+use App\Service\Middleware\Api\Packagist;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\ValueObject\ApplicationVersion;
 use Composer\Semver\VersionParser;
 
@@ -115,6 +115,7 @@ TEXT;
             : $currentStatus
         ;
 
-        $io->text(sprintf(self::CONSOLE_MESSAGE, $release, $version));
+        $message = sprintf(self::CONSOLE_MESSAGE, $release, $version);
+        $io->text($message);
     }
 }

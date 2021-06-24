@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Exception\MissingRequirementException;
-use App\Helper\OrigamiStyle;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use Symfony\Component\Process\ExecutableFinder;
 
 class RequirementsChecker
@@ -35,7 +35,7 @@ class RequirementsChecker
                     $icon = $item['status'] ? '✅' : '❌';
 
                     return "{$icon} {$item['name']} - {$item['description']}";
-                }, array_merge($mandatoryRequirements, $nonMandatoryRequirements))
+                }, [...$mandatoryRequirements, ...$nonMandatoryRequirements])
             );
         }
 
@@ -46,6 +46,8 @@ class RequirementsChecker
 
     /**
      * Checks whether the application mandatory requirements are installed.
+     *
+     * @return array<int, array<string, string|bool>>
      */
     private function checkMandatoryRequirements(): array
     {
@@ -65,6 +67,8 @@ class RequirementsChecker
 
     /**
      * Checks whether the application non-mandatory requirements are installed.
+     *
+     * @return array<int, array<string, string|bool>>
      */
     private function checkNonMandatoryRequirements(): array
     {

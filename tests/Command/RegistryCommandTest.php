@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\RegistryCommand;
-use App\Environment\EnvironmentCollection;
-use App\Environment\EnvironmentEntity;
-use App\Middleware\Database;
+use App\Service\Middleware\Database;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use App\ValueObject\EnvironmentCollection;
+use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Tester\CommandTester;

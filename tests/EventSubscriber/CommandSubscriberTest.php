@@ -6,7 +6,7 @@ namespace App\Tests\EventSubscriber;
 
 use App\EventSubscriber\CommandSubscriber;
 use App\Exception\MissingRequirementException;
-use App\Helper\OrigamiStyle;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\ReleaseChecker;
 use App\Service\RequirementsChecker;
 use PHPUnit\Framework\TestCase;

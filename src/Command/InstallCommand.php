@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Environment\EnvironmentFactory;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\OrigamiStyle;
-use App\Service\ConfigurationFiles;
-use App\Service\EnvironmentBuilder;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Setup\ConfigurationFiles;
+use App\Service\Setup\EnvironmentBuilder;
+use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -17,7 +17,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     protected static $defaultName = 'origami:install';
 
     private EnvironmentBuilder $builder;
@@ -54,7 +56,12 @@ class InstallCommand extends AbstractBaseCommand
 
         try {
             $userInputs = $this->builder->prepare($io);
-            $environment = EnvironmentFactory::createEntityFromUserInputs($userInputs);
+            $environment = new EnvironmentEntity(
+                $userInputs->getName(),
+                $userInputs->getLocation(),
+                $userInputs->getType(),
+                $userInputs->getDomains()
+            );
 
             $this->configuration->install($environment, $userInputs->getSettings());
 

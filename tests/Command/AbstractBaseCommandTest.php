@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CurrentContext;
+use App\Service\CurrentContext;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
@@ -81,7 +81,11 @@ final class AbstractBaseCommandTest extends TestCase
     private function createFakeOrigamiCommand(ObjectProphecy $currentContext): AbstractBaseCommand
     {
         return new class($currentContext->reveal()) extends AbstractBaseCommand {
+            /**
+             * {@inheritdoc}
+             */
             protected static $defaultName = 'origami:test';
+
             protected CurrentContext $currentContext;
 
             public function __construct(CurrentContext $currentContext, string $name = null)

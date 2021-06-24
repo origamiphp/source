@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Exception\MissingRequirementException;
-use App\Helper\OrigamiStyle;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\ReleaseChecker;
 use App\Service\RequirementsChecker;
 use Symfony\Component\Console\Command\Command;
@@ -29,6 +29,8 @@ class CommandSubscriber implements EventSubscriberInterface
      * @codeCoverageIgnore
      *
      * @uses \App\EventSubscriber\CommandSubscriber::onConsoleCommand
+     *
+     * @return array<string, string>
      */
     public static function getSubscribedEvents(): array
     {

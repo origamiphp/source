@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\UpdateCommand;
-use App\Helper\CurrentContext;
-use App\Service\ConfigurationFiles;
-use App\Service\EnvironmentBuilder;
+use App\Service\CurrentContext;
+use App\Service\Setup\ConfigurationFiles;
+use App\Service\Setup\EnvironmentBuilder;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\PrepareAnswers;

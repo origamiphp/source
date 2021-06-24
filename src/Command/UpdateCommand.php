@@ -6,10 +6,10 @@ namespace App\Command;
 
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CurrentContext;
-use App\Helper\OrigamiStyle;
-use App\Service\ConfigurationFiles;
-use App\Service\EnvironmentBuilder;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Setup\ConfigurationFiles;
+use App\Service\Setup\EnvironmentBuilder;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,7 +17,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     protected static $defaultName = 'origami:update';
 
     private CurrentContext $currentContext;

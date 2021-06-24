@@ -39,11 +39,14 @@ jobs:
       - name: 'Executes the code style analysis in dry-run mode on all PHP files'
         run: make phpcsfixer-audit
 
-      - name: 'Executes a static analysis on all PHP files with PHPStan'
+      - name: 'Executes the static analysis on all PHP files with PHPStan'
         run: make phpstan
 
-      - name: 'Executes a static analysis on all PHP files with Psalm'
+      - name: 'Executes the static analysis on all PHP files with Psalm'
         run: make psalm
+
+      - name: 'Executes the automated refactoring in dry-run mode on all PHP files'
+        run: make rector-audit
 
       - name: 'Executes the security audit on all PHP dependencies'
         run: |

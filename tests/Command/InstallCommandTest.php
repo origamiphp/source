@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\InstallCommand;
-use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\FilesystemException;
-use App\Service\ConfigurationFiles;
-use App\Service\EnvironmentBuilder;
+use App\Service\Setup\ConfigurationFiles;
+use App\Service\Setup\EnvironmentBuilder;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use App\ValueObject\EnvironmentEntity;
 use App\ValueObject\PrepareAnswers;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
@@ -27,7 +27,6 @@ use Symfony\Component\EventDispatcher\EventDispatcher;
  * @covers \App\Command\AbstractBaseCommand
  * @covers \App\Command\InstallCommand
  *
- * @uses \App\Environment\EnvironmentFactory
  * @uses \App\Event\AbstractEnvironmentEvent
  */
 final class InstallCommandTest extends TestCase
