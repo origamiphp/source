@@ -15,11 +15,11 @@ use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mutagen;
 use App\Service\Middleware\Database;
 use App\Service\Middleware\Hosts;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * @internal
@@ -42,7 +42,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $database
             ->add($environment->reveal())
@@ -55,7 +55,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItCreatesTheEnvironmentAfterInstallEvenWithAnException(): void
@@ -66,7 +66,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
         $domains = 'mydomain.test';
 
         $environment
@@ -97,7 +97,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItAnalyzesAndFixesSystemHostsFile(): void
@@ -108,7 +108,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
         $domains = 'mydomain.test';
 
         $environment
@@ -123,12 +123,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->warning(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
 
-        $symfonyStyle
+        $io
             ->confirm(Argument::type('string'), false)
             ->shouldBeCalledOnce()
             ->willReturn(true)
@@ -150,7 +150,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItAnalyzesAndDoesNotFixSystemHostsFile(): void
@@ -161,7 +161,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
         $domains = 'mydomain.test';
 
         $environment
@@ -176,12 +176,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->warning(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
 
-        $symfonyStyle
+        $io
             ->confirm(Argument::type('string'), false)
             ->shouldBeCalledOnce()
             ->willReturn(false)
@@ -203,7 +203,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStartsTheEnvironmentSuccessfully(): void
@@ -214,7 +214,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $docker
             ->fixPermissionsOnSharedSSHAgent()
@@ -238,7 +238,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStartsTheEnvironmentWithOnSharedSSHAgent(): void
@@ -249,7 +249,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $docker
             ->fixPermissionsOnSharedSSHAgent()
@@ -257,7 +257,7 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->error(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
@@ -279,7 +279,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStartsTheEnvironmentWithAnErrorWithMutagen(): void
@@ -290,7 +290,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $docker
             ->fixPermissionsOnSharedSSHAgent()
@@ -304,7 +304,7 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->error(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
@@ -320,7 +320,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStopsTheEnvironmentSuccessfully(): void
@@ -331,7 +331,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->stopDockerSynchronization()
@@ -350,7 +350,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStopsTheEnvironmentWithAnErrorOnMutagen(): void
@@ -361,7 +361,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->stopDockerSynchronization()
@@ -369,7 +369,7 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->error(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
@@ -385,7 +385,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItRestartsTheEnvironmentSuccessfully(): void
@@ -396,7 +396,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->stopDockerSynchronization()
@@ -411,7 +411,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItRestartsTheEnvironmentWithAnErrorOnMutagenStopping(): void
@@ -422,7 +422,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->stopDockerSynchronization()
@@ -435,13 +435,13 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldNotBeCalled()
         ;
 
-        $symfonyStyle
+        $io
             ->error(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItRestartsTheEnvironmentWithAnErrorOnMutagenStarting(): void
@@ -452,7 +452,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->stopDockerSynchronization()
@@ -466,13 +466,13 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->error(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentSuccessfully(): void
@@ -483,7 +483,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->removeDockerSynchronization()
@@ -502,7 +502,7 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentWithAnErrorOnMutagen(): void
@@ -513,7 +513,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $database = $this->prophesize(Database::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
-        $symfonyStyle = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
             ->removeDockerSynchronization()
@@ -521,7 +521,7 @@ final class EnvironmentSubscriberTest extends TestCase
             ->willReturn(false)
         ;
 
-        $symfonyStyle
+        $io
             ->error(Argument::type('string'))
             ->shouldBeCalledOnce()
         ;
@@ -537,6 +537,6 @@ final class EnvironmentSubscriberTest extends TestCase
         ;
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $symfonyStyle->reveal()));
+        $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $io->reveal()));
     }
 }

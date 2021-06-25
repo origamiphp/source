@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Setup;
 
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\Middleware\Wrapper\ProcessProxy;
 use App\Service\RequirementsChecker;
 use App\Service\Setup\EnvironmentBuilder;
@@ -15,7 +16,6 @@ use App\ValueObject\TechnologyDetails;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 /**
  * @internal
@@ -44,7 +44,7 @@ final class EnvironmentBuilderTest extends TestCase
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
-        $io = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $processProxy
             ->getWorkingDirectory()
@@ -129,7 +129,7 @@ final class EnvironmentBuilderTest extends TestCase
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
-        $io = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $processProxy
             ->getWorkingDirectory()
@@ -209,7 +209,7 @@ final class EnvironmentBuilderTest extends TestCase
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
-        $io = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
 
         $processProxy
             ->getWorkingDirectory()
@@ -287,7 +287,7 @@ final class EnvironmentBuilderTest extends TestCase
         $validator = $this->prophesize(Validator::class);
         $requirements = self::TECHNOLOGY_REQUIREMENTS;
 
-        $io = $this->prophesize(SymfonyStyle::class);
+        $io = $this->prophesize(OrigamiStyle::class);
         $environment = $this->createEnvironment();
 
         $processProxy

@@ -60,7 +60,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentInstall(EnvironmentInstalledEvent $event): void
     {
         $environment = $event->getEnvironment();
-        $io = $event->getSymfonyStyle();
+        $io = $event->getConsoleStyle();
 
         try {
             if (($domains = $environment->getDomains()) && !$this->hosts->hasDomains($domains)) {
@@ -85,7 +85,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentStart(EnvironmentStartedEvent $event): void
     {
         $environment = $event->getEnvironment();
-        $io = $event->getSymfonyStyle();
+        $io = $event->getConsoleStyle();
 
         if (!$this->docker->fixPermissionsOnSharedSSHAgent()) {
             $io->error('An error occurred while trying to fix the permissions on the shared SSH agent.');
@@ -105,7 +105,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentStop(EnvironmentStoppedEvent $event): void
     {
         $environment = $event->getEnvironment();
-        $io = $event->getSymfonyStyle();
+        $io = $event->getConsoleStyle();
 
         if (!$this->mutagen->stopDockerSynchronization()) {
             $io->error('An error occurred while stopping the Docker synchronization.');
@@ -120,7 +120,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      */
     public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
     {
-        $io = $event->getSymfonyStyle();
+        $io = $event->getConsoleStyle();
 
         if (!$this->mutagen->stopDockerSynchronization() || !$this->mutagen->startDockerSynchronization()) {
             $io->error('An error occurred while restarting the Docker synchronization.');
@@ -133,7 +133,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     public function onEnvironmentUninstall(EnvironmentUninstalledEvent $event): void
     {
         $environment = $event->getEnvironment();
-        $io = $event->getSymfonyStyle();
+        $io = $event->getConsoleStyle();
 
         if (!$this->mutagen->removeDockerSynchronization()) {
             $io->error('An error occurred while removing the Docker synchronization.');

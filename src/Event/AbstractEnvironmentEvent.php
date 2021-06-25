@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Event;
 
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractEnvironmentEvent extends Event
 {
     protected EnvironmentEntity $environment;
-    protected SymfonyStyle $symfonyStyle;
+    protected OrigamiStyle $symfonyStyle;
 
-    public function __construct(EnvironmentEntity $environment, SymfonyStyle $symfonyStyle)
+    public function __construct(EnvironmentEntity $environment, OrigamiStyle $symfonyStyle)
     {
         $this->environment = $environment;
         $this->symfonyStyle = $symfonyStyle;
@@ -28,9 +28,9 @@ abstract class AbstractEnvironmentEvent extends Event
     }
 
     /**
-     * Retrieves the SymfonyStyle object previously configured in the Command class.
+     * Retrieves the OrigamiStyle object previously configured in the Command class.
      */
-    public function getSymfonyStyle(): SymfonyStyle
+    public function getConsoleStyle(): OrigamiStyle
     {
         return $this->symfonyStyle;
     }

@@ -7,6 +7,7 @@ namespace App\Tests\Command;
 use App\Command\InstallCommand;
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\FilesystemException;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Tests\TestCommandTrait;
@@ -17,7 +18,6 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -45,7 +45,7 @@ final class InstallCommandTest extends TestCase
         $environment = new EnvironmentEntity('name', 'location', 'type', null);
 
         $environmentBuilder
-            ->prepare(Argument::type(SymfonyStyle::class))
+            ->prepare(Argument::type(OrigamiStyle::class))
             ->shouldBeCalledOnce()
             ->willReturn($answers)
         ;
@@ -77,7 +77,7 @@ final class InstallCommandTest extends TestCase
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
         $environmentBuilder
-            ->prepare(Argument::type(SymfonyStyle::class))
+            ->prepare(Argument::type(OrigamiStyle::class))
             ->shouldBeCalledOnce()
             ->willThrow(FilesystemException::class)
         ;
