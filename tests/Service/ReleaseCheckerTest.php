@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Helper\OrigamiStyle;
-use App\Middleware\Api\GitHub;
-use App\Middleware\Api\Packagist;
+use App\Service\Middleware\Api\GitHub;
+use App\Service\Middleware\Api\Packagist;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\ReleaseChecker;
 use App\ValueObject\ApplicationVersion;
 use PHPUnit\Framework\TestCase;

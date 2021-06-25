@@ -7,9 +7,9 @@ namespace App\Command;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CurrentContext;
-use App\Middleware\Binary\Docker;
-use App\Service\ConfigurationFiles;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Binary\Docker;
+use App\Service\Setup\ConfigurationFiles;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class UninstallCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     protected static $defaultName = 'origami:uninstall';
 
     private CurrentContext $currentContext;

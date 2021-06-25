@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests;
 
-use App\Environment\EnvironmentEntity;
-use App\Service\ConfigurationFiles;
+use App\Service\Setup\ConfigurationFiles;
+use App\ValueObject\EnvironmentEntity;
 use Generator;
 use ReflectionClass;
 use RuntimeException;

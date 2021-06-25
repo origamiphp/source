@@ -10,10 +10,10 @@ use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
-use App\Middleware\Binary\Docker;
-use App\Middleware\Binary\Mutagen;
-use App\Middleware\Database;
-use App\Middleware\Hosts;
+use App\Service\Middleware\Binary\Docker;
+use App\Service\Middleware\Binary\Mutagen;
+use App\Service\Middleware\Database;
+use App\Service\Middleware\Hosts;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EnvironmentSubscriber implements EventSubscriberInterface
@@ -40,6 +40,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStop
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentUninstall
+     *
+     * @return string[]
      */
     public static function getSubscribedEvents(): array
     {
@@ -62,7 +64,9 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
         try {
             if (($domains = $environment->getDomains()) && !$this->hosts->hasDomains($domains)) {
-                $io->warning(sprintf('Your hosts file do not contain the "127.0.0.1 %s" entry.', $domains));
+                $message = sprintf('Your hosts file do not contain the "127.0.0.1 %s" entry.', $domains);
+                $io->warning($message);
+
                 if ($io->confirm('Do you want to automatically update it? Your password may be asked by the system, but you can also do it yourself afterwards.', false)) {
                     $this->hosts->fixHostsFile($domains);
                 }

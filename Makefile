@@ -17,10 +17,10 @@ box: ## Compiles the project into a PHAR archive
 .PHONY: box
 
 ci: ## Executes all the Continuous Integration tests
-	make composer lint phpcsfixer-audit phpstan psalm tests
+	make composer lint phpcsfixer-audit phpstan psalm phpunit rector-audit
 .PHONY: ci
 
-composer: ## Executes an analysis on the Composer files
+composer: ## Executes the analysis on the Composer files
 	composer validate --strict
 .PHONY: composer
 
@@ -37,17 +37,25 @@ phpcsfixer-fix: ## Executes the code style analysis on all PHP files
 	./vendor/bin/php-cs-fixer fix --verbose --ansi
 .PHONY: phpcsfixer-fix
 
-phpstan: ## Executes a static analysis on all PHP files with PHPStan
+phpstan: ## Executes the static analysis on all PHP files with PHPStan
 	./vendor/bin/phpstan analyse
 .PHONY: phpstan
 
-psalm: ## Executes a static analysis on all PHP files with Psalm
+phpunit: ## Executes the unit and functional tests
+	./bin/phpunit --testdox
+.PHONY: phpunit
+
+psalm: ## Executes the static analysis on all PHP files with Psalm
 	./vendor/bin/psalm --show-info=true --find-dead-code --no-cache
 .PHONY: psalm
 
-tests: ## Executes the unit tests and functional tests
-	./bin/phpunit --testdox
-.PHONY: tests
+rector-audit: ## Executes the automated refactoring in dry-run mode on all PHP files
+	./vendor/bin/rector process --dry-run
+.PHONY: rector-audit
+
+rector-fix: ## Executes the automated refactoring on all PHP files
+	./vendor/bin/rector process
+.PHONY: rector-fix
 
 help:
 	@grep -E '(^[a-zA-Z_-]+:.*?##.*$$)|(^##)' $(MAKEFILE_LIST) \

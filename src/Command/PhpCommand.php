@@ -6,8 +6,8 @@ namespace App\Command;
 
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CurrentContext;
-use App\Middleware\Binary\Docker;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Binary\Docker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,7 +18,9 @@ class PhpCommand extends AbstractBaseCommand
     private const COMMAND_SERVICE_NAME = 'php';
     private const COMMAND_USERNAME = 'www-data:www-data';
 
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     protected static $defaultName = 'origami:php';
 
     private CurrentContext $currentContext;

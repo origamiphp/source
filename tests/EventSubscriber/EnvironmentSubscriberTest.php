@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\EventSubscriber;
 
-use App\Environment\EnvironmentEntity;
 use App\Event\EnvironmentInstalledEvent;
 use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
@@ -12,10 +11,11 @@ use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\UnsupportedOperatingSystemException;
-use App\Middleware\Binary\Docker;
-use App\Middleware\Binary\Mutagen;
-use App\Middleware\Database;
-use App\Middleware\Hosts;
+use App\Service\Middleware\Binary\Docker;
+use App\Service\Middleware\Binary\Mutagen;
+use App\Service\Middleware\Database;
+use App\Service\Middleware\Hosts;
+use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;

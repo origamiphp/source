@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Environment\EnvironmentEntity;
+use App\ValueObject\EnvironmentEntity;
 use Ergebnis\Environment\SystemVariables;
 use Ergebnis\Environment\Variables;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
@@ -15,6 +15,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->autowire(true)
         ->autoconfigure(true)
         ->bind('$projectDir', '%kernel.project_dir%')
+        ->bind('$installDir', '%app.install_dir%')
         ->bind('$requirements', '%app.requirements%')
     ;
 
@@ -30,6 +31,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     ;
 
     $parameters = $containerConfigurator->parameters();
+    $parameters->set('app.install_dir', '/var/docker');
 
     $php80 = ['ajardin/php:8.0', 'ajardin/php:8.0-blackfire', 'ajardin/php:8.0-xdebug'];
     $php74 = ['ajardin/php:7.4', 'ajardin/php:7.4-blackfire', 'ajardin/php7.4-xdebug'];

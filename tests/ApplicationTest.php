@@ -29,18 +29,18 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\StopCommand
  * @uses \App\Command\UninstallCommand
  * @uses \App\Command\UpdateCommand
- * @uses \App\Helper\CurrentContext
- * @uses \App\Helper\ProcessFactory
- * @uses \App\Helper\Validator
- * @uses \App\Middleware\Binary\Docker
- * @uses \App\Middleware\Binary\Mkcert
- * @uses \App\Middleware\Binary\Mutagen
- * @uses \App\Middleware\Database
- * @uses \App\Middleware\Hosts
+ * @uses \App\Service\CurrentContext
+ * @uses \App\Service\Middleware\Wrapper\ProcessFactory
+ * @uses \App\Service\Setup\Validator
+ * @uses \App\Service\Middleware\Binary\Docker
+ * @uses \App\Service\Middleware\Binary\Mkcert
+ * @uses \App\Service\Middleware\Binary\Mutagen
+ * @uses \App\Service\Middleware\Database
+ * @uses \App\Service\Middleware\Hosts
  * @uses \App\Service\RequirementsChecker
- * @uses \App\Service\ConfigurationFiles
- * @uses \App\Service\EnvironmentBuilder
- * @uses \App\Service\TechnologyIdentifier
+ * @uses \App\Service\Setup\ConfigurationFiles
+ * @uses \App\Service\Setup\EnvironmentBuilder
+ * @uses \App\Service\Setup\TechnologyIdentifier
  * @uses \App\Kernel
  */
 final class ApplicationTest extends WebTestCase

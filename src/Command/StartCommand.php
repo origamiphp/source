@@ -7,10 +7,10 @@ namespace App\Command;
 use App\Event\EnvironmentStartedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Helper\CurrentContext;
-use App\Helper\OrigamiStyle;
-use App\Helper\ProcessProxy;
-use App\Middleware\Binary\Docker;
+use App\Service\CurrentContext;
+use App\Service\Middleware\Binary\Docker;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Middleware\Wrapper\ProcessProxy;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -19,7 +19,9 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class StartCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
+    /**
+     * {@inheritdoc}
+     */
     protected static $defaultName = 'origami:start';
 
     private CurrentContext $currentContext;
@@ -78,10 +80,12 @@ class StartCommand extends AbstractBaseCommand
                 $this->eventDispatcher->dispatch($event);
 
                 $io->success('Docker services successfully started.');
-                $io->info(sprintf(
+
+                $message = sprintf(
                     'Please visit %s to access your environment.',
                     ($domains !== null ? "https://{$domains}" : 'https://127.0.0.1')
-                ));
+                );
+                $io->info($message);
             } else {
                 throw new InvalidEnvironmentException('Unable to start an environment when there is already a running one.');
             }
