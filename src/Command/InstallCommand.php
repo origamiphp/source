@@ -6,9 +6,9 @@ namespace App\Command;
 
 use App\Event\EnvironmentInstalledEvent;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
+use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;

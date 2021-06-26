@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Exception\MissingRequirementException;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Process\ExecutableFinder;
 
 class RequirementsChecker

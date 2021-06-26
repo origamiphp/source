@@ -9,6 +9,7 @@ use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
+use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mutagen;
@@ -56,6 +57,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
     /**
      * Listener which triggers the check on custom domains and the environment registration.
+     *
+     * @throws InvalidEnvironmentException
      */
     public function onEnvironmentInstall(EnvironmentInstalledEvent $event): void
     {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Middleware;
 
 use App\Exception\UnsupportedOperatingSystemException;
-use App\Service\Middleware\Wrapper\ProcessFactory;
+use App\Service\Wrapper\ProcessFactory;
 
 class Hosts
 {

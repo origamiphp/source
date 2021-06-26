@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Service\Middleware\Wrapper;
+namespace App\Tests\Service\Wrapper;
 
-use App\Service\Middleware\Wrapper\ProcessFactory;
-use App\Service\Middleware\Wrapper\ProcessProxy;
+use App\Service\Wrapper\ProcessFactory;
+use App\Service\Wrapper\ProcessProxy;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -14,8 +14,8 @@ use Psr\Log\LoggerInterface;
 /**
  * @internal
  *
- * @covers \App\Service\Middleware\Wrapper\ProcessFactory
- * @covers \App\Service\Middleware\Wrapper\ProcessProxy
+ * @covers \App\Service\Wrapper\ProcessFactory
+ * @covers \App\Service\Wrapper\ProcessProxy
  */
 final class ProcessFactoryTest extends TestCase
 {

@@ -9,7 +9,7 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Exception\PackagistException;
 use App\Service\Middleware\Api\GitHub;
 use App\Service\Middleware\Api\Packagist;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\ApplicationVersion;
 use Composer\Semver\VersionParser;
 

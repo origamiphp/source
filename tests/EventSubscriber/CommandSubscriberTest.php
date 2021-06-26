@@ -6,9 +6,9 @@ namespace App\Tests\EventSubscriber;
 
 use App\EventSubscriber\CommandSubscriber;
 use App\Exception\MissingRequirementException;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\ReleaseChecker;
 use App\Service\RequirementsChecker;
+use App\Service\Wrapper\OrigamiStyle;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;

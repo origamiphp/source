@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Setup;
 
-use App\Service\Middleware\Wrapper\OrigamiStyle;
-use App\Service\Middleware\Wrapper\ProcessProxy;
 use App\Service\RequirementsChecker;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Service\Setup\TechnologyIdentifier;
 use App\Service\Setup\Validator;
+use App\Service\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\ProcessProxy;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\PrepareAnswers;
 use App\ValueObject\TechnologyDetails;

@@ -7,7 +7,7 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\CurrentContext;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\OrigamiStyle;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;

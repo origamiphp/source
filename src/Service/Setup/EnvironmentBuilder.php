@@ -6,9 +6,9 @@ namespace App\Service\Setup;
 
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
-use App\Service\Middleware\Wrapper\ProcessProxy;
 use App\Service\RequirementsChecker;
+use App\Service\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\ProcessProxy;
 use App\ValueObject\EnvironmentEntity;
 use App\ValueObject\PrepareAnswers;
 use Composer\Semver\VersionParser;
@@ -111,14 +111,14 @@ class EnvironmentBuilder
     /**
      * Asks the choice questions about the environment settings.
      *
-     * @return array<int|string, mixed>
+     * @return array<string, string>
      */
     private function askEnvironmentSettings(OrigamiStyle $io, string $type, string $version): array
     {
         $settings = [];
 
         foreach ($this->requirements[$type][$version] as $service => $choices) {
-            $settings[$service] = $io->choice(
+            $settings[(string) $service] = (string) $io->choice(
                 "Which <options=bold>{$service}</> version do you want to use in your project?",
                 $choices,
                 $choices[0],
