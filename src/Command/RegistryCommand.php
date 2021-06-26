@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Service\Middleware\Database;
+use App\Service\ApplicationData;
 use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -18,13 +18,13 @@ class RegistryCommand extends AbstractBaseCommand
      */
     protected static $defaultName = 'origami:registry';
 
-    private Database $database;
+    private ApplicationData $applicationData;
 
-    public function __construct(Database $database, ?string $name = null)
+    public function __construct(ApplicationData $applicationData, ?string $name = null)
     {
         parent::__construct($name);
 
-        $this->database = $database;
+        $this->applicationData = $applicationData;
     }
 
     /**
@@ -42,7 +42,7 @@ class RegistryCommand extends AbstractBaseCommand
     {
         $io = new OrigamiStyle($input, $output);
 
-        $environments = $this->database->getAllEnvironments();
+        $environments = $this->applicationData->getAllEnvironments();
         if ($environments->count() > 0) {
             $table = new Table($output);
             $table->setHeaders(['Name', 'Location', 'Type', 'Domains', 'Status']);

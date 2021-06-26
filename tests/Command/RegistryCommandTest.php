@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\RegistryCommand;
-use App\Service\Middleware\Database;
+use App\Service\ApplicationData;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentCollection;
@@ -28,7 +28,7 @@ final class RegistryCommandTest extends TestCase
 
     public function testItPrintsNoteMessageWithoutEnvironments(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $database
             ->getAllEnvironments()
@@ -49,7 +49,7 @@ final class RegistryCommandTest extends TestCase
      */
     public function testItPrintsEnvironmentDetailsInTable(string $name, string $type, ?string $domains = null): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
 
         $database

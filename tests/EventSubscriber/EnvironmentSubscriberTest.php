@@ -11,9 +11,9 @@ use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
 use App\Exception\UnsupportedOperatingSystemException;
+use App\Service\ApplicationData;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mutagen;
-use App\Service\Middleware\Database;
 use App\Service\Middleware\Hosts;
 use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
@@ -39,7 +39,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -63,7 +63,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -105,7 +105,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -158,7 +158,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -211,7 +211,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -246,7 +246,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -287,7 +287,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -328,7 +328,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -358,7 +358,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -393,7 +393,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -419,7 +419,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -449,7 +449,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -480,7 +480,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
@@ -510,7 +510,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
