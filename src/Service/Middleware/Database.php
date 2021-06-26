@@ -123,7 +123,7 @@ class Database
     /**
      * Extracts the registered environments from the database file.
      *
-     * @return \App\ValueObject\EnvironmentEntity[]
+     * @return EnvironmentEntity[]
      */
     private function getRegisteredEnvironments(): array
     {

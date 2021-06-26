@@ -6,7 +6,7 @@ namespace App\Tests\Service\Middleware;
 
 use App\Exception\UnsupportedOperatingSystemException;
 use App\Service\Middleware\Hosts;
-use App\Service\Middleware\Wrapper\ProcessFactory;
+use App\Service\Wrapper\ProcessFactory;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;

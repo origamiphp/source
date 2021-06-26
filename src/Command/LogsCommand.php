@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\CurrentContext;
 use App\Service\Middleware\Binary\Docker;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

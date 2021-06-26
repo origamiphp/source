@@ -6,7 +6,7 @@ namespace App\Tests\Service\Middleware\Binary;
 
 use App\Service\CurrentContext;
 use App\Service\Middleware\Binary\Mutagen;
-use App\Service\Middleware\Wrapper\ProcessFactory;
+use App\Service\Wrapper\ProcessFactory;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;

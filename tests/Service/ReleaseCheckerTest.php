@@ -6,8 +6,8 @@ namespace App\Tests\Service;
 
 use App\Service\Middleware\Api\GitHub;
 use App\Service\Middleware\Api\Packagist;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\ReleaseChecker;
+use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\ApplicationVersion;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;

@@ -6,18 +6,20 @@ namespace App\ValueObject;
 
 use App\Exception\InvalidEnvironmentException;
 use ArrayIterator;
+use Countable;
 use Iterator;
+use IteratorAggregate;
 
 /**
  * @codeCoverageIgnore
  */
-class EnvironmentCollection implements \Countable, \IteratorAggregate
+class EnvironmentCollection implements Countable, IteratorAggregate
 {
     /** @var EnvironmentEntity[] */
     private array $values;
 
     /**
-     * @param \App\ValueObject\EnvironmentEntity[] $values
+     * @param EnvironmentEntity[] $values
      */
     public function __construct(array $values = [])
     {
@@ -35,7 +37,7 @@ class EnvironmentCollection implements \Countable, \IteratorAggregate
     /**
      * {@inheritdoc}
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
     public function getIterator(): Iterator
     {

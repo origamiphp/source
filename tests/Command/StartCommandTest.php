@@ -7,7 +7,7 @@ namespace App\Tests\Command;
 use App\Command\StartCommand;
 use App\Service\CurrentContext;
 use App\Service\Middleware\Binary\Docker;
-use App\Service\Middleware\Wrapper\ProcessProxy;
+use App\Service\Wrapper\ProcessProxy;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;

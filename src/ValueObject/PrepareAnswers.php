@@ -16,7 +16,7 @@ class PrepareAnswers
     private ?string $domains;
 
     /**
-     * @param mixed[] $settings
+     * @param array<string, string> $settings
      */
     public function __construct(
         string $name,
@@ -53,7 +53,7 @@ class PrepareAnswers
     }
 
     /**
-     * @return mixed[]
+     * @return array[]
      */
     public function getSettings(): array
     {

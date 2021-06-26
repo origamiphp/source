@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Tests\Service;
 
 use App\Exception\MissingRequirementException;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\RequirementsChecker;
+use App\Service\Wrapper\OrigamiStyle;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;

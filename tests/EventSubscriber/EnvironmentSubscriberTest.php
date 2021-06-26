@@ -15,7 +15,7 @@ use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mutagen;
 use App\Service\Middleware\Database;
 use App\Service\Middleware\Hosts;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;

@@ -6,7 +6,7 @@ namespace App\Tests\Service\Middleware\Binary;
 
 use App\Exception\MkcertException;
 use App\Service\Middleware\Binary\Mkcert;
-use App\Service\Middleware\Wrapper\ProcessFactory;
+use App\Service\Wrapper\ProcessFactory;
 use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;

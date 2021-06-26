@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Exception\MissingRequirementException;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\ReleaseChecker;
 use App\Service\RequirementsChecker;
+use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Event;
 
-use App\Service\Middleware\Wrapper\OrigamiStyle;
+use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Contracts\EventDispatcher\Event;
 

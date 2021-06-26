@@ -6,9 +6,9 @@ namespace App\Tests\Command;
 
 use App\Command\UpdateCommand;
 use App\Service\CurrentContext;
-use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
+use App\Service\Wrapper\OrigamiStyle;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\PrepareAnswers;

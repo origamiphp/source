@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service\Middleware\Wrapper;
+namespace App\Service\Wrapper;
 
 use App\Exception\FilesystemException;
 use Symfony\Component\Process\Process;
