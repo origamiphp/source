@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace App\Command;
 
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 abstract class AbstractBaseCommand extends Command
 {
     /**
      * Prints additional details to the console: environment location and environment type.
      */
-    protected function printEnvironmentDetails(EnvironmentEntity $environment, SymfonyStyle $io): void
+    protected function printEnvironmentDetails(EnvironmentEntity $environment, OrigamiStyle $io): void
     {
         $io->success('An environment is currently running.');
         $io->listing(

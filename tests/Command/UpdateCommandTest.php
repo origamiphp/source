@@ -6,6 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\UpdateCommand;
 use App\Service\CurrentContext;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Tests\TestCommandTrait;
@@ -16,7 +17,6 @@ use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -54,7 +54,7 @@ final class UpdateCommandTest extends TestCase
         ;
 
         $environmentBuilder
-            ->prepare(Argument::type(SymfonyStyle::class), $environment)
+            ->prepare(Argument::type(OrigamiStyle::class), $environment)
             ->shouldBeCalledOnce()
             ->willReturn($answers)
         ;

@@ -6,12 +6,12 @@ namespace App\Service\Setup;
 
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Service\Middleware\Wrapper\ProcessProxy;
 use App\Service\RequirementsChecker;
 use App\ValueObject\EnvironmentEntity;
 use App\ValueObject\PrepareAnswers;
 use Composer\Semver\VersionParser;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class EnvironmentBuilder
 {
@@ -22,7 +22,7 @@ class EnvironmentBuilder
     private array $requirements;
 
     /**
-     * @param mixed[] $requirements
+     * @param array[] $requirements
      */
     public function __construct(
         ProcessProxy $processProxy,
@@ -43,7 +43,7 @@ class EnvironmentBuilder
      *
      * @throws FilesystemException
      */
-    public function prepare(SymfonyStyle $io, ?EnvironmentEntity $environment = null): PrepareAnswers
+    public function prepare(OrigamiStyle $io, ?EnvironmentEntity $environment = null): PrepareAnswers
     {
         $location = $this->processProxy->getWorkingDirectory();
         $technology = $this->technologyIdentifier->identify($location);
@@ -74,7 +74,7 @@ class EnvironmentBuilder
     /**
      * Asks the question about the environment name.
      */
-    private function askEnvironmentName(SymfonyStyle $io, string $defaultName): string
+    private function askEnvironmentName(OrigamiStyle $io, string $defaultName): string
     {
         return $io->ask('What is the <options=bold>name</> of the environment you want to install?', $defaultName);
     }
@@ -82,7 +82,7 @@ class EnvironmentBuilder
     /**
      * Asks the choice question about the environment type.
      */
-    private function askEnvironmentType(SymfonyStyle $io, ?string $assumption): string
+    private function askEnvironmentType(OrigamiStyle $io, ?string $assumption): string
     {
         return $io->choice(
             'Which <options=bold>type</> of environment you want to install?',
@@ -94,7 +94,7 @@ class EnvironmentBuilder
     /**
      * Asks the choice question about the environment version.
      */
-    private function askEnvironmentVersion(SymfonyStyle $io, string $type, ?string $assumption): string
+    private function askEnvironmentVersion(OrigamiStyle $io, string $type, ?string $assumption): string
     {
         if ($assumption) {
             $version = $this->parseVersionAssumption($assumption);
@@ -113,7 +113,7 @@ class EnvironmentBuilder
      *
      * @return array<int|string, mixed>
      */
-    private function askEnvironmentSettings(SymfonyStyle $io, string $type, string $version): array
+    private function askEnvironmentSettings(OrigamiStyle $io, string $type, string $version): array
     {
         $settings = [];
 
@@ -131,7 +131,7 @@ class EnvironmentBuilder
     /**
      * Asks the question about the environment domains.
      */
-    private function askDomains(SymfonyStyle $io, string $name): ?string
+    private function askDomains(OrigamiStyle $io, string $name): ?string
     {
         if ($io->confirm('Do you want to generate a locally-trusted development <options=bold>certificate</>?', false)) {
             $domains = $io->ask(

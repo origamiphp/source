@@ -7,6 +7,7 @@ namespace App\Tests\Command;
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\CurrentContext;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
@@ -17,7 +18,6 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
@@ -115,7 +115,7 @@ final class AbstractBaseCommandTest extends TestCase
              */
             protected function execute(InputInterface $input, OutputInterface $output): int
             {
-                $io = new SymfonyStyle($input, $output);
+                $io = new OrigamiStyle($input, $output);
 
                 try {
                     $this->currentContext->loadEnvironment($input);

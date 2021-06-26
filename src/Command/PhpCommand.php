@@ -8,10 +8,10 @@ use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\CurrentContext;
 use App\Service\Middleware\Binary\Docker;
+use App\Service\Middleware\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Style\SymfonyStyle;
 
 class PhpCommand extends AbstractBaseCommand
 {
@@ -47,7 +47,7 @@ class PhpCommand extends AbstractBaseCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $io = new OrigamiStyle($input, $output);
 
         try {
             $this->currentContext->loadEnvironment($input);
