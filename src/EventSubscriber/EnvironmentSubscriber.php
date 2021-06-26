@@ -11,9 +11,9 @@ use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
+use App\Service\ApplicationData;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mutagen;
-use App\Service\Middleware\Database;
 use App\Service\Middleware\Hosts;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -22,14 +22,14 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     private Hosts $hosts;
     private Docker $docker;
     private Mutagen $mutagen;
-    private Database $database;
+    private ApplicationData $applicationData;
 
-    public function __construct(Hosts $hosts, Docker $docker, Mutagen $mutagen, Database $database)
+    public function __construct(Hosts $hosts, Docker $docker, Mutagen $mutagen, ApplicationData $applicationData)
     {
         $this->hosts = $hosts;
         $this->docker = $docker;
         $this->mutagen = $mutagen;
-        $this->database = $database;
+        $this->applicationData = $applicationData;
     }
 
     /**
@@ -78,8 +78,8 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('Unable to check whether the custom domains are defined in your hosts file.');
         }
 
-        $this->database->add($environment);
-        $this->database->save();
+        $this->applicationData->add($environment);
+        $this->applicationData->save();
     }
 
     /**
@@ -99,7 +99,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         }
 
         $environment->activate();
-        $this->database->save();
+        $this->applicationData->save();
     }
 
     /**
@@ -115,7 +115,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
         }
 
         $environment->deactivate();
-        $this->database->save();
+        $this->applicationData->save();
     }
 
     /**
@@ -142,7 +142,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             $io->error('An error occurred while removing the Docker synchronization.');
         }
 
-        $this->database->remove($environment);
-        $this->database->save();
+        $this->applicationData->remove($environment);
+        $this->applicationData->save();
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Service\Middleware;
+namespace App\Service;
 
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
@@ -14,9 +14,9 @@ use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
-class Database
+class ApplicationData
 {
-    public const DATABASE_FILENAME = '.origami';
+    public const DATA_FILENAME = '.origami';
 
     private string $path;
     private Serializer $serializer;
@@ -32,9 +32,9 @@ class Database
             : $systemVariables->get('HOMEDRIVE').$systemVariables->get('HOMEPATH')              // @codeCoverageIgnore
         ;
 
-        $this->path = $home.\DIRECTORY_SEPARATOR.self::DATABASE_FILENAME;
+        $this->path = $home.\DIRECTORY_SEPARATOR.self::DATA_FILENAME;
         if (!@is_file($this->path) && !@touch($this->path)) {
-            throw new FilesystemException('Unable to create the database file.');       // @codeCoverageIgnore
+            throw new FilesystemException('Unable to create the data file.');           // @codeCoverageIgnore
         }
 
         $this->serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);
@@ -110,7 +110,7 @@ class Database
     }
 
     /**
-     * Saves the registered environments state in the database file.
+     * Saves the registered environments state in the data file.
      */
     public function save(): void
     {
@@ -121,7 +121,7 @@ class Database
     }
 
     /**
-     * Extracts the registered environments from the database file.
+     * Extracts the registered environments from the data file.
      *
      * @return EnvironmentEntity[]
      */

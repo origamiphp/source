@@ -35,7 +35,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Service\Middleware\Binary\Docker
  * @uses \App\Service\Middleware\Binary\Mkcert
  * @uses \App\Service\Middleware\Binary\Mutagen
- * @uses \App\Service\Middleware\Database
+ * @uses \App\Service\ApplicationData
  * @uses \App\Service\Middleware\Hosts
  * @uses \App\Service\RequirementsChecker
  * @uses \App\Service\Setup\ConfigurationFiles

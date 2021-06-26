@@ -6,7 +6,7 @@ namespace App\Tests\Service\Middleware;
 
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\Middleware\Database;
+use App\Service\ApplicationData;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentCollection;
 use App\ValueObject\EnvironmentEntity;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * @internal
  *
- * @covers \App\Service\Middleware\Database
+ * @covers \App\Service\ApplicationData
  */
 final class DatabaseTest extends TestCase
 {
@@ -30,7 +30,7 @@ final class DatabaseTest extends TestCase
         static::assertFileDoesNotExist($this->getDatabasePath());
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        new Database($fakeVariables);
+        new ApplicationData($fakeVariables);
 
         static::assertFileExists($this->getDatabasePath());
     }
@@ -40,7 +40,7 @@ final class DatabaseTest extends TestCase
         $this->expectException(FilesystemException::class);
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => '/fake/location']);
-        new Database($fakeVariables);
+        new ApplicationData($fakeVariables);
     }
 
     /**
@@ -50,7 +50,7 @@ final class DatabaseTest extends TestCase
     {
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         $environments = $database->getAllEnvironments();
 
@@ -85,7 +85,7 @@ final class DatabaseTest extends TestCase
     {
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         static::assertEquals(
             new EnvironmentEntity(
@@ -100,7 +100,7 @@ final class DatabaseTest extends TestCase
 
         file_put_contents($this->getDatabasePath(), '[]');
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         static::assertNull($database->getActiveEnvironment());
     }
@@ -112,7 +112,7 @@ final class DatabaseTest extends TestCase
     {
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         static::assertEquals(
             new EnvironmentEntity(
@@ -134,7 +134,7 @@ final class DatabaseTest extends TestCase
     {
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         static::assertEquals(
             new EnvironmentEntity(
@@ -157,7 +157,7 @@ final class DatabaseTest extends TestCase
     {
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         $environment = new EnvironmentEntity(
             'fake-environment-3',
@@ -180,7 +180,7 @@ final class DatabaseTest extends TestCase
     {
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
-        $database = new Database($fakeVariables);
+        $database = new ApplicationData($fakeVariables);
 
         $environment = new EnvironmentEntity(
             'fake-environment-1',
@@ -201,7 +201,7 @@ final class DatabaseTest extends TestCase
      */
     private function getDatabasePath(): string
     {
-        return $this->location.\DIRECTORY_SEPARATOR.Database::DATABASE_FILENAME;
+        return $this->location.\DIRECTORY_SEPARATOR.ApplicationData::DATA_FILENAME;
     }
 
     /**

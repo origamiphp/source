@@ -7,8 +7,8 @@ namespace App\Tests\Service;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
+use App\Service\ApplicationData;
 use App\Service\CurrentContext;
-use App\Service\Middleware\Database;
 use App\Service\Setup\Validator;
 use App\Service\Wrapper\ProcessProxy;
 use App\Tests\TestEnvironmentTrait;
@@ -33,7 +33,7 @@ final class CurrentContextTest extends TestCase
      */
     public function testItRetrieveTheActiveEnvironment(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
         $installDir = '/var/docker';
@@ -72,7 +72,7 @@ final class CurrentContextTest extends TestCase
      */
     public function testItRetrieveTheEnvironmentFromInput(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
         $installDir = '/var/docker';
@@ -130,7 +130,7 @@ final class CurrentContextTest extends TestCase
      */
     public function testItRetrieveTheEnvironmentFromLocation(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
         $installDir = '/var/docker';
@@ -198,7 +198,7 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithoutEnvironment(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
         $installDir = '/var/docker';
@@ -221,7 +221,7 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithMissingDotEnvFile(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
         $installDir = '/var/docker';
@@ -259,7 +259,7 @@ final class CurrentContextTest extends TestCase
      */
     public function testItThrowsAnExceptionWithMissingConfigurationFiles(): void
     {
-        $database = $this->prophesize(Database::class);
+        $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
         $installDir = '/var/docker';

@@ -7,7 +7,6 @@ namespace App\Service;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\Middleware\Database;
 use App\Service\Setup\Validator;
 use App\Service\Wrapper\ProcessProxy;
 use App\ValueObject\EnvironmentEntity;
@@ -16,19 +15,19 @@ use Symfony\Component\Dotenv\Dotenv;
 
 class CurrentContext
 {
-    private Database $database;
+    private ApplicationData $applicationData;
     private ProcessProxy $processProxy;
     private Validator $validator;
     private EnvironmentEntity $environment;
     private string $installDir;
 
     public function __construct(
-        Database $database,
+        ApplicationData $applicationData,
         ProcessProxy $processProxy,
         Validator $validator,
         string $installDir
     ) {
-        $this->database = $database;
+        $this->applicationData = $applicationData;
         $this->processProxy = $processProxy;
         $this->validator = $validator;
         $this->installDir = $installDir;
@@ -44,21 +43,21 @@ class CurrentContext
     public function loadEnvironment(InputInterface $input): void
     {
         // 1. Try to load the currently running environment.
-        $environment = $this->database->getActiveEnvironment();
+        $environment = $this->applicationData->getActiveEnvironment();
 
         // 2. Try to load the environment from the user input (i.e. BuildCommand, StartCommand, and UninstallCommand).
         if (!$environment instanceof EnvironmentEntity && $input->hasArgument('environment')) {
             $argument = $input->getArgument('environment');
 
             if (\is_string($argument) && $argument !== '') {
-                $environment = $this->database->getEnvironmentByName($argument);
+                $environment = $this->applicationData->getEnvironmentByName($argument);
             }
         }
 
         // 3. Try to load the environment from the current location.
         if (!$environment instanceof EnvironmentEntity) {
             $location = $this->processProxy->getWorkingDirectory();
-            $environment = $this->database->getEnvironmentByLocation($location);
+            $environment = $this->applicationData->getEnvironmentByLocation($location);
         }
 
         // 4. Throw an exception is there is still no defined environment.
