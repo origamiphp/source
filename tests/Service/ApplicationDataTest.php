@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Service\Middleware;
+namespace App\Tests\Service;
 
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
@@ -18,7 +18,7 @@ use PHPUnit\Framework\TestCase;
  *
  * @covers \App\Service\ApplicationData
  */
-final class DatabaseTest extends TestCase
+final class ApplicationDataTest extends TestCase
 {
     use TestEnvironmentTrait;
 
