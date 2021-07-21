@@ -209,7 +209,7 @@ final class ApplicationDataTest extends TestCase
      */
     private function getFakeDatabasePath(): string
     {
-        return __DIR__.'/../../Fixtures/databases/fake_database.json';
+        return __DIR__.'/../Fixtures/databases/fake_database.json';
     }
 
     /**
@@ -217,7 +217,7 @@ final class ApplicationDataTest extends TestCase
      */
     private function getFakeDatabaseAfterAdditionPath(): string
     {
-        return __DIR__.'/../../Fixtures/databases/fake_database_after_addition.json';
+        return __DIR__.'/../Fixtures/databases/fake_database_after_addition.json';
     }
 
     /**
@@ -225,6 +225,6 @@ final class ApplicationDataTest extends TestCase
      */
     private function getFakeDatabaseAfterDeletionPath(): string
     {
-        return __DIR__.'/../../Fixtures/databases/fake_database_after_deletion.json';
+        return __DIR__.'/../Fixtures/databases/fake_database_after_deletion.json';
     }
 }
