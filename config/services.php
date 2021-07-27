@@ -34,8 +34,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('app.install_dir', '/var/docker');
 
     $php80 = ['ajardin/php:8.0', 'ajardin/php:8.0-blackfire', 'ajardin/php:8.0-xdebug'];
-    $php74 = ['ajardin/php:7.4', 'ajardin/php:7.4-blackfire', 'ajardin/php7.4-xdebug'];
-    $php73 = ['ajardin/php:7.3', 'ajardin/php:7.3-blackfire', 'ajardin/php7.3-xdebug'];
+    $php74 = ['ajardin/php:7.4', 'ajardin/php:7.4-blackfire', 'ajardin/php:7.4-xdebug'];
+    $php73 = ['ajardin/php:7.3', 'ajardin/php:7.3-blackfire', 'ajardin/php:7.3-xdebug'];
 
     $parameters->set('app.requirements', [
         // https://www.drupal.org/docs/system-requirements
