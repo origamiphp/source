@@ -101,6 +101,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
         // https://docs.sylius.com/en/latest/book/installation/requirements.html
         EnvironmentEntity::TYPE_SYLIUS => [
+            '1.10' => [
+                'database' => ['mysql:8.0', 'mysql:5.7'],
+                'php' => array_merge($php80, $php74, $php73),
+            ],
             '1.9' => [
                 'database' => ['mysql:8.0', 'mysql:5.7'],
                 'php' => array_merge($php74, $php73),
