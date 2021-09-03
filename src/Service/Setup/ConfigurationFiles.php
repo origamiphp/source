@@ -4,44 +4,52 @@ declare(strict_types=1);
 
 namespace App\Service\Setup;
 
+use App\Exception\DatabaseException;
 use App\Exception\FilesystemException;
 use App\Exception\MkcertException;
 use App\Service\Middleware\Binary\Mkcert;
+use App\Service\Middleware\Database;
 use App\ValueObject\EnvironmentEntity;
 use Ergebnis\Environment\Variables;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ConfigurationFiles
 {
-    public const INSTALLATION_DIRECTORY = '/var/docker';
-    protected const BLACKFIRE_PARAMETERS = [
+    private const BLACKFIRE_PARAMETERS = [
         'BLACKFIRE_CLIENT_ID',
         'BLACKFIRE_CLIENT_TOKEN',
         'BLACKFIRE_SERVER_ID',
         'BLACKFIRE_SERVER_TOKEN',
     ];
+    public const INSTALLATION_DIRECTORY = '/var/docker';
 
     protected Mkcert $mkcert;
     protected Variables $systemVariables;
+    protected Database $database;
 
-    public function __construct(Mkcert $mkcert, Variables $systemVariables)
+    public function __construct(Mkcert $mkcert, Variables $systemVariables, Database $database)
     {
         $this->mkcert = $mkcert;
         $this->systemVariables = $systemVariables;
+        $this->database = $database;
     }
 
     /**
      * Installs the Docker environment configuration.
      *
-     * @throws FilesystemException|MkcertException
+     * @throws FilesystemException|MkcertException|DatabaseException
      */
     public function install(EnvironmentEntity $environment, array $settings): void
     {
-        $source = __DIR__."/../../Resources/{$environment->getType()}";
+        $source = __DIR__."/../../Resources/templates/{$environment->getType()}";
         $destination = $environment->getLocation().self::INSTALLATION_DIRECTORY;
 
         $this->copyConfiguration($source, $destination);
         $configuration = "{$destination}/.env";
+
+        if (isset($settings['database'])) {
+            $this->database->replaceDatabasePlaceholder($settings['database'], $destination);
+        }
 
         foreach ($settings as $key => $value) {
             $this->fillDotEnvFile($configuration, 'DOCKER_'.strtoupper($key).'_IMAGE', $value);

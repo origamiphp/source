@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service\Middleware\Binary;
 
 use App\Service\CurrentContext;
+use App\Service\Middleware\Database;
 use App\Service\Wrapper\ProcessFactory;
 use App\ValueObject\EnvironmentEntity;
 
@@ -184,6 +185,87 @@ class Docker
     }
 
     /**
+     * Executes the native MySQL dump process.
+     */
+    public function dumpMysqlDatabase(string $path): bool
+    {
+        $environment = $this->currentContext->getActiveEnvironment();
+
+        // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
+        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+
+        $command = str_replace(
+            ['{container}', '{password}', '{database}', '{filename}'],
+            [$container, Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} mysqldump --user=root --password={password} {database} > {filename}'
+        );
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcessFromShellCommandLine($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
+     * Executes the native Postgres dump process.
+     */
+    public function dumpPostgresDatabase(string $path): bool
+    {
+        $environment = $this->currentContext->getActiveEnvironment();
+
+        // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
+        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+
+        $command = str_replace(
+            ['{container}', '{password}', '{database}', '{filename}'],
+            [$container, Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} pg_dump --clean --dbname=postgresql://postgres:{password}@127.0.0.1:5432/{database} > {filename}'
+        );
+
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcessFromShellCommandLine($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
+     * Executes the native MySQL restore process.
+     */
+    public function restoreMysqlDatabase(string $path): bool
+    {
+        $environment = $this->currentContext->getActiveEnvironment();
+
+        // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
+        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+
+        $command = str_replace(
+            ['{container}', '{password}', '{database}', '{filename}'],
+            [$container, Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} mysql --user=root --password={password} {database} < {filename}'
+        );
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcessFromShellCommandLine($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
+     * Executes the native Postgres restore process.
+     */
+    public function restorePostgresDatabase(string $path): bool
+    {
+        $environment = $this->currentContext->getActiveEnvironment();
+
+        // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
+        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+
+        $command = str_replace(
+            ['{container}', '{password}', '{database}', '{filename}'],
+            [$container, Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} psql --dbname=postgresql://postgres:{password}@127.0.0.1:5432/{database} < {filename}'
+        );
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcessFromShellCommandLine($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
      * Retrieves the options required by the "docker compose" commands when working in different directories.
      *
      * @return string[]
@@ -206,13 +288,9 @@ class Docker
      */
     private function getEnvironmentVariables(EnvironmentEntity $environment): array
     {
-        $projectName = $this->currentContext->getProjectName();
-
         return [
-            'PROJECT_NAME' => $projectName,
+            'PROJECT_NAME' => $this->currentContext->getProjectName(),
             'PROJECT_LOCATION' => $environment->getLocation(),
-            // @deprecated
-            'COMPOSE_PROJECT_NAME' => $projectName,
         ];
     }
 }
