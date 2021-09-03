@@ -295,6 +295,158 @@ final class DockerTest extends TestCase
         static::assertTrue($docker->openTerminal('php'));
     }
 
+    public function testItDumpsMysqlDatabase(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $projectName = "{$environment->getType()}_{$environment->getName()}";
+        $process = $this->prophesize(Process::class);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine(Argument::containingString('> /path/to/dump_file.sql'), Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
+
+        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        static::assertTrue($docker->dumpMysqlDatabase('/path/to/dump_file.sql'));
+    }
+
+    public function testItRestoresMysqlDatabase(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $projectName = "{$environment->getType()}_{$environment->getName()}";
+        $process = $this->prophesize(Process::class);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine(Argument::containingString('< /path/to/dump_file.sql'), Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
+
+        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        static::assertTrue($docker->restoreMysqlDatabase('/path/to/dump_file.sql'));
+    }
+
+    public function testItDumpsPostgresDatabase(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $projectName = "{$environment->getType()}_{$environment->getName()}";
+        $process = $this->prophesize(Process::class);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine(Argument::containingString('> /path/to/dump_file.sql'), Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
+
+        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        static::assertTrue($docker->dumpPostgresDatabase('/path/to/dump_file.sql'));
+    }
+
+    public function testItRestoresPostgresDatabase(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $projectName = "{$environment->getType()}_{$environment->getName()}";
+        $process = $this->prophesize(Process::class);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $currentContext
+            ->getProjectName()
+            ->shouldBeCalledOnce()
+            ->willReturn($projectName)
+        ;
+
+        $process
+            ->isSuccessful()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $processFactory
+            ->runForegroundProcessFromShellCommandLine(Argument::containingString('< /path/to/dump_file.sql'), Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process->reveal())
+        ;
+
+        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        static::assertTrue($docker->restorePostgresDatabase('/path/to/dump_file.sql'));
+    }
+
     /**
      * @return string[]
      */

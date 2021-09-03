@@ -7,24 +7,7 @@ services:
     depends_on:
       - php
 
-  database:
-    image: ${DOCKER_DATABASE_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    ports:
-      - "3306:3306"
-      - "5432:5432"
-    volumes:
-      - database:/var/lib/mysql
-    tty: true
-
-  elasticsearch:
-    image: ${DOCKER_ELASTICSEARCH_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    volumes:
-      - elasticsearch:/usr/share/elasticsearch/data
+# <== DATABASE PLACEHOLDER ==>
 
   maildev:
     image: djfarrelly/maildev:latest
@@ -65,25 +48,6 @@ services:
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
     tty: true
 
-  rabbitmq:
-    image: ${DOCKER_RABBITMQ_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    ports:
-      - "15672:15672"
-    volumes:
-      - rabbitmq:/var/lib/rabbitmq
-    tty: true
-
-  redis:
-    image: ${DOCKER_REDIS_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    volumes:
-      - redis:/data
-      # Custom configuration
-      - ${PROJECT_LOCATION}/var/docker/redis/custom.conf:/usr/local/etc/redis/redis.conf
-    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
-    tty: true
-
   synchro:
     image: ajardin/synchro:latest
     container_name: ${PROJECT_NAME}_synchro
@@ -93,6 +57,3 @@ services:
 volumes:
   code: {}
   database: {}
-  elasticsearch: {}
-  rabbitmq: {}
-  redis: {}

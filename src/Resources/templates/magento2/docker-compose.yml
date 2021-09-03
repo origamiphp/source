@@ -16,14 +16,7 @@ services:
     volumes:
       - elasticsearch:/usr/share/elasticsearch/data
 
-  database:
-    image: ${DOCKER_DATABASE_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
-    ports:
-      - "3306:3306"
-    volumes:
-      - database:/var/lib/mysql
-    tty: true
+# <== DATABASE PLACEHOLDER ==>
 
   maildev:
     image: djfarrelly/maildev:latest

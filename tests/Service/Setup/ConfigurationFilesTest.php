@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service\Setup;
 
 use App\Service\Middleware\Binary\Mkcert;
+use App\Service\Middleware\Database;
 use App\Service\Setup\ConfigurationFiles;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentEntity;
@@ -42,9 +43,15 @@ final class ConfigurationFilesTest extends TestCase
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
         $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
+        $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
+
+        $database
+            ->replaceDatabasePlaceholder(Argument::type('string'), Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
 
         if ($domains = $environment->getDomains()) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -62,7 +69,7 @@ final class ConfigurationFilesTest extends TestCase
             ;
         }
 
-        $installer = new ConfigurationFiles($mkcert->reveal(), $environmentVariables);
+        $installer = new ConfigurationFiles($mkcert->reveal(), $environmentVariables, $database->reveal());
         $installer->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination, $settings);
@@ -80,10 +87,16 @@ final class ConfigurationFilesTest extends TestCase
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
         $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
+        $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
+
+        $database
+            ->replaceDatabasePlaceholder(Argument::type('string'), Argument::type('string'))
+            ->shouldBeCalledOnce()
+        ;
 
         if ($domains = $environment->getDomains()) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -101,7 +114,7 @@ final class ConfigurationFilesTest extends TestCase
             ;
         }
 
-        $updater = new ConfigurationFiles($mkcert->reveal(), $environmentVariables);
+        $updater = new ConfigurationFiles($mkcert->reveal(), $environmentVariables, $database->reveal());
         $updater->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination, $settings);
@@ -118,6 +131,7 @@ final class ConfigurationFilesTest extends TestCase
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
         $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
+        $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
@@ -125,7 +139,7 @@ final class ConfigurationFilesTest extends TestCase
 
         static::assertDirectoryExists($destination);
 
-        $uninstaller = new ConfigurationFiles($mkcert->reveal(), $environmentVariables);
+        $uninstaller = new ConfigurationFiles($mkcert->reveal(), $environmentVariables, $database->reveal());
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);
@@ -136,13 +150,13 @@ final class ConfigurationFilesTest extends TestCase
         $type = $environment->getType();
 
         $finder = new Finder();
-        $finder->files()->in(__DIR__."/../../../src/Resources/{$type}");
+        $finder->files()->in(__DIR__."/../../../src/Resources/templates/{$type}");
 
         foreach ($finder as $file) {
             $pathname = $file->getPathname();
             $relativePath = substr($pathname, (strpos($pathname, $type) ?: 0) + \strlen($type) + 1);
 
-            static::assertFileEquals($file->getPathname(), $destination.'/'.$relativePath);
+            static::assertFileExists($destination.'/'.$relativePath);
         }
 
         /** @var string $projectConfiguration */
