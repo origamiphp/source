@@ -9,6 +9,7 @@ use App\Service\Middleware\Binary\Mutagen;
 use App\Service\Wrapper\ProcessFactory;
 use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
@@ -55,28 +56,14 @@ final class MutagenTest extends TestCase
             ->willReturn('')
         ;
 
-        $command = ['mutagen', 'sync', 'list', "--label-selector=name={$projectName}"];
         $processFactory
-            ->runBackgroundProcess($command)
+            ->runBackgroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
 
-        $command = [
-            'mutagen',
-            'sync',
-            'create',
-            '--default-owner-beta=id:1000',
-            '--default-group-beta=id:1000',
-            '--sync-mode=two-way-resolved',
-            '--ignore-vcs',
-            '--symlink-mode=posix-raw',
-            "--label=name={$projectName}",
-            $environment->getLocation(),
-            "docker://{$projectName}_synchro/var/www/html/",
-        ];
         $processFactory
-            ->runForegroundProcess($command)
+            ->runForegroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -118,16 +105,14 @@ final class MutagenTest extends TestCase
             ->willReturn($projectName)
         ;
 
-        $command = ['mutagen', 'sync', 'list', "--label-selector=name={$projectName}"];
         $processFactory
-            ->runBackgroundProcess($command)
+            ->runBackgroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
 
-        $command = ['mutagen', 'sync', 'resume', "--label-selector=name={$projectName}"];
         $processFactory
-            ->runForegroundProcess($command)
+            ->runForegroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -157,9 +142,8 @@ final class MutagenTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = ['mutagen', 'sync', 'pause', "--label-selector=name={$projectName}"];
         $processFactory
-            ->runForegroundProcess($command)
+            ->runForegroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -189,9 +173,8 @@ final class MutagenTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = ['mutagen', 'sync', 'terminate', "--label-selector=name={$projectName}"];
         $processFactory
-            ->runForegroundProcess($command)
+            ->runForegroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
