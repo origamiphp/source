@@ -31,7 +31,7 @@ class GitHub
         try {
             $response = $this->httpClient->request(Request::METHOD_GET, $url);
             $details = $response->toArray();
-        } catch (HttpExceptionInterface | TransportExceptionInterface | DecodingExceptionInterface $exception) {
+        } catch (HttpExceptionInterface|TransportExceptionInterface|DecodingExceptionInterface $exception) {
             return null;
         }
 

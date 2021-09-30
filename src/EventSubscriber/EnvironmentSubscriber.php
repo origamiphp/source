@@ -42,7 +42,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentUninstall
      *
-     * @return string[]
+     * @return array<string, string>
      */
     public static function getSubscribedEvents(): array
     {

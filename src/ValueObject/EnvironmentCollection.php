@@ -7,7 +7,6 @@ namespace App\ValueObject;
 use App\Exception\InvalidEnvironmentException;
 use ArrayIterator;
 use Countable;
-use Iterator;
 use IteratorAggregate;
 
 /**
@@ -36,10 +35,8 @@ class EnvironmentCollection implements Countable, IteratorAggregate
 
     /**
      * {@inheritdoc}
-     *
-     * @return ArrayIterator
      */
-    public function getIterator(): Iterator
+    public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->values);
     }
