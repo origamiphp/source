@@ -10,27 +10,18 @@ use App\Exception\MkcertException;
 use App\Service\Middleware\Binary\Mkcert;
 use App\Service\Middleware\Database;
 use App\ValueObject\EnvironmentEntity;
-use Ergebnis\Environment\Variables;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ConfigurationFiles
 {
-    private const BLACKFIRE_PARAMETERS = [
-        'BLACKFIRE_CLIENT_ID',
-        'BLACKFIRE_CLIENT_TOKEN',
-        'BLACKFIRE_SERVER_ID',
-        'BLACKFIRE_SERVER_TOKEN',
-    ];
     public const INSTALLATION_DIRECTORY = '/var/docker';
 
     protected Mkcert $mkcert;
-    protected Variables $systemVariables;
     protected Database $database;
 
-    public function __construct(Mkcert $mkcert, Variables $systemVariables, Database $database)
+    public function __construct(Mkcert $mkcert, Database $database)
     {
         $this->mkcert = $mkcert;
-        $this->systemVariables = $systemVariables;
         $this->database = $database;
     }
 
@@ -45,17 +36,12 @@ class ConfigurationFiles
         $destination = $environment->getLocation().self::INSTALLATION_DIRECTORY;
 
         $this->copyConfiguration($source, $destination);
-        $configuration = "{$destination}/.env";
 
         if (isset($settings['database'])) {
             $this->database->replaceDatabasePlaceholder($settings['database'], $destination);
         }
 
-        foreach ($settings as $key => $value) {
-            $this->fillDotEnvFile($configuration, 'DOCKER_'.strtoupper($key).'_IMAGE', $value);
-        }
-
-        $this->loadBlackfireParameters($destination);
+        $this->fillDockerComposeYamlFile("{$destination}/docker-compose.yml", $settings);
 
         if ($domains = $environment->getDomains()) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -87,19 +73,16 @@ class ConfigurationFiles
         // Copy the environment files into the project directory
         $filesystem->mirror($source, $destination, null, ['override' => true]);
 
-        // Copy the common dotenv file into the project directory
-        $filesystem->copy("{$source}/../.env", "{$destination}/.env", true);
-
         // Create the directory where Mkcert will store locally-trusted development certificate for Nginx
         $filesystem->mkdir("{$destination}/nginx/certs");
     }
 
     /**
-     * Fills the environment dotenv file with the given parameter/value pair.
+     * Fills the environment "docker-compose.yml" file with the given settings.
      *
      * @throws FilesystemException
      */
-    private function fillDotEnvFile(string $filename, string $parameter, string $value): void
+    private function fillDockerComposeYamlFile(string $filename, array $settings): void
     {
         if (!$configuration = file_get_contents($filename)) {
             // @codeCoverageIgnoreStart
@@ -107,31 +90,15 @@ class ConfigurationFiles
             // @codeCoverageIgnoreEnd
         }
 
-        if (!$updates = preg_replace("/{$parameter}=.*/", "{$parameter}={$value}", $configuration)) {
-            // @codeCoverageIgnoreStart
-            throw new FilesystemException(sprintf("Unable to parse the environment configuration.\n%s", $filename));
-            // @codeCoverageIgnoreEnd
+        foreach ($settings as $key => $value) {
+            $parameter = 'DOCKER_'.strtoupper($key).'_IMAGE';
+            $configuration = str_replace("\${{$parameter}}", $value, $configuration);
         }
 
-        if (!file_put_contents($filename, $updates)) {
+        if (!file_put_contents($filename, $configuration)) {
             // @codeCoverageIgnoreStart
             throw new FilesystemException(sprintf("Unable to update the environment configuration.\n%s", $filename));
             // @codeCoverageIgnoreEnd
-        }
-    }
-
-    /**
-     * Loads Blackfire credentials from the environment variables and updates the environment dotenv file.
-     *
-     * @throws FilesystemException
-     */
-    private function loadBlackfireParameters(string $destination): void
-    {
-        $filename = "{$destination}/.env";
-        foreach (self::BLACKFIRE_PARAMETERS as $parameter) {
-            if ($this->systemVariables->has($parameter)) {
-                $this->fillDotEnvFile($filename, $parameter, $this->systemVariables->get($parameter));
-            }
         }
     }
 }

@@ -11,7 +11,6 @@ use App\Service\Setup\Validator;
 use App\Service\Wrapper\ProcessProxy;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Dotenv\Dotenv;
 
 class CurrentContext
 {
@@ -19,18 +18,15 @@ class CurrentContext
     private ProcessProxy $processProxy;
     private Validator $validator;
     private EnvironmentEntity $environment;
-    private string $installDir;
 
     public function __construct(
         ApplicationData $applicationData,
         ProcessProxy $processProxy,
-        Validator $validator,
-        string $installDir
+        Validator $validator
     ) {
         $this->applicationData = $applicationData;
         $this->processProxy = $processProxy;
         $this->validator = $validator;
-        $this->installDir = $installDir;
     }
 
     /**
@@ -92,14 +88,6 @@ class CurrentContext
      */
     private function checkEnvironmentConfiguration(EnvironmentEntity $environment): void
     {
-        if ($this->validator->validateDotEnvExistence($environment)) {
-            $dotenv = new Dotenv();
-            $dotenv->usePutenv(true);
-            $dotenv->overload($environment->getLocation().$this->installDir.'/.env');
-        } else {
-            throw new InvalidConfigurationException('The environment is not configured, consider executing the "install" command.');
-        }
-
         if (!$this->validator->validateConfigurationFiles($environment)) {
             throw new InvalidConfigurationException('The environment is not configured, consider executing the "install" command.');
         }

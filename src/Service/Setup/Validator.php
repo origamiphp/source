@@ -24,17 +24,6 @@ class Validator
     }
 
     /**
-     * Checks whether the environment has a dotenv file.
-     */
-    public function validateDotEnvExistence(EnvironmentEntity $environment): bool
-    {
-        $filesystem = new Filesystem();
-        $configuration = $environment->getLocation().$this->installDir.'/.env';
-
-        return $filesystem->exists($configuration);
-    }
-
-    /**
      * Checks whether the environment configuration is correctly installed.
      */
     public function validateConfigurationFiles(EnvironmentEntity $environment): bool

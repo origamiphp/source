@@ -9,7 +9,6 @@ use App\Service\Middleware\Database;
 use App\Service\Setup\ConfigurationFiles;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentEntity;
-use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -25,13 +24,6 @@ final class ConfigurationFilesTest extends TestCase
     use ProphecyTrait;
     use TestEnvironmentTrait;
 
-    private const FAKE_BLACKFIRE_CREDENTIALS = [
-        'BLACKFIRE_SERVER_ID' => 'server_foo',
-        'BLACKFIRE_SERVER_TOKEN' => 'server_bar',
-        'BLACKFIRE_CLIENT_ID' => 'client_foo',
-        'BLACKFIRE_CLIENT_TOKEN' => 'client_bar',
-    ];
-
     /**
      * @dataProvider provideMultipleInstallContexts
      */
@@ -42,7 +34,6 @@ final class ConfigurationFilesTest extends TestCase
         array $settings = []
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
-        $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
         $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
@@ -69,11 +60,10 @@ final class ConfigurationFilesTest extends TestCase
             ;
         }
 
-        $installer = new ConfigurationFiles($mkcert->reveal(), $environmentVariables, $database->reveal());
+        $installer = new ConfigurationFiles($mkcert->reveal(), $database->reveal());
         $installer->install($environment, $settings);
 
-        $this->assertConfigurationIsInstalled($environment, $destination, $settings);
-        $this->assertConfigurationContainsBlackfireCredentials($destination);
+        $this->assertConfigurationIsInstalled($environment, $destination);
     }
 
     /**
@@ -86,7 +76,6 @@ final class ConfigurationFilesTest extends TestCase
         array $settings = []
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
-        $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
         $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
@@ -114,11 +103,10 @@ final class ConfigurationFilesTest extends TestCase
             ;
         }
 
-        $updater = new ConfigurationFiles($mkcert->reveal(), $environmentVariables, $database->reveal());
+        $updater = new ConfigurationFiles($mkcert->reveal(), $database->reveal());
         $updater->install($environment, $settings);
 
-        $this->assertConfigurationIsInstalled($environment, $destination, $settings);
-        $this->assertConfigurationContainsBlackfireCredentials($destination);
+        $this->assertConfigurationIsInstalled($environment, $destination);
     }
 
     /**
@@ -130,7 +118,6 @@ final class ConfigurationFilesTest extends TestCase
         ?string $domains = null
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
-        $environmentVariables = FakeVariables::fromArray(self::FAKE_BLACKFIRE_CREDENTIALS);
         $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
@@ -139,13 +126,13 @@ final class ConfigurationFilesTest extends TestCase
 
         static::assertDirectoryExists($destination);
 
-        $uninstaller = new ConfigurationFiles($mkcert->reveal(), $environmentVariables, $database->reveal());
+        $uninstaller = new ConfigurationFiles($mkcert->reveal(), $database->reveal());
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);
     }
 
-    private function assertConfigurationIsInstalled(EnvironmentEntity $environment, string $destination, array $settings): void
+    private function assertConfigurationIsInstalled(EnvironmentEntity $environment, string $destination): void
     {
         $type = $environment->getType();
 
@@ -160,21 +147,7 @@ final class ConfigurationFilesTest extends TestCase
         }
 
         /** @var string $projectConfiguration */
-        $projectConfiguration = file_get_contents("{$destination}/.env");
-
-        foreach ($settings as $key => $value) {
-            $entry = sprintf('DOCKER_%s_IMAGE=%s', strtoupper($key), $value);
-            static::assertStringContainsString($entry, $projectConfiguration);
-        }
-    }
-
-    private function assertConfigurationContainsBlackfireCredentials(string $destination): void
-    {
-        /** @var string $projectConfiguration */
-        $projectConfiguration = file_get_contents("{$destination}/.env");
-
-        foreach (self::FAKE_BLACKFIRE_CREDENTIALS as $key => $value) {
-            static::assertStringContainsString("{$key}={$value}\n", $projectConfiguration);
-        }
+        $projectConfiguration = file_get_contents("{$destination}/docker-compose.yml");
+        static::assertStringNotContainsString('${DOCKER_PHP_IMAGE}', $projectConfiguration);
     }
 }

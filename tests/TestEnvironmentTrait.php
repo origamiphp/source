@@ -91,6 +91,5 @@ trait TestEnvironmentTrait
         }
 
         $filesystem->mirror($source, $destination);
-        $filesystem->copy("{$source}/../.env", "{$destination}/.env");
     }
 }
