@@ -46,7 +46,7 @@ class Packagist
         try {
             $response = $this->httpClient->request(Request::METHOD_GET, $url);
             $releases = $response->toArray();
-        } catch (TransportExceptionInterface | HttpExceptionInterface | DecodingExceptionInterface $exception) {
+        } catch (TransportExceptionInterface|HttpExceptionInterface|DecodingExceptionInterface $exception) {
             return null;
         }
 
