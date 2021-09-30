@@ -1,6 +1,5 @@
   database:
     image: ${DOCKER_DATABASE_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - MYSQL_ROOT_PASSWORD=YourPwdShouldBeLongAndSecure
       - MYSQL_DATABASE=origami

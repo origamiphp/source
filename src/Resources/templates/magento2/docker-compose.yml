@@ -3,13 +3,19 @@ version: "3.7"
 services:
   blackfire:
     image: blackfire/blackfire:2
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
+    environment:
+      - BLACKFIRE_DISABLE_LEGACY_PORT=1
+      - BLACKFIRE_LOG_LEVEL=2
+      # Credentials should be configured on the host system (https://docs.docker.com/compose/compose-file/compose-file-v3/#environment).
+      - BLACKFIRE_SERVER_ID
+      - BLACKFIRE_SERVER_TOKEN
+      - BLACKFIRE_CLIENT_ID
+      - BLACKFIRE_CLIENT_TOKEN
     depends_on:
       - php
 
   elasticsearch:
     image: ${DOCKER_ELASTICSEARCH_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
@@ -20,7 +26,6 @@ services:
 
   maildev:
     image: djfarrelly/maildev:latest
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
     depends_on:
       - php
     ports:
@@ -28,7 +33,6 @@ services:
 
   nginx:
     image: ajardin/magento2-nginx:latest
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
     ports:
       - "443:443"
     volumes:
@@ -44,7 +48,6 @@ services:
 
   php:
     image: ${DOCKER_PHP_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
     volumes:
@@ -59,7 +62,6 @@ services:
 
   redis:
     image: ${DOCKER_REDIS_IMAGE}
-    env_file: ${PROJECT_LOCATION}/var/docker/.env
     volumes:
       - redis:/data
     tty: true

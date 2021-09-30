@@ -49,31 +49,6 @@ final class ValidatorTest extends TestCase
         static::assertFalse($validator->validateConfigurationFiles($environment));
     }
 
-    public function testItValidatesAnExistingDotEnvFile(): void
-    {
-        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
-        $projectDir = __DIR__.'/../../..';
-        $installDir = '/var/docker';
-
-        $environment = $this->createEnvironment();
-        $this->installEnvironmentConfiguration($environment);
-
-        $validator = new Validator($symfonyValidator->reveal(), $projectDir, $installDir);
-        static::assertTrue($validator->validateDotEnvExistence($environment));
-    }
-
-    public function testItInvalidatesAMissingDotEnvFile(): void
-    {
-        $symfonyValidator = $this->prophesize(ValidatorInterface::class);
-        $projectDir = __DIR__.'/../../..';
-        $installDir = '/var/docker';
-
-        $environment = $this->createEnvironment();
-
-        $validator = new Validator($symfonyValidator->reveal(), $projectDir, $installDir);
-        static::assertFalse($validator->validateDotEnvExistence($environment));
-    }
-
     public function testItValidatesAnAcceptableHostname(): void
     {
         $symfonyValidator = $this->prophesize(ValidatorInterface::class);

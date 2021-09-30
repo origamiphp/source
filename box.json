@@ -4,7 +4,6 @@
         "config"
     ],
     "files": [
-        "src/Resources/templates/.env",
         ".env.local.php",
         "autoload_runtime.template"
     ],
