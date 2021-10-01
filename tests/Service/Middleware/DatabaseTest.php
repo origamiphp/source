@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\Service\Middleware;
 
 use App\Exception\DatabaseException;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidConfigurationException;
+use App\Service\CurrentContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Tests\TestEnvironmentTrait;
-use Ergebnis\Environment\FakeVariables;
 use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -24,14 +26,31 @@ final class DatabaseTest extends TestCase
     use TestEnvironmentTrait;
 
     /**
-     * @dataProvider provideMysqlImages
+     * @dataProvider provideMysqlServices
      */
-    public function testItTriggersMysqlDump(string $dockerImage): void
+    public function testItTriggersMysqlDump(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->dumpMysqlDatabase($backupFile)
@@ -39,19 +58,36 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     /**
-     * @dataProvider provideMysqlImages
+     * @dataProvider provideMysqlServices
      */
-    public function testItDetectsMysqlDumpFailure(string $dockerImage): void
+    public function testItDetectsMysqlDumpFailure(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->dumpMysqlDatabase($backupFile)
@@ -61,19 +97,36 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     /**
-     * @dataProvider providePostgresImages
+     * @dataProvider providePostgresServices
      */
-    public function testItTriggersPostgresDump(string $dockerImage): void
+    public function testItTriggersPostgresDump(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->dumpPostgresDatabase($backupFile)
@@ -81,19 +134,36 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     /**
-     * @dataProvider providePostgresImages
+     * @dataProvider providePostgresServices
      */
-    public function testItDetectsPostgresDumpFailure(string $dockerImage): void
+    public function testItDetectsPostgresDumpFailure(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->dumpPostgresDatabase($backupFile)
@@ -103,49 +173,88 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     public function testItDoesNotDumpDatabaseWithoutConfiguration(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => '']);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $this->expectException(FilesystemException::class);
+
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database->dump($backupFile);
+    }
+
+    public function testItDoesNotDumpDatabaseWithInvalidImages(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', "  database\n    image: foobar", file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $this->expectException(DatabaseException::class);
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $this->expectException(InvalidConfigurationException::class);
+
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     /**
-     * @dataProvider provideInvalidImages
+     * @dataProvider provideMysqlServices
      */
-    public function testItDoesNotDumpDatabaseWithInvalidImages(string $dockerImage): void
+    public function testItTriggersMysqlRestore(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
 
-        $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
 
-        $this->expectException(DatabaseException::class);
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
 
-        $database = new Database($docker->reveal(), $systemVariables);
-        $database->dump($backupFile);
-    }
-
-    /**
-     * @dataProvider provideMysqlImages
-     */
-    public function testItTriggersMysqlRestore(string $dockerImage): void
-    {
-        $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->restoreMysqlDatabase($backupFile)
@@ -153,20 +262,37 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     /**
-     * @dataProvider provideMysqlImages
+     * @dataProvider provideMysqlServices
      */
-    public function testItDetectsMysqlRestoreFailure(string $dockerImage): void
+    public function testItDetectsMysqlRestoreFailure(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->restoreMysqlDatabase($backupFile)
@@ -176,20 +302,37 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     /**
-     * @dataProvider providePostgresImages
+     * @dataProvider providePostgresServices
      */
-    public function testItTriggersPostgresRestore(string $dockerImage): void
+    public function testItTriggersPostgresRestore(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->restorePostgresDatabase($backupFile)
@@ -197,20 +340,37 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     /**
-     * @dataProvider providePostgresImages
+     * @dataProvider providePostgresServices
      */
-    public function testItDetectsPostgresRestoreFailure(string $dockerImage): void
+    public function testItDetectsPostgresRestoreFailure(string $databaseService): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', $databaseService, file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
+
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
         $docker
             ->restorePostgresDatabase($backupFile)
@@ -220,17 +380,15 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
-    /**
-     * @dataProvider provideMysqlImages
-     */
-    public function testItDetectsMissingMysqlDump(string $dockerImage): void
+    public function testItDetectsMissingDump(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
@@ -239,50 +397,79 @@ final class DatabaseTest extends TestCase
             ->shouldNotBeCalled()
         ;
 
+        $docker
+            ->restorePostgresDatabase()
+            ->shouldNotBeCalled()
+        ;
+
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     public function testItDoesNotRestoreDatabaseWithoutConfiguration(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => '']);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $this->expectException(DatabaseException::class);
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $this->expectException(FilesystemException::class);
+
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
-    /**
-     * @dataProvider provideInvalidImages
-     */
-    public function testItDoesNotRestoreDatabaseWithInvalidImages(string $dockerImage): void
+    public function testItDoesNotRestoreDatabaseWithInvalidImages(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
+
+        $environment = $this->createEnvironment();
+        $this->installEnvironmentConfiguration($environment);
+
+        $configurationPath = $this->location.$installDir.'/docker-compose.yml';
+
+        file_put_contents(
+            $configurationPath,
+            str_replace('# <== DATABASE PLACEHOLDER ==>', "  database\n    image: foobar", file_get_contents($configurationPath))
+        );
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $this->expectException(DatabaseException::class);
+        $currentContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
 
-        $database = new Database($docker->reveal(), $systemVariables);
+        $this->expectException(InvalidConfigurationException::class);
+
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     /**
-     * @dataProvider provideMysqlImages
+     * @dataProvider provideDatabaseImages
      */
-    public function testItReplacesPlaceholder(string $dockerImage): void
+    public function testItReplacesPlaceholder(string $databaseImage): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
@@ -294,8 +481,8 @@ final class DatabaseTest extends TestCase
             file_get_contents("{$destination}/docker-compose.yml")
         );
 
-        $database = new Database($docker->reveal(), $systemVariables);
-        $database->replaceDatabasePlaceholder($dockerImage, $destination);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database->replaceDatabasePlaceholder($databaseImage, $destination);
 
         static::assertStringNotContainsString(
             '# <== DATABASE PLACEHOLDER ==>',
@@ -303,51 +490,54 @@ final class DatabaseTest extends TestCase
         );
     }
 
-    /**
-     * @dataProvider provideInvalidImages
-     */
-    public function testItDoesNotReplacePlaceholderWithInvalidImages(string $dockerImage): void
+    public function testItDoesNotReplacePlaceholderWithInvalidImage(): void
     {
+        $currentContext = $this->prophesize(CurrentContext::class);
         $docker = $this->prophesize(Docker::class);
-        $systemVariables = FakeVariables::fromArray(['DOCKER_DATABASE_IMAGE' => $dockerImage]);
+        $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
         $destination = $this->location.'/var/docker';
 
-        $this->expectException(DatabaseException::class);
+        $this->expectException(InvalidConfigurationException::class);
 
-        $database = new Database($docker->reveal(), $systemVariables);
-        $database->replaceDatabasePlaceholder($dockerImage, $destination);
+        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database->replaceDatabasePlaceholder('foobar', $destination);
     }
 
     /**
      * @return \Iterator<string[]>
      */
-    public function provideMysqlImages(): Iterator
+    public function provideMysqlServices(): Iterator
+    {
+        yield 'MariaDB latest version' => ["  database:\n    image: mariadb:latest"];
+        yield 'MariaDB specific version' => ["  database:\n    image: mariadb:10.5"];
+
+        yield 'MySQL latest version' => ["  database:\n    image: mysql:latest"];
+        yield 'MySQL specific version' => ["  database:\n    image: mysql:8.0"];
+    }
+
+    /**
+     * @return \Iterator<string[]>
+     */
+    public function providePostgresServices(): Iterator
+    {
+        yield 'Postgres latest version' => ["  database:\n    image: postgres:latest"];
+        yield 'Postgres specific version' => ["  database:\n    image: postgres:13-alpine"];
+    }
+
+    /**
+     * @return \Iterator<string[]>
+     */
+    public function provideDatabaseImages(): Iterator
     {
         yield 'MariaDB latest version' => ['mariadb:latest'];
         yield 'MariaDB specific version' => ['mariadb:10.5'];
         yield 'MySQL latest version' => ['mysql:latest'];
         yield 'MySQL specific version' => ['mysql:8.0'];
-    }
-
-    /**
-     * @return \Iterator<string[]>
-     */
-    public function providePostgresImages(): Iterator
-    {
         yield 'Postgres latest version' => ['postgres:latest'];
         yield 'Postgres specific version' => ['postgres:13-alpine'];
-    }
-
-    /**
-     * @return \Iterator<string[]>
-     */
-    public function provideInvalidImages(): Iterator
-    {
-        yield 'unsupported database type' => ['foo:bar'];
-        yield 'unrecognized Docker image' => ['foobar'];
     }
 }

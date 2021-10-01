@@ -6,8 +6,9 @@ namespace App\Service\Middleware;
 
 use App\Exception\DatabaseException;
 use App\Exception\FilesystemException;
+use App\Exception\InvalidConfigurationException;
+use App\Service\CurrentContext;
 use App\Service\Middleware\Binary\Docker;
-use Ergebnis\Environment\Variables;
 
 class Database
 {
@@ -18,27 +19,27 @@ class Database
     public const DEFAULT_SERVICE_PASSWORD = 'YourPwdShouldBeLongAndSecure';
     public const DEFAULT_SERVICE_DATABASE = 'origami';
 
+    private CurrentContext $currentContext;
     private Docker $docker;
-    private Variables $systemVariables;
+    private string $installDir;
 
-    public function __construct(Docker $docker, Variables $systemVariables)
+    public function __construct(CurrentContext $currentContext, Docker $docker, string $installDir)
     {
         $this->docker = $docker;
-        $this->systemVariables = $systemVariables;
+        $this->currentContext = $currentContext;
+        $this->installDir = $installDir;
     }
 
     /**
      * Triggers the database dump process according to the database type.
      *
      * @throws DatabaseException
+     * @throws InvalidConfigurationException
+     * @throws FilesystemException
      */
     public function dump(string $path): void
     {
-        if (($databaseImage = $this->systemVariables->get('DOCKER_DATABASE_IMAGE')) === '') {
-            throw new DatabaseException('Unable to retrieve the database image from environment variables.');
-        }
-
-        switch ($this->extractDatabaseImageName($databaseImage)) {
+        switch ($this->getDatabaseType()) {
             case 'mariadb':
             case 'mysql':
                 if (!$this->docker->dumpMysqlDatabase($path)) {
@@ -61,18 +62,16 @@ class Database
      * Triggers the database restore process according to the database type.
      *
      * @throws DatabaseException
+     * @throws InvalidConfigurationException
+     * @throws FilesystemException
      */
     public function restore(string $path): void
     {
-        if (($databaseImage = $this->systemVariables->get('DOCKER_DATABASE_IMAGE')) === '') {
-            throw new DatabaseException('Unable to retrieve the database image from environment variables.');
-        }
-
         if (!is_file($path)) {
             throw new DatabaseException('Unable to find the backup file to restore.');
         }
 
-        switch ($this->extractDatabaseImageName($databaseImage)) {
+        switch ($this->getDatabaseType()) {
             case 'mariadb':
             case 'mysql':
                 if (!$this->docker->restoreMysqlDatabase($path)) {
@@ -96,6 +95,7 @@ class Database
      *
      * @throws DatabaseException
      * @throws FilesystemException
+     * @throws InvalidConfigurationException
      */
     public function replaceDatabasePlaceholder(string $image, string $destination): void
     {
@@ -126,15 +126,52 @@ class Database
     }
 
     /**
+     * Retrieves the database type from the environment "docker-compose.yml" file.
+     *
+     * @throws InvalidConfigurationException
+     * @throws FilesystemException
+     */
+    private function getDatabaseType(): ?string
+    {
+        $environment = $this->currentContext->getActiveEnvironment();
+        $configurationPath = $environment->getLocation().$this->installDir.'/docker-compose.yml';
+
+        if (!is_file($configurationPath)) {
+            throw new FilesystemException(sprintf("Unable to find the file.\n%s", $configurationPath));
+        }
+
+        if (!$configuration = file_get_contents($configurationPath)) {
+            // @codeCoverageIgnoreStart
+            throw new FilesystemException(sprintf("Unable to load the file content.\n%s", $configurationPath));
+            // @codeCoverageIgnoreEnd
+        }
+
+        $matches = [];
+        if (!preg_match_all('/image: (?<image>.+)/', $configuration, $matches)) {
+            throw new InvalidConfigurationException('');
+        }
+
+        foreach ($matches['image'] as $match) {
+            $serviceImage = $this->extractDatabaseImageName($match);
+            if (\in_array($serviceImage, self::SUPPORTED_DATABASE_TYPES, true)) {
+                return $serviceImage;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Extracts the image name from the given string (expecting "name:tag" format).
      *
-     * @throws DatabaseException
+     * @throws InvalidConfigurationException
      */
     private function extractDatabaseImageName(string $databaseImage): string
     {
         $matches = [];
-        if (!preg_match('/^(?<type>[[:alpha:]]+):.+$/', $databaseImage, $matches)) {
-            throw new DatabaseException('Unable to extract the database type from the string.');
+
+        if (!preg_match('/^(?<type>[[:alpha:]]+(\/[[:alpha:]]+)?):.+$/', $databaseImage, $matches)) {
+            throw new InvalidConfigurationException('');
         }
 
         return $matches['type'];
