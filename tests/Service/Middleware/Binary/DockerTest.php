@@ -237,7 +237,7 @@ final class DockerTest extends TestCase
             ->willReturn($projectName)
         ;
 
-        $command = "docker exec -it --user=www-data:www-data {$projectName}_php_1 bash --login";
+        $command = "docker exec -it --user=www-data:www-data {$projectName}-php-1 bash --login";
 
         $process
             ->isSuccessful()
@@ -277,7 +277,7 @@ final class DockerTest extends TestCase
             ->willReturn($projectName)
         ;
 
-        $command = "docker exec -it {$projectName}_php_1 bash --login";
+        $command = "docker exec -it {$projectName}-php-1 bash --login";
 
         $process
             ->isSuccessful()

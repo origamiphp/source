@@ -159,7 +159,7 @@ class Docker
         $environment = $this->currentContext->getActiveEnvironment();
 
         // There is an issue when allocating a TTY with the "docker compose exec" instruction.
-        $container = $environment->getType().'_'.$environment->getName()."_{$service}_1";
+        $container = $environment->getType().'_'.$environment->getName()."-{$service}-1";
 
         $command = $user !== ''
             ? "docker exec -it --user={$user} {$container} bash --login"
@@ -192,7 +192,7 @@ class Docker
         $environment = $this->currentContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
-        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+        $container = $environment->getType().'_'.$environment->getName().'-database-1';
 
         $command = str_replace(
             ['{container}', '{password}', '{database}', '{filename}'],
@@ -212,7 +212,7 @@ class Docker
         $environment = $this->currentContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
-        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+        $container = $environment->getType().'_'.$environment->getName().'-database-1';
 
         $command = str_replace(
             ['{container}', '{password}', '{database}', '{filename}'],
@@ -233,7 +233,7 @@ class Docker
         $environment = $this->currentContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
-        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+        $container = $environment->getType().'_'.$environment->getName().'-database-1';
 
         $command = str_replace(
             ['{container}', '{password}', '{database}', '{filename}'],
