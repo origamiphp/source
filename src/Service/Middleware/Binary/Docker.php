@@ -23,6 +23,14 @@ class Docker
     }
 
     /**
+     * Retrieves the version of the binary installed on the host.
+     */
+    public function getVersion(): string
+    {
+        return $this->processFactory->runBackgroundProcess(['docker', '--version'])->getOutput();
+    }
+
+    /**
      * Pulls the Docker images associated to the current environment.
      */
     public function pullServices(): bool

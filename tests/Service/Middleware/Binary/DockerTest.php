@@ -24,6 +24,27 @@ final class DockerTest extends TestCase
     use ProphecyTrait;
     use TestEnvironmentTrait;
 
+    public function testItRetrievesBinaryVersion(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+        $installDir = '/var/docker';
+
+        $process = $this->prophesize(Process::class);
+        $process->getOutput()
+            ->shouldBeCalledOnce()
+            ->willReturn('docker version')
+        ;
+
+        $processFactory->runBackgroundProcess(Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process)
+        ;
+
+        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        static::assertSame('docker version', $docker->getVersion());
+    }
+
     /**
      * @dataProvider provideDockerComposeScenarios
      *

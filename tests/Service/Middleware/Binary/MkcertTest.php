@@ -9,6 +9,7 @@ use App\Service\Middleware\Binary\Mkcert;
 use App\Service\Wrapper\ProcessFactory;
 use Iterator;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Process\Process;
 
@@ -20,6 +21,25 @@ use Symfony\Component\Process\Process;
 final class MkcertTest extends TestCase
 {
     use ProphecyTrait;
+
+    public function testItRetrievesBinaryVersion(): void
+    {
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
+        $process = $this->prophesize(Process::class);
+        $process->getOutput()
+            ->shouldBeCalledOnce()
+            ->willReturn('mkcert version')
+        ;
+
+        $processFactory->runBackgroundProcess(Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process)
+        ;
+
+        $mkcert = new Mkcert($processFactory->reveal());
+        static::assertSame('mkcert version', $mkcert->getVersion());
+    }
 
     /**
      * @dataProvider provideCertificateDomains

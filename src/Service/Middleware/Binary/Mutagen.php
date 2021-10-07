@@ -22,6 +22,14 @@ class Mutagen
     }
 
     /**
+     * Retrieves the version of the binary installed on the host.
+     */
+    public function getVersion(): string
+    {
+        return $this->processFactory->runBackgroundProcess(['mutagen', 'version'])->getOutput();
+    }
+
+    /**
      * Starts the Docker synchronization needed to share the project source code.
      */
     public function startDockerSynchronization(): bool

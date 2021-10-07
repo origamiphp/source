@@ -23,6 +23,26 @@ final class MutagenTest extends TestCase
     use ProphecyTrait;
     use TestEnvironmentTrait;
 
+    public function testItRetrievesBinaryVersion(): void
+    {
+        $currentContext = $this->prophesize(CurrentContext::class);
+        $processFactory = $this->prophesize(ProcessFactory::class);
+
+        $process = $this->prophesize(Process::class);
+        $process->getOutput()
+            ->shouldBeCalledOnce()
+            ->willReturn('mutagen version')
+        ;
+
+        $processFactory->runBackgroundProcess(Argument::type('array'))
+            ->shouldBeCalledOnce()
+            ->willReturn($process)
+        ;
+
+        $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
+        static::assertSame('mutagen version', $mutagen->getVersion());
+    }
+
     public function testItStartsSynchronizationSession(): void
     {
         $currentContext = $this->prophesize(CurrentContext::class);
