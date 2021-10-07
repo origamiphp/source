@@ -19,6 +19,14 @@ class Mkcert
     }
 
     /**
+     * Retrieves the version of the binary installed on the host.
+     */
+    public function getVersion(): string
+    {
+        return $this->processFactory->runBackgroundProcess(['mkcert', '--version'])->getOutput();
+    }
+
+    /**
      * Generates a locally-trusted development certificate with mkcert.
      *
      * @throws MkcertException

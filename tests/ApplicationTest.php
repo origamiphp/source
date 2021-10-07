@@ -17,6 +17,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  *
  * @uses \App\Command\AbstractBaseCommand
  * @uses \App\Command\DataCommand
+ * @uses \App\Command\DebugCommand
  * @uses \App\Command\DefaultCommand
  * @uses \App\Command\InstallCommand
  * @uses \App\Command\LogsCommand
