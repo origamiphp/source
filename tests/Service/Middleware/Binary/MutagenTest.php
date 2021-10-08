@@ -70,67 +70,6 @@ final class MutagenTest extends TestCase
             ->willReturn(true)
         ;
 
-        $process
-            ->getOutput()
-            ->shouldBeCalledOnce()
-            ->willReturn('')
-        ;
-
-        $processFactory
-            ->runBackgroundProcess(Argument::type('array'))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $processFactory
-            ->runForegroundProcess(Argument::type('array'))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
-        $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
-        static::assertTrue($mutagen->startDockerSynchronization());
-    }
-
-    public function testItResumesSynchronizationSession(): void
-    {
-        $currentContext = $this->prophesize(CurrentContext::class);
-        $processFactory = $this->prophesize(ProcessFactory::class);
-
-        $environment = $this->createEnvironment();
-        $projectName = "{$environment->getType()}_{$environment->getName()}";
-        $process = $this->prophesize(Process::class);
-
-        $currentContext
-            ->getActiveEnvironment()
-            ->shouldBeCalledOnce()
-            ->willReturn($environment)
-        ;
-
-        $currentContext
-            ->getProjectName()
-            ->shouldBeCalled()
-            ->willReturn($projectName)
-        ;
-
-        $process
-            ->isSuccessful()
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        $process
-            ->getOutput()
-            ->shouldBeCalledOnce()
-            ->willReturn($projectName)
-        ;
-
-        $processFactory
-            ->runBackgroundProcess(Argument::type('array'))
-            ->shouldBeCalledOnce()
-            ->willReturn($process->reveal())
-        ;
-
         $processFactory
             ->runForegroundProcess(Argument::type('array'))
             ->shouldBeCalledOnce()
@@ -169,7 +108,7 @@ final class MutagenTest extends TestCase
         ;
 
         $mutagen = new Mutagen($currentContext->reveal(), $processFactory->reveal());
-        static::assertTrue($mutagen->stopDockerSynchronization());
+        static::assertTrue($mutagen->removeDockerSynchronization());
     }
 
     public function testItRemovesSynchronizationSession(): void

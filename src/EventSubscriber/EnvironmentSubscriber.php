@@ -103,15 +103,15 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Listener which triggers the Docker synchronization stop.
+     * Listener which triggers the Docker synchronization removing.
      */
     public function onEnvironmentStop(EnvironmentStoppedEvent $event): void
     {
         $environment = $event->getEnvironment();
         $io = $event->getConsoleStyle();
 
-        if (!$this->mutagen->stopDockerSynchronization()) {
-            $io->error('An error occurred while stopping the Docker synchronization.');
+        if (!$this->mutagen->removeDockerSynchronization()) {
+            $io->error('An error occurred while removing the Docker synchronization.');
         }
 
         $environment->deactivate();
@@ -125,7 +125,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
     {
         $io = $event->getConsoleStyle();
 
-        if (!$this->mutagen->stopDockerSynchronization() || !$this->mutagen->startDockerSynchronization()) {
+        if (!$this->mutagen->removeDockerSynchronization() || !$this->mutagen->startDockerSynchronization()) {
             $io->error('An error occurred while restarting the Docker synchronization.');
         }
     }
