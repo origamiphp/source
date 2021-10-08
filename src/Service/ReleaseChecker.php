@@ -16,8 +16,11 @@ use Composer\Semver\VersionParser;
 class ReleaseChecker
 {
     private const CONSOLE_MESSAGE = <<<'TEXT'
-🎉 A new version is available: <fg=green;options=bold>%s</>, currently running <fg=red;options=bold>%s</>!
-    Consider upgrading soon with <fg=yellow;options=bold>composer global update ajardin/origami</>.
+<options=bold>There is a new version available for download.</>
+
+Consider upgrading (from <fg=green;options=bold>%s</> to <fg=red;options=bold>%s</>) by following the steps described below.
+  👉 Retrieve the latest version of the tool with <fg=yellow;options=bold>composer global update ajardin/origami</>.
+  👉 Update your local environment configuration with <fg=yellow;options=bold>origami update</>.
 
 TEXT;
 
