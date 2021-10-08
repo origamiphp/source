@@ -334,7 +334,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
-            ->stopDockerSynchronization()
+            ->removeDockerSynchronization()
             ->shouldBeCalledOnce()
             ->willReturn(true)
         ;
@@ -364,7 +364,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
-            ->stopDockerSynchronization()
+            ->removeDockerSynchronization()
             ->shouldBeCalledOnce()
             ->willReturn(false)
         ;
@@ -399,7 +399,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
-            ->stopDockerSynchronization()
+            ->removeDockerSynchronization()
             ->shouldBeCalledOnce()
             ->willReturn(true)
         ;
@@ -425,7 +425,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
-            ->stopDockerSynchronization()
+            ->removeDockerSynchronization()
             ->shouldBeCalledOnce()
             ->willReturn(false)
         ;
@@ -455,7 +455,7 @@ final class EnvironmentSubscriberTest extends TestCase
         $io = $this->prophesize(OrigamiStyle::class);
 
         $mutagen
-            ->stopDockerSynchronization()
+            ->removeDockerSynchronization()
             ->shouldBeCalledOnce()
             ->willReturn(true)
         ;

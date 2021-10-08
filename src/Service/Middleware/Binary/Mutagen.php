@@ -37,38 +37,22 @@ class Mutagen
         $environment = $this->currentContext->getActiveEnvironment();
         $projectName = $this->currentContext->getProjectName();
 
-        if (!$this->canResumeSynchronization()) {
-            $command = [
-                'mutagen',
-                'sync',
-                'create',
-                '--default-owner-beta='.self::DEFAULT_CONTAINER_UID,
-                '--default-group-beta='.self::DEFAULT_CONTAINER_GID,
-                '--sync-mode=two-way-resolved',
-                '--ignore-vcs',
-                '--ignore=var/cache/**',
-                '--ignore=var/page_cache/**',
-                '--ignore=var/view_preprocessed/**',
-                '--symlink-mode=posix-raw',
-                "--label=name={$projectName}",
-                $environment->getLocation(),
-                "docker://{$projectName}_synchro/var/www/html/",
-            ];
-        } else {
-            $command = ['mutagen', 'sync', 'resume', "--label-selector=name={$projectName}"];
-        }
-        $process = $this->processFactory->runForegroundProcess($command);
-
-        return $process->isSuccessful();
-    }
-
-    /**
-     * Stops the Docker synchronization needed to share the project source code.
-     */
-    public function stopDockerSynchronization(): bool
-    {
-        $projectName = $this->currentContext->getProjectName();
-        $command = ['mutagen', 'sync', 'pause', "--label-selector=name={$projectName}"];
+        $command = [
+            'mutagen',
+            'sync',
+            'create',
+            '--default-owner-beta='.self::DEFAULT_CONTAINER_UID,
+            '--default-group-beta='.self::DEFAULT_CONTAINER_GID,
+            '--sync-mode=two-way-resolved',
+            '--ignore-vcs',
+            '--ignore=var/cache/**',
+            '--ignore=var/page_cache/**',
+            '--ignore=var/view_preprocessed/**',
+            '--symlink-mode=posix-raw',
+            "--label=name={$projectName}",
+            $environment->getLocation(),
+            "docker://{$projectName}_synchro/var/www/html/",
+        ];
 
         return $this->processFactory->runForegroundProcess($command)->isSuccessful();
     }
@@ -82,16 +66,5 @@ class Mutagen
         $command = ['mutagen', 'sync', 'terminate', "--label-selector=name={$projectName}"];
 
         return $this->processFactory->runForegroundProcess($command)->isSuccessful();
-    }
-
-    /**
-     * Checks whether an existing session is associated with the given environment.
-     */
-    private function canResumeSynchronization(): bool
-    {
-        $projectName = $this->currentContext->getProjectName();
-        $command = ['mutagen', 'sync', 'list', "--label-selector=name={$projectName}"];
-
-        return strpos($this->processFactory->runBackgroundProcess($command)->getOutput(), $projectName) !== false;
     }
 }
