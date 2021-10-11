@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service\Middleware\Binary;
 
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Wrapper\ProcessFactory;
 
 class Mutagen
@@ -12,12 +12,12 @@ class Mutagen
     private const DEFAULT_CONTAINER_UID = 'id:1000';
     private const DEFAULT_CONTAINER_GID = 'id:1000';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private ProcessFactory $processFactory;
 
-    public function __construct(CurrentContext $currentContext, ProcessFactory $processFactory)
+    public function __construct(ApplicationContext $applicationContext, ProcessFactory $processFactory)
     {
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->processFactory = $processFactory;
     }
 
@@ -34,8 +34,8 @@ class Mutagen
      */
     public function startDockerSynchronization(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
-        $projectName = $this->currentContext->getProjectName();
+        $environment = $this->applicationContext->getActiveEnvironment();
+        $projectName = $this->applicationContext->getProjectName();
 
         $command = [
             'mutagen',
@@ -62,7 +62,7 @@ class Mutagen
      */
     public function removeDockerSynchronization(): bool
     {
-        $projectName = $this->currentContext->getProjectName();
+        $projectName = $this->applicationContext->getProjectName();
         $command = ['mutagen', 'sync', 'terminate', "--label-selector=name={$projectName}"];
 
         return $this->processFactory->runForegroundProcess($command)->isSuccessful();

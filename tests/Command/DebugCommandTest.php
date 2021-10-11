@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\DebugCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mkcert;
 use App\Service\Middleware\Binary\Mutagen;
@@ -37,7 +37,7 @@ final class DebugCommandTest extends TestCase
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $mkcert = $this->prophesize(Mkcert::class);
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $installDir = '/var/docker';
 
         $docker->getVersion()->shouldBeCalledOnce()->willReturn('docker version');
@@ -47,17 +47,17 @@ final class DebugCommandTest extends TestCase
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $command = new DebugCommand($docker->reveal(), $mutagen->reveal(), $mkcert->reveal(), $currentContext->reveal(), $installDir);
+        $command = new DebugCommand($docker->reveal(), $mutagen->reveal(), $mkcert->reveal(), $applicationContext->reveal(), $installDir);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
@@ -75,7 +75,7 @@ final class DebugCommandTest extends TestCase
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $mkcert = $this->prophesize(Mkcert::class);
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $installDir = '/var/docker';
 
         $docker->getVersion()->shouldBeCalledOnce()->willReturn('docker version');
@@ -85,13 +85,13 @@ final class DebugCommandTest extends TestCase
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
             ->willThrow(InvalidEnvironmentException::class)
         ;
 
-        $command = new DebugCommand($docker->reveal(), $mutagen->reveal(), $mkcert->reveal(), $currentContext->reveal(), $installDir);
+        $command = new DebugCommand($docker->reveal(), $mutagen->reveal(), $mkcert->reveal(), $applicationContext->reveal(), $installDir);
 
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);

@@ -6,7 +6,7 @@ namespace App\Command\Database;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Database;
 use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
@@ -18,14 +18,14 @@ class RestoreCommand extends AbstractBaseCommand
     protected static $defaultName = 'origami:database:restore';
     protected static $defaultDescription = 'Restores a dump of the environment database according to the engine in use';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private Database $database;
 
-    public function __construct(CurrentContext $currentContext, Database $database, string $name = null)
+    public function __construct(ApplicationContext $applicationContext, Database $database, string $name = null)
     {
         parent::__construct($name);
 
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->database = $database;
     }
 
@@ -37,8 +37,8 @@ class RestoreCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            $this->currentContext->loadEnvironment($input);
-            $environment = $this->currentContext->getActiveEnvironment();
+            $this->applicationContext->loadEnvironment($input);
+            $environment = $this->applicationContext->getActiveEnvironment();
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);

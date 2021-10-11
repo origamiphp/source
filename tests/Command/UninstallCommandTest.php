@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\UninstallCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Setup\ConfigurationFiles;
 use App\Tests\TestCommandTrait;
@@ -35,7 +35,7 @@ final class UninstallCommandTest extends TestCase
 
     public function testItUninstallsTheCurrentEnvironment(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
@@ -44,12 +44,12 @@ final class UninstallCommandTest extends TestCase
         $environment->deactivate();
         $this->installEnvironmentConfiguration($environment);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -71,7 +71,7 @@ final class UninstallCommandTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
+        $command = new UninstallCommand($applicationContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -83,7 +83,7 @@ final class UninstallCommandTest extends TestCase
 
     public function testItDisplaysWarningWithError(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
@@ -92,12 +92,12 @@ final class UninstallCommandTest extends TestCase
         $environment->deactivate();
         $this->installEnvironmentConfiguration($environment);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -119,7 +119,7 @@ final class UninstallCommandTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
+        $command = new UninstallCommand($applicationContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -132,22 +132,22 @@ final class UninstallCommandTest extends TestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->willThrow(InvalidEnvironmentException::class)
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldNotBeCalled()
         ;
 
-        $command = new UninstallCommand($currentContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
+        $command = new UninstallCommand($applicationContext->reveal(), $docker->reveal(), $configurationFiles->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);

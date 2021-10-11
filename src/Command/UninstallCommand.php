@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Event\EnvironmentUninstalledEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Wrapper\OrigamiStyle;
@@ -24,13 +24,13 @@ class UninstallCommand extends AbstractBaseCommand
      */
     protected static $defaultName = 'origami:uninstall';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private Docker $docker;
     private ConfigurationFiles $uninstaller;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
-        CurrentContext $currentContext,
+        ApplicationContext $applicationContext,
         Docker $docker,
         ConfigurationFiles $uninstaller,
         EventDispatcherInterface $eventDispatcher,
@@ -38,7 +38,7 @@ class UninstallCommand extends AbstractBaseCommand
     ) {
         parent::__construct($name);
 
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->docker = $docker;
         $this->uninstaller = $uninstaller;
         $this->eventDispatcher = $eventDispatcher;
@@ -66,8 +66,8 @@ class UninstallCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            $this->currentContext->loadEnvironment($input);
-            $environment = $this->currentContext->getActiveEnvironment();
+            $this->applicationContext->loadEnvironment($input);
+            $environment = $this->applicationContext->getActiveEnvironment();
 
             $question = sprintf(
                 'Are you sure you want to uninstall the "%s" environment?',

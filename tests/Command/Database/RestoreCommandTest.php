@@ -6,7 +6,7 @@ namespace App\Tests\Command\Database;
 
 use App\Command\Database\RestoreCommand;
 use App\Exception\DatabaseException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Database;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -29,17 +29,17 @@ final class RestoreCommandTest extends TestCase
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $database = $this->prophesize(Database::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -50,23 +50,23 @@ final class RestoreCommandTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new RestoreCommand($currentContext->reveal(), $database->reveal());
+        $command = new RestoreCommand($applicationContext->reveal(), $database->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $database = $this->prophesize(Database::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -78,7 +78,7 @@ final class RestoreCommandTest extends TestCase
             ->willThrow(DatabaseException::class)
         ;
 
-        $command = new RestoreCommand($currentContext->reveal(), $database->reveal());
+        $command = new RestoreCommand($applicationContext->reveal(), $database->reveal());
         static::assertExceptionIsHandled($command);
     }
 }

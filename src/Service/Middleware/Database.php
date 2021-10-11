@@ -7,7 +7,7 @@ namespace App\Service\Middleware;
 use App\Exception\DatabaseException;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 
 class Database
@@ -19,14 +19,14 @@ class Database
     public const DEFAULT_SERVICE_PASSWORD = 'YourPwdShouldBeLongAndSecure';
     public const DEFAULT_SERVICE_DATABASE = 'origami';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private Docker $docker;
     private string $installDir;
 
-    public function __construct(CurrentContext $currentContext, Docker $docker, string $installDir)
+    public function __construct(ApplicationContext $applicationContext, Docker $docker, string $installDir)
     {
         $this->docker = $docker;
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->installDir = $installDir;
     }
 
@@ -133,7 +133,7 @@ class Database
      */
     private function getDatabaseType(): ?string
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
         $configurationPath = $environment->getLocation().$this->installDir.'/docker-compose.yml';
 
         if (!is_file($configurationPath)) {

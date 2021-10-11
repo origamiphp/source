@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\LogsCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -38,17 +38,17 @@ final class LogsCommandTest extends TestCase
      */
     public function testItShowsServicesLogs(?int $tail, ?string $service): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -60,7 +60,7 @@ final class LogsCommandTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = new LogsCommand($currentContext->reveal(), $docker->reveal());
+        $command = new LogsCommand($applicationContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],
@@ -77,20 +77,20 @@ final class LogsCommandTest extends TestCase
      */
     public function testItGracefullyExitsWhenAnExceptionOccurred(?int $tail, ?string $service): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->willThrow(InvalidEnvironmentException::class)
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldNotBeCalled()
         ;
 
-        $command = new LogsCommand($currentContext->reveal(), $docker->reveal());
+        $command = new LogsCommand($applicationContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute(
             ['--tail' => $tail, 'service' => $service],

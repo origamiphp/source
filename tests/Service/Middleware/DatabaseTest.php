@@ -7,7 +7,7 @@ namespace App\Tests\Service\Middleware;
 use App\Exception\DatabaseException;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Tests\TestEnvironmentTrait;
@@ -30,7 +30,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItTriggersMysqlDump(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -46,7 +46,7 @@ final class DatabaseTest extends TestCase
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -58,7 +58,7 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
@@ -67,7 +67,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItDetectsMysqlDumpFailure(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -83,7 +83,7 @@ final class DatabaseTest extends TestCase
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -97,7 +97,7 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
@@ -106,7 +106,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItTriggersPostgresDump(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -122,7 +122,7 @@ final class DatabaseTest extends TestCase
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -134,7 +134,7 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
@@ -143,7 +143,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItDetectsPostgresDumpFailure(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -159,7 +159,7 @@ final class DatabaseTest extends TestCase
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -173,20 +173,20 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     public function testItDoesNotDumpDatabaseWithoutConfiguration(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -194,13 +194,13 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(FilesystemException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
     public function testItDoesNotDumpDatabaseWithInvalidImages(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -216,7 +216,7 @@ final class DatabaseTest extends TestCase
 
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -224,7 +224,7 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(InvalidConfigurationException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->dump($backupFile);
     }
 
@@ -233,7 +233,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItTriggersMysqlRestore(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -250,7 +250,7 @@ final class DatabaseTest extends TestCase
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -262,7 +262,7 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
@@ -271,7 +271,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItDetectsMysqlRestoreFailure(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -288,7 +288,7 @@ final class DatabaseTest extends TestCase
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -302,7 +302,7 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
@@ -311,7 +311,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItTriggersPostgresRestore(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -328,7 +328,7 @@ final class DatabaseTest extends TestCase
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -340,7 +340,7 @@ final class DatabaseTest extends TestCase
             ->willReturn(true)
         ;
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
@@ -349,7 +349,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItDetectsPostgresRestoreFailure(string $databaseService): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -366,7 +366,7 @@ final class DatabaseTest extends TestCase
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -380,13 +380,13 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     public function testItDetectsMissingDump(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -404,13 +404,13 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(DatabaseException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     public function testItDoesNotRestoreDatabaseWithoutConfiguration(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -419,7 +419,7 @@ final class DatabaseTest extends TestCase
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -427,13 +427,13 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(FilesystemException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
     public function testItDoesNotRestoreDatabaseWithInvalidImages(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -450,7 +450,7 @@ final class DatabaseTest extends TestCase
         $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
         touch($backupFile);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -458,7 +458,7 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(InvalidConfigurationException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->restore($backupFile);
     }
 
@@ -467,7 +467,7 @@ final class DatabaseTest extends TestCase
      */
     public function testItReplacesPlaceholder(string $databaseImage): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -481,7 +481,7 @@ final class DatabaseTest extends TestCase
             file_get_contents("{$destination}/docker-compose.yml")
         );
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->replaceDatabasePlaceholder($databaseImage, $destination);
 
         static::assertStringNotContainsString(
@@ -492,7 +492,7 @@ final class DatabaseTest extends TestCase
 
     public function testItDoesNotReplacePlaceholderWithInvalidImage(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $installDir = '/var/docker';
 
@@ -503,7 +503,7 @@ final class DatabaseTest extends TestCase
 
         $this->expectException(InvalidConfigurationException::class);
 
-        $database = new Database($currentContext->reveal(), $docker->reveal(), $installDir);
+        $database = new Database($applicationContext->reveal(), $docker->reveal(), $installDir);
         $database->replaceDatabasePlaceholder('foobar', $destination);
     }
 

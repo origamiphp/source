@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Event\EnvironmentRestartedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
@@ -22,19 +22,19 @@ class RestartCommand extends AbstractBaseCommand
      */
     protected static $defaultName = 'origami:restart';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private Docker $docker;
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
-        CurrentContext $currentContext,
+        ApplicationContext $applicationContext,
         Docker $docker,
         EventDispatcherInterface $eventDispatcher,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->docker = $docker;
         $this->eventDispatcher = $eventDispatcher;
     }
@@ -55,8 +55,8 @@ class RestartCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            $this->currentContext->loadEnvironment($input);
-            $environment = $this->currentContext->getActiveEnvironment();
+            $this->applicationContext->loadEnvironment($input);
+            $environment = $this->applicationContext->getActiveEnvironment();
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);

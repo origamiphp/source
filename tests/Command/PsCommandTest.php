@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\PsCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -29,17 +29,17 @@ final class PsCommandTest extends TestCase
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -51,26 +51,26 @@ final class PsCommandTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = new PsCommand($currentContext->reveal(), $docker->reveal());
+        $command = new PsCommand($applicationContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->willThrow(InvalidEnvironmentException::class)
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldNotBeCalled()
         ;
 
-        $command = new PsCommand($currentContext->reveal(), $docker->reveal());
+        $command = new PsCommand($applicationContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 }

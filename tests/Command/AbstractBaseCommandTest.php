@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\AbstractBaseCommand;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Wrapper\OrigamiStyle;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -33,20 +33,20 @@ final class AbstractBaseCommandTest extends TestCase
 
     public function testItDoesPrintDetailsWhenVerbose(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($this->createEnvironment())
         ;
 
-        $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
+        $commandTester = new CommandTester($this->createFakeOrigamiCommand($applicationContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
         static::assertStringContainsString('[OK] ', $commandTester->getDisplay());
@@ -55,20 +55,20 @@ final class AbstractBaseCommandTest extends TestCase
 
     public function testItDoesNotPrintDetailsWhenNotVerbose(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($this->createEnvironment())
         ;
 
-        $commandTester = new CommandTester($this->createFakeOrigamiCommand($currentContext));
+        $commandTester = new CommandTester($this->createFakeOrigamiCommand($applicationContext));
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_NORMAL]);
 
         static::assertStringNotContainsString('[OK] ', $commandTester->getDisplay());
@@ -78,21 +78,21 @@ final class AbstractBaseCommandTest extends TestCase
     /**
      * Creates a fake Origami command based on AbstractBaseCommand with previously defined prophecies.
      */
-    private function createFakeOrigamiCommand(ObjectProphecy $currentContext): AbstractBaseCommand
+    private function createFakeOrigamiCommand(ObjectProphecy $applicationContext): AbstractBaseCommand
     {
-        return new class($currentContext->reveal()) extends AbstractBaseCommand {
+        return new class($applicationContext->reveal()) extends AbstractBaseCommand {
             /**
              * {@inheritdoc}
              */
             protected static $defaultName = 'origami:test';
 
-            protected CurrentContext $currentContext;
+            protected ApplicationContext $applicationContext;
 
-            public function __construct(CurrentContext $currentContext, string $name = null)
+            public function __construct(ApplicationContext $applicationContext, string $name = null)
             {
                 parent::__construct($name);
 
-                $this->currentContext = $currentContext;
+                $this->applicationContext = $applicationContext;
             }
 
             /**
@@ -118,8 +118,8 @@ final class AbstractBaseCommandTest extends TestCase
                 $io = new OrigamiStyle($input, $output);
 
                 try {
-                    $this->currentContext->loadEnvironment($input);
-                    $environment = $this->currentContext->getActiveEnvironment();
+                    $this->applicationContext->loadEnvironment($input);
+                    $environment = $this->applicationContext->getActiveEnvironment();
 
                     if ($output->isVerbose()) {
                         $this->printEnvironmentDetails($environment, $io);

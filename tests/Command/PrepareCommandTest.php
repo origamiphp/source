@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\PrepareCommand;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -33,17 +33,17 @@ final class PrepareCommandTest extends TestCase
 
     public function testItPreparesTheActiveEnvironment(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -61,7 +61,7 @@ final class PrepareCommandTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
+        $command = new PrepareCommand($applicationContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
@@ -73,17 +73,17 @@ final class PrepareCommandTest extends TestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -101,7 +101,7 @@ final class PrepareCommandTest extends TestCase
             ->willReturn(false)
         ;
 
-        $command = new PrepareCommand($currentContext->reveal(), $docker->reveal());
+        $command = new PrepareCommand($applicationContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 

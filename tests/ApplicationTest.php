@@ -30,7 +30,7 @@ use Symfony\Component\Console\Tester\CommandTester;
  * @uses \App\Command\StopCommand
  * @uses \App\Command\UninstallCommand
  * @uses \App\Command\UpdateCommand
- * @uses \App\Service\CurrentContext
+ * @uses \App\Service\ApplicationContext
  * @uses \App\Service\Wrapper\ProcessFactory
  * @uses \App\Service\Setup\Validator
  * @uses \App\Service\Middleware\Binary\Docker

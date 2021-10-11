@@ -12,7 +12,7 @@ use App\Service\Wrapper\ProcessProxy;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Input\InputInterface;
 
-class CurrentContext
+class ApplicationContext
 {
     private ApplicationData $applicationData;
     private ProcessProxy $processProxy;

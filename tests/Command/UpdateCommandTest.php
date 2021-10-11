@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\UpdateCommand;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Service\Wrapper\OrigamiStyle;
@@ -35,19 +35,19 @@ final class UpdateCommandTest extends TestCase
 
     public function testItSuccessfullyUpdatesTheCurrentEnvironment(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $environmentBuilder = $this->prophesize(EnvironmentBuilder::class);
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
 
         $environment = $this->createEnvironment();
         $answers = new PrepareAnswers($environment->getName(), $environment->getLocation(), $environment->getType(), null, []);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -64,7 +64,7 @@ final class UpdateCommandTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new UpdateCommand($currentContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
+        $command = new UpdateCommand($applicationContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
@@ -76,25 +76,25 @@ final class UpdateCommandTest extends TestCase
 
     public function testItAbortsGracefullyTheUpdate(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $environmentBuilder = $this->prophesize(EnvironmentBuilder::class);
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
 
         $environment = $this->createEnvironment();
         $environment->activate();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $command = new UpdateCommand($currentContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
+        $command = new UpdateCommand($applicationContext->reveal(), $environmentBuilder->reveal(), $configurationFiles->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->setInputs(['yes']);
         $commandTester->execute([]);
