@@ -6,7 +6,7 @@ namespace App\Command;
 
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
@@ -21,17 +21,17 @@ class PrepareCommand extends AbstractBaseCommand
      */
     protected static $defaultName = 'origami:prepare';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private Docker $docker;
 
     public function __construct(
-        CurrentContext $currentContext,
+        ApplicationContext $applicationContext,
         Docker $docker,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->docker = $docker;
     }
 
@@ -57,8 +57,8 @@ class PrepareCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            $this->currentContext->loadEnvironment($input);
-            $environment = $this->currentContext->getActiveEnvironment();
+            $this->applicationContext->loadEnvironment($input);
+            $environment = $this->applicationContext->getActiveEnvironment();
 
             if ($output->isVerbose()) {
                 $this->printEnvironmentDetails($environment, $io);

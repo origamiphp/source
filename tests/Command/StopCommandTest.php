@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\StopCommand;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -32,18 +32,18 @@ final class StopCommandTest extends TestCase
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -60,24 +60,24 @@ final class StopCommandTest extends TestCase
             ->willReturn(new stdClass())
         ;
 
-        $command = new StopCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new StopCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -89,7 +89,7 @@ final class StopCommandTest extends TestCase
             ->willReturn(false)
         ;
 
-        $command = new StopCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new StopCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertExceptionIsHandled($command);
     }
 }

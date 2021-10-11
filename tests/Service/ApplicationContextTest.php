@@ -7,8 +7,8 @@ namespace App\Tests\Service;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\InvalidEnvironmentException;
+use App\Service\ApplicationContext;
 use App\Service\ApplicationData;
-use App\Service\CurrentContext;
 use App\Service\Setup\Validator;
 use App\Service\Wrapper\ProcessProxy;
 use App\Tests\TestEnvironmentTrait;
@@ -19,9 +19,9 @@ use Symfony\Component\Console\Input\InputInterface;
 /**
  * @internal
  *
- * @covers \App\Service\CurrentContext
+ * @covers \App\Service\ApplicationContext
  */
-final class CurrentContextTest extends TestCase
+final class ApplicationContextTest extends TestCase
 {
     use ProphecyTrait;
     use TestEnvironmentTrait;
@@ -52,10 +52,10 @@ final class CurrentContextTest extends TestCase
             ->willReturn(true)
         ;
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
-        static::assertSame($environment, $currentContext->getActiveEnvironment());
-        static::assertSame("{$environment->getType()}_{$environment->getName()}", $currentContext->getProjectName());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
+        static::assertSame($environment, $applicationContext->getActiveEnvironment());
+        static::assertSame("{$environment->getType()}_{$environment->getName()}", $applicationContext->getProjectName());
     }
 
     /**
@@ -103,10 +103,10 @@ final class CurrentContextTest extends TestCase
             ->willReturn(true)
         ;
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($input->reveal());
-        static::assertSame($environment, $currentContext->getActiveEnvironment());
-        static::assertSame("{$environment->getType()}_{$environment->getName()}", $currentContext->getProjectName());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext->loadEnvironment($input->reveal());
+        static::assertSame($environment, $applicationContext->getActiveEnvironment());
+        static::assertSame("{$environment->getType()}_{$environment->getName()}", $applicationContext->getProjectName());
     }
 
     /**
@@ -165,10 +165,10 @@ final class CurrentContextTest extends TestCase
             ->willReturn(true)
         ;
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($input->reveal());
-        static::assertSame($environment, $currentContext->getActiveEnvironment());
-        static::assertSame("{$environment->getType()}_{$environment->getName()}", $currentContext->getProjectName());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext->loadEnvironment($input->reveal());
+        static::assertSame($environment, $applicationContext->getActiveEnvironment());
+        static::assertSame("{$environment->getType()}_{$environment->getName()}", $applicationContext->getProjectName());
     }
 
     /**
@@ -187,9 +187,9 @@ final class CurrentContextTest extends TestCase
             ->willReturn('.')
         ;
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
         $this->expectException(InvalidEnvironmentException::class);
-        $currentContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
+        $applicationContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
 
     /**
@@ -220,7 +220,7 @@ final class CurrentContextTest extends TestCase
 
         $this->expectException(InvalidConfigurationException::class);
 
-        $currentContext = new CurrentContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
-        $currentContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
 }

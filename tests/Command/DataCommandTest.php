@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\DataCommand;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -28,17 +28,17 @@ final class DataCommandTest extends TestCase
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -50,23 +50,23 @@ final class DataCommandTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = new DataCommand($currentContext->reveal(), $docker->reveal());
+        $command = new DataCommand($applicationContext->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -78,7 +78,7 @@ final class DataCommandTest extends TestCase
             ->willReturn(false)
         ;
 
-        $command = new DataCommand($currentContext->reveal(), $docker->reveal());
+        $command = new DataCommand($applicationContext->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
     }
 }

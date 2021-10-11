@@ -7,7 +7,7 @@ namespace App\Command;
 use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mkcert;
 use App\Service\Middleware\Binary\Mutagen;
@@ -27,14 +27,14 @@ class DebugCommand extends AbstractBaseCommand
     private Docker $docker;
     private Mutagen $mutagen;
     private Mkcert $mkcert;
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private string $installDir;
 
     public function __construct(
         Docker $docker,
         Mutagen $mutagen,
         Mkcert $mkcert,
-        CurrentContext $currentContext,
+        ApplicationContext $applicationContext,
         string $installDir,
         string $name = null
     ) {
@@ -43,7 +43,7 @@ class DebugCommand extends AbstractBaseCommand
         $this->docker = $docker;
         $this->mutagen = $mutagen;
         $this->mkcert = $mkcert;
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->installDir = $installDir;
     }
 
@@ -66,8 +66,8 @@ class DebugCommand extends AbstractBaseCommand
             $this->displayBinaryVersions($io);
 
             try {
-                $this->currentContext->loadEnvironment($input);
-                $environment = $this->currentContext->getActiveEnvironment();
+                $this->applicationContext->loadEnvironment($input);
+                $environment = $this->applicationContext->getActiveEnvironment();
 
                 $this->displayEnvironmentDetails($io, $environment);
             } catch (InvalidEnvironmentException $exception) {

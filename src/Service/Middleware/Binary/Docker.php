@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Service\Middleware\Binary;
 
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Database;
 use App\Service\Wrapper\ProcessFactory;
 use App\ValueObject\EnvironmentEntity;
 
 class Docker
 {
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private ProcessFactory $processFactory;
     private string $installDir;
 
-    public function __construct(CurrentContext $currentContext, ProcessFactory $processFactory, string $installDir)
+    public function __construct(ApplicationContext $applicationContext, ProcessFactory $processFactory, string $installDir)
     {
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->processFactory = $processFactory;
         $this->installDir = $installDir;
     }
@@ -35,7 +35,7 @@ class Docker
      */
     public function pullServices(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['pull'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -49,7 +49,7 @@ class Docker
      */
     public function buildServices(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['build', '--pull', '--parallel'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -63,7 +63,7 @@ class Docker
      */
     public function showResourcesUsage(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $defaultOptions = implode(' ', $this->getDefaultComposeOptions($environment));
         $command = "docker compose {$defaultOptions} ps --quiet | xargs docker stats";
@@ -77,7 +77,7 @@ class Docker
      */
     public function showServicesLogs(?int $tail = null, ?string $service = null): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
         if ($service) {
@@ -94,7 +94,7 @@ class Docker
      */
     public function showServicesStatus(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['ps'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -108,7 +108,7 @@ class Docker
      */
     public function restartServices(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['restart'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -122,7 +122,7 @@ class Docker
      */
     public function startServices(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['up', '--build', '--detach', '--remove-orphans'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -136,7 +136,7 @@ class Docker
      */
     public function stopServices(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['stop'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -150,7 +150,7 @@ class Docker
      */
     public function fixPermissionsOnSharedSSHAgent(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['exec', '-T', 'php', 'bash', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -164,7 +164,7 @@ class Docker
      */
     public function openTerminal(string $service, string $user = ''): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         // There is an issue when allocating a TTY with the "docker compose exec" instruction.
         $container = $environment->getType().'_'.$environment->getName()."-{$service}-1";
@@ -183,7 +183,7 @@ class Docker
      */
     public function removeServices(): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         $action = ['down', '--rmi', 'local', '--volumes', '--remove-orphans'];
         $command = array_merge(['docker', 'compose'], $this->getDefaultComposeOptions($environment), $action);
@@ -197,7 +197,7 @@ class Docker
      */
     public function dumpMysqlDatabase(string $path): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
         $container = $environment->getType().'_'.$environment->getName().'-database-1';
@@ -217,7 +217,7 @@ class Docker
      */
     public function dumpPostgresDatabase(string $path): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
         $container = $environment->getType().'_'.$environment->getName().'-database-1';
@@ -238,7 +238,7 @@ class Docker
      */
     public function restoreMysqlDatabase(string $path): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
         $container = $environment->getType().'_'.$environment->getName().'-database-1';
@@ -258,7 +258,7 @@ class Docker
      */
     public function restorePostgresDatabase(string $path): bool
     {
-        $environment = $this->currentContext->getActiveEnvironment();
+        $environment = $this->applicationContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
         $container = $environment->getType().'_'.$environment->getName().'_database_1';
@@ -285,7 +285,7 @@ class Docker
         return [
             '--file='.$location.$this->installDir.'/docker-compose.yml',
             '--project-directory='.$location,
-            '--project-name='.$this->currentContext->getProjectName(),
+            '--project-name='.$this->applicationContext->getProjectName(),
         ];
     }
 
@@ -297,7 +297,7 @@ class Docker
     private function getEnvironmentVariables(EnvironmentEntity $environment): array
     {
         return [
-            'PROJECT_NAME' => $this->currentContext->getProjectName(),
+            'PROJECT_NAME' => $this->applicationContext->getProjectName(),
             'PROJECT_LOCATION' => $environment->getLocation(),
         ];
     }

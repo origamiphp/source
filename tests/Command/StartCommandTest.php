@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\StartCommand;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\ProcessProxy;
 use App\Tests\TestCommandTrait;
@@ -34,19 +34,19 @@ final class StartCommandTest extends TestCase
 
     public function testItStartsTheEnvironment(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -63,7 +63,7 @@ final class StartCommandTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new StartCommand($applicationContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
@@ -75,7 +75,7 @@ final class StartCommandTest extends TestCase
 
     public function testItDoesNotStartMultipleEnvironments(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
@@ -83,12 +83,12 @@ final class StartCommandTest extends TestCase
         $environment = $this->createEnvironment();
         $environment->activate();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -109,7 +109,7 @@ final class StartCommandTest extends TestCase
             ->shouldNotBeCalled()
         ;
 
-        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new StartCommand($applicationContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 
@@ -120,30 +120,30 @@ final class StartCommandTest extends TestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -160,7 +160,7 @@ final class StartCommandTest extends TestCase
             ->willReturn(false)
         ;
 
-        $command = new StartCommand($currentContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new StartCommand($applicationContext->reveal(), $processProxy->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);
 

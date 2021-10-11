@@ -6,7 +6,7 @@ namespace App\Command;
 
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Service\Wrapper\OrigamiStyle;
@@ -22,19 +22,19 @@ class UpdateCommand extends AbstractBaseCommand
      */
     protected static $defaultName = 'origami:update';
 
-    private CurrentContext $currentContext;
+    private ApplicationContext $applicationContext;
     private EnvironmentBuilder $builder;
     private ConfigurationFiles $configuration;
 
     public function __construct(
-        CurrentContext $currentContext,
+        ApplicationContext $applicationContext,
         EnvironmentBuilder $builder,
         ConfigurationFiles $configuration,
         ?string $name = null
     ) {
         parent::__construct($name);
 
-        $this->currentContext = $currentContext;
+        $this->applicationContext = $applicationContext;
         $this->builder = $builder;
         $this->configuration = $configuration;
     }
@@ -61,8 +61,8 @@ class UpdateCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            $this->currentContext->loadEnvironment($input);
-            $environment = $this->currentContext->getActiveEnvironment();
+            $this->applicationContext->loadEnvironment($input);
+            $environment = $this->applicationContext->getActiveEnvironment();
 
             if ($environment->isActive()) {
                 throw new InvalidEnvironmentException('Unable to update a running environment.');

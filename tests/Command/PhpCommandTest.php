@@ -6,7 +6,7 @@ namespace App\Tests\Command;
 
 use App\Command\PhpCommand;
 use App\Exception\InvalidEnvironmentException;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -34,15 +34,15 @@ final class PhpCommandTest extends TestCase
 
     public function testItOpensTerminalOnService(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($this->createEnvironment())
@@ -54,7 +54,7 @@ final class PhpCommandTest extends TestCase
             ->willReturn(true)
         ;
 
-        $command = new PhpCommand($currentContext->reveal(), $docker->reveal());
+        $command = new PhpCommand($applicationContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([], ['verbosity' => OutputInterface::VERBOSITY_VERBOSE]);
 
@@ -63,20 +63,20 @@ final class PhpCommandTest extends TestCase
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->willThrow(InvalidEnvironmentException::class)
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldNotBeCalled()
         ;
 
-        $command = new PhpCommand($currentContext->reveal(), $docker->reveal());
+        $command = new PhpCommand($applicationContext->reveal(), $docker->reveal());
         self::assertExceptionIsHandled($command);
     }
 }

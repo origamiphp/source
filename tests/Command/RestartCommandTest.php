@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\RestartCommand;
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
@@ -31,18 +31,18 @@ final class RestartCommandTest extends TestCase
 
     public function testItExecutesProcessSuccessfully(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -59,24 +59,24 @@ final class RestartCommandTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new RestartCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
         $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
 
         $environment = $this->createEnvironment();
 
-        $currentContext
+        $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
             ->shouldBeCalledOnce()
         ;
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
@@ -88,7 +88,7 @@ final class RestartCommandTest extends TestCase
             ->willReturn(false)
         ;
 
-        $command = new RestartCommand($currentContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        $command = new RestartCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertExceptionIsHandled($command);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\Middleware\Binary;
 
-use App\Service\CurrentContext;
+use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\ProcessFactory;
 use App\Tests\TestEnvironmentTrait;
@@ -26,7 +26,7 @@ final class DockerTest extends TestCase
 
     public function testItRetrievesBinaryVersion(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -41,7 +41,7 @@ final class DockerTest extends TestCase
             ->willReturn($process)
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertSame('docker version', $docker->getVersion());
     }
 
@@ -52,7 +52,7 @@ final class DockerTest extends TestCase
      */
     public function testItExecutesDockerComposeInstruction(string $function, array $action): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -60,13 +60,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext->getProjectName()
+        $applicationContext->getProjectName()
             ->shouldBeCalledTimes(2)
             ->willReturn($projectName)
         ;
@@ -85,7 +85,7 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->{$function}());
     }
 
@@ -142,7 +142,7 @@ final class DockerTest extends TestCase
 
     public function testItDisplaysResourceUsage(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -150,13 +150,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledTimes(2)
             ->willReturn($projectName)
@@ -177,7 +177,7 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->showResourcesUsage());
     }
 
@@ -186,7 +186,7 @@ final class DockerTest extends TestCase
      */
     public function testItDisplaysLogs(?int $tail = null, ?string $service = null): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -194,13 +194,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledTimes(2)
             ->willReturn($projectName)
@@ -224,7 +224,7 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->showServicesLogs($tail, $service));
     }
 
@@ -238,7 +238,7 @@ final class DockerTest extends TestCase
 
     public function testItOpensTerminalWithSpecificUser(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -246,13 +246,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledOnce()
             ->willReturn($projectName)
@@ -272,13 +272,13 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->openTerminal('php', 'www-data:www-data'));
     }
 
     public function testItOpensTerminalWithoutSpecificUser(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -286,13 +286,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledOnce()
             ->willReturn($projectName)
@@ -312,13 +312,13 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->openTerminal('php'));
     }
 
     public function testItDumpsMysqlDatabase(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -326,13 +326,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledOnce()
             ->willReturn($projectName)
@@ -350,13 +350,13 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->dumpMysqlDatabase('/path/to/dump_file.sql'));
     }
 
     public function testItRestoresMysqlDatabase(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -364,13 +364,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledOnce()
             ->willReturn($projectName)
@@ -388,13 +388,13 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->restoreMysqlDatabase('/path/to/dump_file.sql'));
     }
 
     public function testItDumpsPostgresDatabase(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -402,13 +402,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledOnce()
             ->willReturn($projectName)
@@ -426,13 +426,13 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->dumpPostgresDatabase('/path/to/dump_file.sql'));
     }
 
     public function testItRestoresPostgresDatabase(): void
     {
-        $currentContext = $this->prophesize(CurrentContext::class);
+        $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
         $installDir = '/var/docker';
 
@@ -440,13 +440,13 @@ final class DockerTest extends TestCase
         $projectName = "{$environment->getType()}_{$environment->getName()}";
         $process = $this->prophesize(Process::class);
 
-        $currentContext
+        $applicationContext
             ->getActiveEnvironment()
             ->shouldBeCalledOnce()
             ->willReturn($environment)
         ;
 
-        $currentContext
+        $applicationContext
             ->getProjectName()
             ->shouldBeCalledOnce()
             ->willReturn($projectName)
@@ -464,7 +464,7 @@ final class DockerTest extends TestCase
             ->willReturn($process->reveal())
         ;
 
-        $docker = new Docker($currentContext->reveal(), $processFactory->reveal(), $installDir);
+        $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->restorePostgresDatabase('/path/to/dump_file.sql'));
     }
 
