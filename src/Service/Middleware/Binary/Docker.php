@@ -261,7 +261,7 @@ class Docker
         $environment = $this->applicationContext->getActiveEnvironment();
 
         // There is sometimes a "bad file descriptor" issue with the "docker compose exec" instruction.
-        $container = $environment->getType().'_'.$environment->getName().'_database_1';
+        $container = $environment->getType().'_'.$environment->getName().'-database-1';
 
         $command = str_replace(
             ['{container}', '{password}', '{database}', '{filename}'],
