@@ -13,10 +13,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RegistryCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:registry';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Shows the list of registered environments';
 
     private ApplicationData $applicationData;
 
@@ -25,14 +25,6 @@ class RegistryCommand extends AbstractBaseCommand
         parent::__construct($name);
 
         $this->applicationData = $applicationData;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Shows the list of registered environments');
     }
 
     /**

@@ -47,10 +47,8 @@ final class DockerTest extends TestCase
 
     /**
      * @dataProvider provideDockerComposeScenarios
-     *
-     * @param string[] $action
      */
-    public function testItExecutesDockerComposeInstruction(string $function, array $action): void
+    public function testItExecutesDockerComposeInstruction(string $function): void
     {
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $processFactory = $this->prophesize(ProcessFactory::class);
@@ -67,11 +65,9 @@ final class DockerTest extends TestCase
         ;
 
         $applicationContext->getProjectName()
-            ->shouldBeCalledTimes(2)
+            ->shouldBeCalledOnce()
             ->willReturn($projectName)
         ;
-
-        $command = array_merge(['docker', 'compose'], $this->getDefaultDockerComposeOptions($projectName), $action);
 
         $process
             ->isSuccessful()
@@ -80,7 +76,7 @@ final class DockerTest extends TestCase
         ;
 
         $processFactory
-            ->runForegroundProcess($command, Argument::type('array'))
+            ->runForegroundProcess(Argument::type('array'), Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -92,52 +88,28 @@ final class DockerTest extends TestCase
     public function provideDockerComposeScenarios(): Iterator
     {
         // @see \App\Middleware\Binary\Docker::pullServices
-        yield 'pull' => [
-            'pullServices',
-            ['pull'],
-        ];
+        yield 'pull' => ['pullServices'];
 
         // @see \App\Middleware\Binary\Docker::buildServices
-        yield 'build' => [
-            'buildServices',
-            ['build', '--pull', '--parallel'],
-        ];
+        yield 'build' => ['buildServices'];
 
         // @see \App\Middleware\Binary\Docker::fixPermissionsOnSharedSSHAgent
-        yield 'permissions' => [
-            'fixPermissionsOnSharedSSHAgent',
-            ['exec', '-T', 'php', 'bash', '-c', 'chown www-data:www-data /run/host-services/ssh-auth.sock'],
-        ];
+        yield 'permissions' => ['fixPermissionsOnSharedSSHAgent'];
 
         // @see \App\Middleware\Binary\Docker::startServices
-        yield 'start' => [
-            'startServices',
-            ['up', '--build', '--detach', '--remove-orphans'],
-        ];
+        yield 'start' => ['startServices'];
 
         // @see \App\Middleware\Binary\Docker::stopServices
-        yield 'stop' => [
-            'stopServices',
-            ['stop'],
-        ];
+        yield 'stop' => ['stopServices'];
 
         // @see \App\Middleware\Binary\Docker::restartServices
-        yield 'restart' => [
-            'restartServices',
-            ['restart'],
-        ];
+        yield 'restart' => ['restartServices'];
 
         // @see \App\Middleware\Binary\Docker::showServicesStatus
-        yield 'status' => [
-            'showServicesStatus',
-            ['ps'],
-        ];
+        yield 'status' => ['showServicesStatus'];
 
         // @see \App\Middleware\Binary\Docker::removeServices
-        yield 'uninstall' => [
-            'removeServices',
-            ['down', '--rmi', 'local', '--volumes', '--remove-orphans'],
-        ];
+        yield 'uninstall' => ['removeServices'];
     }
 
     public function testItDisplaysResourceUsage(): void
@@ -158,12 +130,9 @@ final class DockerTest extends TestCase
 
         $applicationContext
             ->getProjectName()
-            ->shouldBeCalledTimes(2)
+            ->shouldBeCalledOnce()
             ->willReturn($projectName)
         ;
-
-        $action = ['ps --quiet | xargs docker stats'];
-        $command = implode(' ', array_merge(['docker', 'compose'], $this->getDefaultDockerComposeOptions($projectName), $action));
 
         $process
             ->isSuccessful()
@@ -172,7 +141,7 @@ final class DockerTest extends TestCase
         ;
 
         $processFactory
-            ->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))
+            ->runForegroundProcessFromShellCommandLine(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -202,15 +171,9 @@ final class DockerTest extends TestCase
 
         $applicationContext
             ->getProjectName()
-            ->shouldBeCalledTimes(2)
+            ->shouldBeCalledOnce()
             ->willReturn($projectName)
         ;
-
-        $action = ['logs', '--follow', sprintf('--tail=%s', $tail ?? 0)];
-        if ($service) {
-            $action[] = $service;
-        }
-        $command = array_merge(['docker', 'compose'], $this->getDefaultDockerComposeOptions($projectName), $action);
 
         $process
             ->isSuccessful()
@@ -219,7 +182,7 @@ final class DockerTest extends TestCase
         ;
 
         $processFactory
-            ->runForegroundProcess($command, Argument::type('array'))
+            ->runForegroundProcess(Argument::type('array'), Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -258,8 +221,6 @@ final class DockerTest extends TestCase
             ->willReturn($projectName)
         ;
 
-        $command = "docker exec -it --user=www-data:www-data {$projectName}-php-1 bash --login";
-
         $process
             ->isSuccessful()
             ->shouldBeCalledOnce()
@@ -267,7 +228,7 @@ final class DockerTest extends TestCase
         ;
 
         $processFactory
-            ->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))
+            ->runForegroundProcessFromShellCommandLine(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -298,8 +259,6 @@ final class DockerTest extends TestCase
             ->willReturn($projectName)
         ;
 
-        $command = "docker exec -it {$projectName}-php-1 bash --login";
-
         $process
             ->isSuccessful()
             ->shouldBeCalledOnce()
@@ -307,7 +266,7 @@ final class DockerTest extends TestCase
         ;
 
         $processFactory
-            ->runForegroundProcessFromShellCommandLine($command, Argument::type('array'))
+            ->runForegroundProcessFromShellCommandLine(Argument::type('string'), Argument::type('array'))
             ->shouldBeCalledOnce()
             ->willReturn($process->reveal())
         ;
@@ -466,17 +425,5 @@ final class DockerTest extends TestCase
 
         $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
         static::assertTrue($docker->restorePostgresDatabase('/path/to/dump_file.sql'));
-    }
-
-    /**
-     * @return string[]
-     */
-    private function getDefaultDockerComposeOptions(string $projectName): array
-    {
-        return [
-            "--file={$this->location}/var/docker/docker-compose.yml",
-            "--project-directory={$this->location}",
-            "--project-name={$projectName}",
-        ];
     }
 }

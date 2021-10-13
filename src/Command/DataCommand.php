@@ -15,10 +15,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DataCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:data';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Shows the usage statistics of running environment';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
@@ -29,14 +29,6 @@ class DataCommand extends AbstractBaseCommand
 
         $this->applicationContext = $applicationContext;
         $this->docker = $docker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Shows the usage statistics of running environment');
     }
 
     /**

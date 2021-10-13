@@ -17,10 +17,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class UpdateCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:update';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Updates a specific environment';
 
     private ApplicationContext $applicationContext;
     private EnvironmentBuilder $builder;
@@ -44,8 +44,6 @@ class UpdateCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setDescription('Updates a specific environment');
-
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,

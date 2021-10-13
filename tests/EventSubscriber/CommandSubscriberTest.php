@@ -63,6 +63,38 @@ final class CommandSubscriberTest extends TestCase
     /**
      * @throws MissingRequirementException
      */
+    public function testItDoesNotTriggerChecksWithOrigamiRootCommand(): void
+    {
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
+        $releaseChecker = $this->prophesize(ReleaseChecker::class);
+
+        $command = $this->prophesize(Command::class);
+        $input = $this->prophesize(InputInterface::class);
+        $output = $this->prophesize(OutputInterface::class);
+
+        $command
+            ->getName()
+            ->shouldBeCalledOnce()
+            ->willReturn('origami:root')
+        ;
+
+        $requirementsChecker
+            ->validate(Argument::type(OrigamiStyle::class), Argument::type('bool'))
+            ->shouldNotBeCalled()
+        ;
+
+        $releaseChecker
+            ->validate(Argument::type(OrigamiStyle::class))
+            ->shouldNotBeCalled()
+        ;
+
+        $subscriber = new CommandSubscriber($requirementsChecker->reveal(), $releaseChecker->reveal());
+        $subscriber->onConsoleCommand(new ConsoleCommandEvent($command->reveal(), $input->reveal(), $output->reveal()));
+    }
+
+    /**
+     * @throws MissingRequirementException
+     */
     public function testItTriggersChecksWithOrigamiCommands(): void
     {
         $requirementsChecker = $this->prophesize(RequirementsChecker::class);

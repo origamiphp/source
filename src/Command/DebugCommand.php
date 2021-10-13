@@ -19,10 +19,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DebugCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:debug';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Shows some data to help in debugging';
 
     private Docker $docker;
     private Mutagen $mutagen;
@@ -45,14 +45,6 @@ class DebugCommand extends AbstractBaseCommand
         $this->mkcert = $mkcert;
         $this->applicationContext = $applicationContext;
         $this->installDir = $installDir;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Shows some data to help in debugging');
     }
 
     /**

@@ -5,7 +5,8 @@
     ],
     "files": [
         ".env.local.php",
-        "autoload_runtime.template"
+        "autoload_runtime.template",
+        "vendor/composer/installed.php"
     ],
     "force-autodiscovery": true,
     "exclude-composer-files": false,

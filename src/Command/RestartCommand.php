@@ -17,10 +17,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class RestartCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:restart';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Restarts an environment previously started';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
@@ -37,14 +37,6 @@ class RestartCommand extends AbstractBaseCommand
         $this->applicationContext = $applicationContext;
         $this->docker = $docker;
         $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Restarts an environment previously started');
     }
 
     /**
