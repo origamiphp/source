@@ -17,10 +17,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class StopCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:stop';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Stops an environment previously started';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
@@ -37,14 +37,6 @@ class StopCommand extends AbstractBaseCommand
         $this->applicationContext = $applicationContext;
         $this->docker = $docker;
         $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Stops an environment previously started');
     }
 
     /**

@@ -17,10 +17,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class InstallCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:install';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Installs a Docker environment in the desired directory';
 
     private EnvironmentBuilder $builder;
     private ConfigurationFiles $configuration;
@@ -37,14 +37,6 @@ class InstallCommand extends AbstractBaseCommand
         $this->builder = $builder;
         $this->configuration = $configuration;
         $this->eventDispatcher = $eventDispatcher;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Installs a Docker environment in the desired directory');
     }
 
     /**

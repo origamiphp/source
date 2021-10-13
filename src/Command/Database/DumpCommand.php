@@ -15,7 +15,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class DumpCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:database:dump';
+    /** {@inheritdoc} */
     protected static $defaultDescription = 'Generates a dump of the environment database according to the engine in use';
 
     private ApplicationContext $applicationContext;

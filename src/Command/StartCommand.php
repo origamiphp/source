@@ -19,10 +19,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class StartCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:start';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Starts an environment previously installed';
 
     private ApplicationContext $applicationContext;
     private ProcessProxy $processProxy;
@@ -49,8 +49,6 @@ class StartCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setDescription('Starts an environment previously installed in the current directory');
-
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,

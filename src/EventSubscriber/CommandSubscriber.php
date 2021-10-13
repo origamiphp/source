@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Command\RootCommand;
 use App\Exception\MissingRequirementException;
 use App\Service\ReleaseChecker;
 use App\Service\RequirementsChecker;
@@ -46,9 +47,16 @@ class CommandSubscriber implements EventSubscriberInterface
      */
     public function onConsoleCommand(ConsoleCommandEvent $event): void
     {
-        // Allow to only trigger the check on environment variables with custom commands.
         $command = $event->getCommand();
-        if ($command instanceof Command && strpos($command->getName() ?? '', 'origami:') === false) {
+
+        if (!$command instanceof Command) {
+            return;
+        }
+
+        $commandName = $command->getName() ?? '';
+
+        // Allow to only trigger the check on environment variables with custom commands.
+        if (strpos($commandName, 'origami:') === false || $commandName === RootCommand::getDefaultName()) {
             return;
         }
 

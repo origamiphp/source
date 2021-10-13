@@ -18,10 +18,10 @@ class PhpCommand extends AbstractBaseCommand
     private const COMMAND_SERVICE_NAME = 'php';
     private const COMMAND_USERNAME = 'www-data:www-data';
 
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:php';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Opens a terminal on the "php" service';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
@@ -32,14 +32,6 @@ class PhpCommand extends AbstractBaseCommand
 
         $this->applicationContext = $applicationContext;
         $this->docker = $docker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Opens a terminal on the "php" service');
     }
 
     /**

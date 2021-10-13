@@ -15,7 +15,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class RestoreCommand extends AbstractBaseCommand
 {
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:database:restore';
+    /** {@inheritdoc} */
     protected static $defaultDescription = 'Restores a dump of the environment database according to the engine in use';
 
     private ApplicationContext $applicationContext;

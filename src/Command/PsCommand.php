@@ -15,10 +15,10 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class PsCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:ps';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Shows the status of an environment previously started';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
@@ -29,14 +29,6 @@ class PsCommand extends AbstractBaseCommand
 
         $this->applicationContext = $applicationContext;
         $this->docker = $docker;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function configure(): void
-    {
-        $this->setDescription('Shows the status of an environment previously started');
     }
 
     /**

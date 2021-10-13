@@ -19,10 +19,10 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class UninstallCommand extends AbstractBaseCommand
 {
-    /**
-     * {@inheritdoc}
-     */
+    /** {@inheritdoc} */
     protected static $defaultName = 'origami:uninstall';
+    /** {@inheritdoc} */
+    protected static $defaultDescription = 'Uninstalls a specific environment';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
@@ -49,8 +49,6 @@ class UninstallCommand extends AbstractBaseCommand
      */
     protected function configure(): void
     {
-        $this->setDescription('Uninstalls a specific environment');
-
         $this->addArgument(
             'environment',
             InputArgument::OPTIONAL,
