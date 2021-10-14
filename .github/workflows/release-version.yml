@@ -48,7 +48,7 @@ jobs:
 
       - name: 'Prepares the local Git repository which contains the PHAR archive'
         run: |
-          git clone git@github.com:ajardin/origami.git /tmp/origami
+          git clone git@github.com:origamiphp/origami.git /tmp/origami
           mkdir -p /tmp/origami/bin/
           cp ./build/origami.phar /tmp/origami/bin/origami
 

@@ -48,7 +48,7 @@ jobs:
 
       - name: 'Prepares the local Git repository which contains the PHAR archive'
         run: |
-          git clone git@github.com:ajardin/origami.git /tmp/origami
+          git clone git@github.com:origamiphp/origami.git /tmp/origami
           mkdir -p /tmp/origami/bin/
           cp ./build/origami.phar /tmp/origami/bin/origami
 
@@ -56,5 +56,5 @@ jobs:
         run: |
           cd /tmp/origami
           git add bin/origami
-          git commit --message="Update to commit https://github.com/ajardin/origami-source/commit/${{ github.sha }}"
+          git commit --message="Update to commit https://github.com/origamiphp/source/commit/${{ github.sha }}"
           git push origin HEAD:master
