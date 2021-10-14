@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\EventSubscriber;
 
 use App\Event\EnvironmentInstalledEvent;
-use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
@@ -39,7 +38,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
      *
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentStop
-     * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentRestart
      * @uses \App\EventSubscriber\EnvironmentSubscriber::onEnvironmentUninstall
      *
      * @return array<string, string>
@@ -50,7 +48,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
             EnvironmentInstalledEvent::class => 'onEnvironmentInstall',
             EnvironmentStartedEvent::class => 'onEnvironmentStart',
             EnvironmentStoppedEvent::class => 'onEnvironmentStop',
-            EnvironmentRestartedEvent::class => 'onEnvironmentRestart',
             EnvironmentUninstalledEvent::class => 'onEnvironmentUninstall',
         ];
     }
@@ -116,18 +113,6 @@ class EnvironmentSubscriber implements EventSubscriberInterface
 
         $environment->deactivate();
         $this->applicationData->save();
-    }
-
-    /**
-     * Listener which triggers the Docker synchronization restart.
-     */
-    public function onEnvironmentRestart(EnvironmentRestartedEvent $event): void
-    {
-        $io = $event->getConsoleStyle();
-
-        if (!$this->mutagen->removeDockerSynchronization() || !$this->mutagen->startDockerSynchronization()) {
-            $io->error('An error occurred while restarting the Docker synchronization.');
-        }
     }
 
     /**

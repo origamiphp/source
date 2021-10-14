@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Command;
 
 use App\Command\RestartCommand;
+use App\Event\AbstractEnvironmentEvent;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
@@ -49,21 +50,27 @@ final class RestartCommandTest extends TestCase
         ;
 
         $docker
-            ->restartServices()
+            ->stopServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $docker
+            ->startServices()
             ->shouldBeCalledOnce()
             ->willReturn(true)
         ;
 
         $eventDispatcher
-            ->dispatch(Argument::any())
-            ->shouldBeCalledOnce()
+            ->dispatch(Argument::type(AbstractEnvironmentEvent::class))
+            ->shouldBeCalledTimes(2)
         ;
 
         $command = new RestartCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
-    public function testItGracefullyExitsWhenAnExceptionOccurred(): void
+    public function testItGracefullyExitsWhenAnExceptionOccurredWhileStopping(): void
     {
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
@@ -83,7 +90,47 @@ final class RestartCommandTest extends TestCase
         ;
 
         $docker
-            ->restartServices()
+            ->stopServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
+        $command = new RestartCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());
+        static::assertExceptionIsHandled($command);
+    }
+
+    public function testItGracefullyExitsWhenAnExceptionOccurredWhileStarting(): void
+    {
+        $applicationContext = $this->prophesize(ApplicationContext::class);
+        $docker = $this->prophesize(Docker::class);
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+
+        $environment = $this->createEnvironment();
+
+        $applicationContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $applicationContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
+        $docker
+            ->stopServices()
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $eventDispatcher
+            ->dispatch(Argument::type(AbstractEnvironmentEvent::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $docker
+            ->startServices()
             ->shouldBeCalledOnce()
             ->willReturn(false)
         ;
