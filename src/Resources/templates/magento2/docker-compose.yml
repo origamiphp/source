@@ -34,6 +34,7 @@ services:
   nginx:
     image: ajardin/magento2-nginx:latest
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       # Project files

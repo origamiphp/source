@@ -34,6 +34,7 @@ services:
   nginx:
     image: ajardin/nginx:latest
     ports:
+      - "80:80"
       - "443:443"
     volumes:
       # Project files
