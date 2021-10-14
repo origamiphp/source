@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Event\EnvironmentRestartedEvent;
+use App\Event\EnvironmentStartedEvent;
+use App\Event\EnvironmentStoppedEvent;
 use App\Exception\InvalidEnvironmentException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
@@ -54,12 +55,15 @@ class RestartCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails($environment, $io);
             }
 
-            if (!$this->docker->restartServices()) {
-                throw new InvalidEnvironmentException('An error occurred while restarting the Docker services.');
+            if (!$this->docker->stopServices()) {
+                throw new InvalidEnvironmentException('An error occurred while stopping the Docker services.');
             }
+            $this->eventDispatcher->dispatch(new EnvironmentStoppedEvent($environment, $io));
 
-            $event = new EnvironmentRestartedEvent($environment, $io);
-            $this->eventDispatcher->dispatch($event);
+            if (!$this->docker->startServices()) {
+                throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
+            }
+            $this->eventDispatcher->dispatch(new EnvironmentStartedEvent($environment, $io));
 
             $io->success('Docker services successfully restarted.');
         } catch (OrigamiExceptionInterface $exception) {

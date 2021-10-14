@@ -102,9 +102,6 @@ final class DockerTest extends TestCase
         // @see \App\Middleware\Binary\Docker::stopServices
         yield 'stop' => ['stopServices'];
 
-        // @see \App\Middleware\Binary\Docker::restartServices
-        yield 'restart' => ['restartServices'];
-
         // @see \App\Middleware\Binary\Docker::showServicesStatus
         yield 'status' => ['showServicesStatus'];
 

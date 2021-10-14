@@ -103,20 +103,6 @@ class Docker
     }
 
     /**
-     * Restarts the services of the current environment.
-     */
-    public function restartServices(): bool
-    {
-        $environment = $this->applicationContext->getActiveEnvironment();
-
-        $action = ['restart'];
-        $command = array_merge(['docker', 'compose'], $action);
-        $environmentVariables = $this->getEnvironmentVariables($environment);
-
-        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
-    }
-
-    /**
      * Starts the services after building the associated images.
      */
     public function startServices(): bool

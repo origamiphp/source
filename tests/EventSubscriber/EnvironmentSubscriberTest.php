@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\EventSubscriber;
 
 use App\Event\EnvironmentInstalledEvent;
-use App\Event\EnvironmentRestartedEvent;
 use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
@@ -386,93 +385,6 @@ final class EnvironmentSubscriberTest extends TestCase
 
         $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $io->reveal()));
-    }
-
-    public function testItRestartsTheEnvironmentSuccessfully(): void
-    {
-        $hosts = $this->prophesize(Hosts::class);
-        $docker = $this->prophesize(Docker::class);
-        $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(ApplicationData::class);
-
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $io = $this->prophesize(OrigamiStyle::class);
-
-        $mutagen
-            ->removeDockerSynchronization()
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        $mutagen
-            ->startDockerSynchronization()
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $io->reveal()));
-    }
-
-    public function testItRestartsTheEnvironmentWithAnErrorOnMutagenStopping(): void
-    {
-        $hosts = $this->prophesize(Hosts::class);
-        $docker = $this->prophesize(Docker::class);
-        $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(ApplicationData::class);
-
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $io = $this->prophesize(OrigamiStyle::class);
-
-        $mutagen
-            ->removeDockerSynchronization()
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
-
-        $mutagen
-            ->startDockerSynchronization()
-            ->shouldNotBeCalled()
-        ;
-
-        $io
-            ->error(Argument::type('string'))
-            ->shouldBeCalledOnce()
-        ;
-
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $io->reveal()));
-    }
-
-    public function testItRestartsTheEnvironmentWithAnErrorOnMutagenStarting(): void
-    {
-        $hosts = $this->prophesize(Hosts::class);
-        $docker = $this->prophesize(Docker::class);
-        $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(ApplicationData::class);
-
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $io = $this->prophesize(OrigamiStyle::class);
-
-        $mutagen
-            ->removeDockerSynchronization()
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        $mutagen
-            ->startDockerSynchronization()
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
-
-        $io
-            ->error(Argument::type('string'))
-            ->shouldBeCalledOnce()
-        ;
-
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentRestart(new EnvironmentRestartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentSuccessfully(): void
