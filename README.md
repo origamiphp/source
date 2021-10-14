@@ -1,11 +1,11 @@
 <h1 align="center">Welcome to Origami! 👋</h1>
 <p align="center">
-  <a href="https://codecov.io/gh/ajardin/origami-source" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/ajardin/origami-source?style=for-the-badge" alt="Codecov"/>
+  <a href="https://codecov.io/gh/origamiphp/source" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/origamiphp/source?style=for-the-badge" alt="Codecov"/>
   </a>
 
-  <a href="https://github.com/ajardin/origami-source/blob/master/LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/ajardin/origami?color=blue&style=for-the-badge" alt="MIT license">
+  <a href="https://github.com/origamiphp/source/blob/master/LICENSE" target="_blank">
+    <img src="https://img.shields.io/github/license/origamiphp/source?color=blue&style=for-the-badge" alt="MIT license">
   </a>
 
   <a href="https://packagist.org/packages/ajardin/origami" target="_blank">
@@ -89,7 +89,7 @@ Copyright © [Alexandre Jardin][me]. `origami` is an open-sourced software licen
 
 <!-- Resources -->
 [box]: https://github.com/humbug/box/
-[contributions]: https://github.com/ajardin/origami-source/issues
+[contributions]: https://github.com/origamiphp/source/issues
 [docker]: https://docs.docker.com/compose/
 [drupal]: https://drupal.org/
 [issue]: https://github.com/docker/for-mac/issues/1592
