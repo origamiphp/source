@@ -18,7 +18,7 @@ class RestoreCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:database:restore';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Restores a dump of the environment database according to the engine in use';
+    protected static $defaultDescription = 'Restores a database dump of the running environment';
 
     private ApplicationContext $applicationContext;
     private Database $database;

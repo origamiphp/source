@@ -20,7 +20,7 @@ class InstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:install';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Installs a Docker environment in the desired directory';
+    protected static $defaultDescription = 'Installs a local Docker environment for the project in the current directory';
 
     private EnvironmentBuilder $builder;
     private ConfigurationFiles $configuration;

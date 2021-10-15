@@ -19,7 +19,7 @@ class LogsCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:logs';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows the logs of an environment previously started';
+    protected static $defaultDescription = 'Shows the logs generated in real-time by the running environment';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;

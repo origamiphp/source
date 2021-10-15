@@ -16,7 +16,7 @@ class RegistryCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:registry';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows the list of registered environments';
+    protected static $defaultDescription = 'Shows the list and status of all previously installed environments';
 
     private ApplicationData $applicationData;
 

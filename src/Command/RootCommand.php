@@ -20,7 +20,7 @@ class RootCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:root';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows instructions to set up the environment variables';
+    protected static $defaultDescription = 'Shows instructions for configuring your terminal to manually use Docker commands';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;

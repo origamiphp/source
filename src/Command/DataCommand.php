@@ -18,7 +18,7 @@ class DataCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:data';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows the usage statistics of running environment';
+    protected static $defaultDescription = 'Shows real-time usage statistics of the running environment';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
