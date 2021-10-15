@@ -20,7 +20,7 @@ class UpdateCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:update';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Updates a specific environment';
+    protected static $defaultDescription = 'Updates the configuration of a previously installed environment';
 
     private ApplicationContext $applicationContext;
     private EnvironmentBuilder $builder;

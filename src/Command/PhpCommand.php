@@ -21,7 +21,7 @@ class PhpCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:php';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Opens a terminal on the "php" service';
+    protected static $defaultDescription = 'Opens a terminal on the "php" service to interact with it';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;

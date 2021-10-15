@@ -22,7 +22,7 @@ class DebugCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:debug';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows some data to help in debugging';
+    protected static $defaultDescription = 'Shows system information and the configuration of the current environment';
 
     private Docker $docker;
     private Mutagen $mutagen;

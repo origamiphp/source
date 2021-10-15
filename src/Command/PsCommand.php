@@ -18,7 +18,7 @@ class PsCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:ps';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows the status of an environment previously started';
+    protected static $defaultDescription = 'Shows the status of the running environment services';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;

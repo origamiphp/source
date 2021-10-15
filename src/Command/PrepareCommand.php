@@ -19,7 +19,7 @@ class PrepareCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:prepare';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Prepares an environment previously installed (i.e. pulls/builds Docker images)';
+    protected static $defaultDescription = 'Prepares Docker images (i.e. pull and build) of a previously installed environment';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;

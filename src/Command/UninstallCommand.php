@@ -22,7 +22,7 @@ class UninstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultName = 'origami:uninstall';
     /** {@inheritdoc} */
-    protected static $defaultDescription = 'Uninstalls a specific environment';
+    protected static $defaultDescription = 'Uninstalls an environment by deleting all Docker data and associated configuration';
 
     private ApplicationContext $applicationContext;
     private Docker $docker;
