@@ -1,16 +1,18 @@
 # origami
 
 <p>
-  <a href="https://codecov.io/gh/origamiphp/source" target="_blank">
-    <img src="https://img.shields.io/codecov/c/github/origamiphp/source?style=for-the-badge" alt="Codecov"/>
+  <img src="https://img.shields.io/packagist/php-v/ajardin/origami" alt="PHP version support"/>
+
+  <a href="https://shepherd.dev/github/origamiphp/source" target="_blank">
+    <img src="https://shepherd.dev/github/origamiphp/source/coverage.svg" alt="Shepherd results"/>
   </a>
 
-  <a href="https://github.com/origamiphp/source/blob/master/LICENSE" target="_blank">
-    <img src="https://img.shields.io/github/license/origamiphp/source?color=blue&style=for-the-badge" alt="MIT license">
+  <a href="https://codecov.io/gh/origamiphp/source" target="_blank">
+    <img src="https://img.shields.io/codecov/c/github/origamiphp/source?label=code-coverage" alt="Codecov results"/>
   </a>
 
   <a href="https://packagist.org/packages/ajardin/origami" target="_blank">
-    <img src="https://img.shields.io/packagist/dt/ajardin/origami?style=for-the-badge" alt="Packagist downloads"/>
+    <img src="https://img.shields.io/packagist/dt/ajardin/origami" alt="Packagist downloads"/>
   </a>
 </p>
 
@@ -25,6 +27,8 @@ the project directory. Native commands are still available since this is a wrapp
 * [Docker][docker-engine] and [Docker Compose][docker-compose].
 * [Mutagen][mutagen] to improve performance because Docker can be [painfully slow on macOS][issue] with some projects.
 * [mkcert][mkcert] (optional) to make locally trusted development certificates because the HTTPS has become the norm.
+
+**Last but not least, this package currently only supports macOS**.
 
 ## 🛠 Installing
 You can install `origami` with Composer like any PHP dependency.

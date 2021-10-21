@@ -46,7 +46,7 @@ phpunit: ## Executes the unit and functional tests
 .PHONY: phpunit
 
 psalm: ## Executes the static analysis on all PHP files with Psalm
-	./vendor/bin/psalm --show-info=true --find-dead-code --no-cache
+	./vendor/bin/psalm --show-info=true --find-dead-code --stats --shepherd
 .PHONY: psalm
 
 rector-audit: ## Executes the automated refactoring in dry-run mode on all PHP files
