@@ -56,9 +56,13 @@ jobs:
           ${destination}
 
       - name: 'Executes the unit tests and functional tests'
-        run: |
-          ./bin/phpunit --testdox
-          bash <(curl -s https://codecov.io/bash) -Z
+        run: ./bin/phpunit --testdox
+
+      - name: 'Uploads PHPUnit reports to Codecov'
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
+          verbose: true
 
       - name: 'Compiles the project into a PHAR archive'
         run: make box
