@@ -40,7 +40,7 @@ services:
     tty: true
 
   php:
-    image: ${DOCKER_PHP_IMAGE}
+    image: ${DOCKER_PHP_IMAGE}-blackfire
     environment:
       - SSH_AUTH_SOCK=/run/host-services/ssh-auth.sock
     volumes:
@@ -51,6 +51,19 @@ services:
       - ${PROJECT_LOCATION}/var/docker/php/php-fpm-fcgi.ini:/usr/local/etc/php/php-fpm-fcgi.ini:ro
       # SSH socket
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+    tty: true
+
+  php_xdebug:
+    image: ${DOCKER_PHP_IMAGE}-xdebug
+    environment:
+      - PHP_IDE_CONFIG=serverName=origami
+    volumes:
+      # Project files
+      - code:/var/www/html:delegated
+      # Custom configuration
+      - ${PROJECT_LOCATION}/var/docker/php/php-cli.ini:/usr/local/etc/php/php-cli.ini:ro
+      - ${PROJECT_LOCATION}/var/docker/php/php-fpm-fcgi.ini:/usr/local/etc/php/php-fpm-fcgi.ini:ro
+      - ${PROJECT_LOCATION}/var/docker/php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini:ro
     tty: true
 
   synchro:
