@@ -33,12 +33,6 @@ final class RequirementsCheckerTest extends TestCase
         ;
 
         $executableFinder
-            ->find('mutagen')
-            ->shouldBeCalledOnce()
-            ->willReturn('/usr/local/bin/mutagen')
-        ;
-
-        $executableFinder
             ->find('mkcert')
             ->shouldBeCalledOnce()
             ->willReturn('/usr/local/bin/mkcert')
@@ -66,12 +60,6 @@ final class RequirementsCheckerTest extends TestCase
         $executableFinder
             ->find('docker')
             ->shouldBeCalledOnce()
-            ->willReturn('/usr/local/bin/docker')
-        ;
-
-        $executableFinder
-            ->find('mutagen')
-            ->shouldBeCalledOnce()
             ->willReturn(null)
         ;
 
@@ -88,8 +76,7 @@ final class RequirementsCheckerTest extends TestCase
 
         $io
             ->listing([
-                '✅ docker - A self-sufficient runtime for containers.',
-                '❌ mutagen - Fast and efficient way to synchronize code to Docker containers.',
+                '❌ docker - A self-sufficient runtime for containers.',
                 '✅ mkcert - A simple zero-config tool to make locally trusted development certificates.',
             ])
             ->shouldBeCalledOnce()
@@ -113,12 +100,6 @@ final class RequirementsCheckerTest extends TestCase
         ;
 
         $executableFinder
-            ->find('mutagen')
-            ->shouldBeCalledOnce()
-            ->willReturn('/usr/local/bin/mutagen')
-        ;
-
-        $executableFinder
             ->find('mkcert')
             ->shouldBeCalledOnce()
             ->willReturn(null)
@@ -132,7 +113,6 @@ final class RequirementsCheckerTest extends TestCase
         $io
             ->listing([
                 '✅ docker - A self-sufficient runtime for containers.',
-                '✅ mutagen - Fast and efficient way to synchronize code to Docker containers.',
                 '❌ mkcert - A simple zero-config tool to make locally trusted development certificates.',
             ])
             ->shouldBeCalledOnce()

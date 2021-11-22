@@ -54,11 +54,6 @@ class RequirementsChecker
                 'description' => 'A self-sufficient runtime for containers.',
                 'status' => $this->executableFinder->find('docker') !== null,
             ],
-            [
-                'name' => 'mutagen',
-                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-                'status' => $this->executableFinder->find('mutagen') !== null,
-            ],
         ];
     }
 
