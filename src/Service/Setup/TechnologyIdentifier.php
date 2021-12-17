@@ -52,13 +52,20 @@ class TechnologyIdentifier
      *
      * @throws JsonException
      * @throws FilesystemException
+     *
+     * @return array[]
      */
-    private function loadConfiguration(string $filename): ?array
+    private function loadConfiguration(string $filename): array
     {
         if (!$content = file_get_contents($filename)) {
             throw new FilesystemException('Unable to load the Composer configuration from the filesystem.');
         }
 
-        return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        $result = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        if (!\is_array($result)) {
+            throw new JsonException('The Composer configuration is not a valid JSON.');
+        }
+
+        return $result;
     }
 }

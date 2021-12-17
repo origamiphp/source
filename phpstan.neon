@@ -12,3 +12,6 @@ parameters:
   inferPrivatePropertyTypeFromConstructor: true
   checkGenericClassInNonGenericObjectType: false
   checkMissingIterableValueType: false
+  ignoreErrors:
+    - '#Part \$path \(mixed\) of encapsed string cannot be cast to string\.#'
+    - '#Method App\\Service\\Setup\\EnvironmentBuilder::.+\(\) should return .+ but returns mixed\.#'

@@ -72,7 +72,7 @@ class EnvironmentBuilder
     }
 
     /**
-     * Asks the question about the environment name.
+     * Asks question about the environment name.
      */
     private function askEnvironmentName(OrigamiStyle $io, string $defaultName): string
     {
@@ -80,7 +80,7 @@ class EnvironmentBuilder
     }
 
     /**
-     * Asks the choice question about the environment type.
+     * Asks choice question about the environment type.
      */
     private function askEnvironmentType(OrigamiStyle $io, ?string $assumption): string
     {
@@ -92,7 +92,7 @@ class EnvironmentBuilder
     }
 
     /**
-     * Asks the choice question about the environment version.
+     * Asks choice question about the environment version.
      */
     private function askEnvironmentVersion(OrigamiStyle $io, string $type, ?string $assumption): string
     {
@@ -109,7 +109,7 @@ class EnvironmentBuilder
     }
 
     /**
-     * Asks the choice questions about the environment settings.
+     * Asks choice questions about the environment settings.
      *
      * @return array<string, string>
      */
@@ -118,18 +118,21 @@ class EnvironmentBuilder
         $settings = [];
 
         foreach ($this->requirements[$type][$version] as $service => $choices) {
-            $settings[(string) $service] = (string) $io->choice(
+            /** @var string $choice */
+            $choice = $io->choice(
                 "Which <options=bold>{$service}</> version do you want to use in your project?",
                 $choices,
                 $choices[0],
             );
+
+            $settings[(string) $service] = $choice;
         }
 
         return $settings;
     }
 
     /**
-     * Asks the question about the environment domains.
+     * Asks question about the environment domains.
      */
     private function askDomains(OrigamiStyle $io, string $name): ?string
     {

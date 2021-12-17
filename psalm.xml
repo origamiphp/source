@@ -20,4 +20,11 @@
         <pluginClass class="Psalm\PhpUnitPlugin\Plugin"/>
         <pluginClass class="Psalm\SymfonyPsalmPlugin\Plugin"/>
     </plugins>
+    <issueHandlers>
+        <PossiblyUnusedMethod>
+            <errorLevel type="suppress">
+                <referencedMethod name="App\Kernel::configureContainer"/>
+            </errorLevel>
+        </PossiblyUnusedMethod>
+    </issueHandlers>
 </psalm>
