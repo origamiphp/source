@@ -22,21 +22,13 @@ class InstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Installs a local Docker environment for the project in the current directory';
 
-    private EnvironmentBuilder $builder;
-    private ConfigurationFiles $configuration;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        EnvironmentBuilder $builder,
-        ConfigurationFiles $configuration,
-        EventDispatcherInterface $eventDispatcher,
-        ?string $name = null
+        private EnvironmentBuilder $builder,
+        private ConfigurationFiles $configuration,
+        private EventDispatcherInterface $eventDispatcher,
+        string $name = null
     ) {
         parent::__construct($name);
-
-        $this->builder = $builder;
-        $this->configuration = $configuration;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**

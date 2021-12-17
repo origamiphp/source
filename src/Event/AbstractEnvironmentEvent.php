@@ -10,13 +10,10 @@ use Symfony\Contracts\EventDispatcher\Event;
 
 abstract class AbstractEnvironmentEvent extends Event
 {
-    protected EnvironmentEntity $environment;
-    protected OrigamiStyle $symfonyStyle;
-
-    public function __construct(EnvironmentEntity $environment, OrigamiStyle $symfonyStyle)
-    {
-        $this->environment = $environment;
-        $this->symfonyStyle = $symfonyStyle;
+    public function __construct(
+        protected EnvironmentEntity $environment,
+        protected OrigamiStyle $symfonyStyle
+    ) {
     }
 
     /**

@@ -9,11 +9,8 @@ use App\Service\Wrapper\ProcessFactory;
 
 class Hosts
 {
-    private ProcessFactory $processFactory;
-
-    public function __construct(ProcessFactory $processFactory)
+    public function __construct(private ProcessFactory $processFactory)
     {
-        $this->processFactory = $processFactory;
     }
 
     /**

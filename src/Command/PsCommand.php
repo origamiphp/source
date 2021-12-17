@@ -20,15 +20,12 @@ class PsCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Shows the status of the running environment services';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-
-    public function __construct(ApplicationContext $applicationContext, Docker $docker, ?string $name = null)
-    {
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        string $name = null
+    ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->docker = $docker;
     }
 
     /**

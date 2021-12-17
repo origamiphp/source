@@ -10,11 +10,8 @@ use Symfony\Component\Process\ExecutableFinder;
 
 class RequirementsChecker
 {
-    private ExecutableFinder $executableFinder;
-
-    public function __construct(ExecutableFinder $executableFinder)
+    public function __construct(private ExecutableFinder $executableFinder)
     {
-        $this->executableFinder = $executableFinder;
     }
 
     /**

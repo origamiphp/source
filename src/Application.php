@@ -24,17 +24,16 @@ ASCII;
 
     public const CONSOLE_NAME = 'Origami';
 
-    private ApplicationVersion $version;
-
     /**
      * {@inheritdoc}
      *
      * @param Kernel $kernel
      */
-    public function __construct(KernelInterface $kernel, ApplicationVersion $version)
-    {
+    public function __construct(
+        KernelInterface $kernel,
+        private ApplicationVersion $version
+    ) {
         parent::__construct($kernel);
-        $this->version = $version;
 
         if ($defaultName = DefaultCommand::getDefaultName()) {
             $this->setDefaultCommand($defaultName);

@@ -1,0 +1,7 @@
+framework:
+  php_errors:
+    log: true
+
+when@test:
+  framework:
+    test: true

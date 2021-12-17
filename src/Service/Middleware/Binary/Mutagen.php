@@ -12,13 +12,10 @@ class Mutagen
     private const DEFAULT_CONTAINER_UID = 'id:1000';
     private const DEFAULT_CONTAINER_GID = 'id:1000';
 
-    private ApplicationContext $applicationContext;
-    private ProcessFactory $processFactory;
-
-    public function __construct(ApplicationContext $applicationContext, ProcessFactory $processFactory)
-    {
-        $this->applicationContext = $applicationContext;
-        $this->processFactory = $processFactory;
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private ProcessFactory $processFactory
+    ) {
     }
 
     /**

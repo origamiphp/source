@@ -20,15 +20,12 @@ class DataCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Shows real-time usage statistics of the running environment';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-
-    public function __construct(ApplicationContext $applicationContext, Docker $docker, ?string $name = null)
-    {
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        string $name = null
+    ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->docker = $docker;
     }
 
     /**

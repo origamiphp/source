@@ -12,15 +12,11 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class Validator
 {
-    private ValidatorInterface $symfonyValidator;
-    private string $projectDir;
-    private string $installDir;
-
-    public function __construct(ValidatorInterface $symfonyValidator, string $projectDir, string $installDir)
-    {
-        $this->symfonyValidator = $symfonyValidator;
-        $this->projectDir = $projectDir;
-        $this->installDir = $installDir;
+    public function __construct(
+        private ValidatorInterface $symfonyValidator,
+        private string $projectDir,
+        private string $installDir
+    ) {
     }
 
     /**

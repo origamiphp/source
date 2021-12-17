@@ -14,15 +14,11 @@ use IteratorAggregate;
  */
 class EnvironmentCollection implements Countable, IteratorAggregate
 {
-    /** @var EnvironmentEntity[] */
-    private array $values;
-
     /**
      * @param EnvironmentEntity[] $values
      */
-    public function __construct(array $values = [])
+    public function __construct(private array $values = [])
     {
-        $this->values = $values;
     }
 
     /**

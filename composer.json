@@ -1,8 +1,8 @@
 {
     "name": "ajardin/origami-source",
-    "type": "project",
     "description": "PHP toolbox to manage your local Docker environments.",
     "license": "MIT",
+    "type": "project",
     "authors": [
         {
             "name": "Alexandre Jardin",
@@ -10,7 +10,7 @@
         }
     ],
     "require": {
-        "php": ">=7.4.0",
+        "php": ">=8.0.2",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "ext-json": "*",
@@ -19,31 +19,17 @@
         "ext-zlib": "*",
         "composer/semver": "^3.2",
         "ergebnis/environment-variables": "^1.0",
-        "symfony/console": "5.4.*",
-        "symfony/dotenv": "5.4.*",
-        "symfony/flex": "^1.3.1",
-        "symfony/framework-bundle": "5.4.*",
-        "symfony/http-client": "5.4.*",
-        "symfony/process": "5.4.*",
-        "symfony/property-access": "5.4.*",
-        "symfony/runtime": "5.4.*",
-        "symfony/serializer": "5.4.*",
-        "symfony/validator": "5.4.*",
-        "symfony/yaml": "5.4.*"
-    },
-    "replace": {
-        "paragonie/random_compat": "2.*",
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-iconv": "*",
-        "symfony/polyfill-php74": "*",
-        "symfony/polyfill-php73": "*",
-        "symfony/polyfill-php72": "*",
-        "symfony/polyfill-php71": "*",
-        "symfony/polyfill-php70": "*",
-        "symfony/polyfill-php56": "*"
-    },
-    "conflict": {
-        "symfony/symfony": "*"
+        "symfony/console": "6.0.*",
+        "symfony/dotenv": "6.0.*",
+        "symfony/flex": "^2.0.1",
+        "symfony/framework-bundle": "6.0.*",
+        "symfony/http-client": "6.0.*",
+        "symfony/process": "6.0.*",
+        "symfony/property-access": "6.0.*",
+        "symfony/runtime": "6.0.*",
+        "symfony/serializer": "6.0.*",
+        "symfony/validator": "6.0.*",
+        "symfony/yaml": "6.0.*"
     },
     "require-dev": {
         "codecov/codecov-php": "dev-master",
@@ -57,27 +43,21 @@
         "psalm/plugin-symfony": "^3.0",
         "rector/rector": "^0.12",
         "symfony/maker-bundle": "^1.0",
-        "symfony/phpunit-bridge": "5.4.*",
-        "symfony/var-dumper": "5.4.*",
+        "symfony/phpunit-bridge": "6.0.*",
+        "symfony/var-dumper": "6.0.*",
         "vimeo/psalm": "^4.3"
     },
-    "config": {
-        "platform": {
-            "php": "7.4"
-        },
-        "preferred-install": {
-            "*": "dist"
-        },
-        "sort-packages": true
+    "replace": {
+        "paragonie/random_compat": "2.*",
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-iconv": "*",
+        "symfony/polyfill-php72": "*",
+        "symfony/polyfill-php73": "*",
+        "symfony/polyfill-php74": "*",
+        "symfony/polyfill-php80": "*"
     },
-    "extra": {
-        "symfony": {
-            "allow-contrib": false,
-            "require": "5.4.*"
-        },
-        "runtime": {
-            "autoload_template": "autoload_runtime.template"
-        }
+    "conflict": {
+        "symfony/symfony": "*"
     },
     "autoload": {
         "psr-4": {
@@ -89,10 +69,31 @@
             "App\\Tests\\": "tests/"
         }
     },
-    "scripts": {
-        "auto-scripts": {
-            "cache:clear": "symfony-cmd"
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "symfony/flex": true,
+            "symfony/runtime": true
         },
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.0.2"
+        },
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    },
+    "extra": {
+        "runtime": {
+            "autoload_template": "autoload_runtime.template"
+        },
+        "symfony": {
+            "allow-contrib": false,
+            "require": "6.0.*"
+        }
+    },
+    "scripts": {
         "post-install-cmd": [
             "@auto-scripts"
         ],
@@ -101,6 +102,9 @@
         ],
         "post-autoload-dump": [
             "@auto-scripts"
-        ]
+        ],
+        "auto-scripts": {
+            "cache:clear": "symfony-cmd"
+        }
     }
 }

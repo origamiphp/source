@@ -15,27 +15,16 @@ use Composer\Semver\VersionParser;
 
 class EnvironmentBuilder
 {
-    private TechnologyIdentifier $technologyIdentifier;
-    private ProcessProxy $processProxy;
-    private RequirementsChecker $requirementsChecker;
-    private Validator $validator;
-    private array $requirements;
-
     /**
      * @param array[] $requirements
      */
     public function __construct(
-        ProcessProxy $processProxy,
-        TechnologyIdentifier $technologyIdentifier,
-        RequirementsChecker $requirementsChecker,
-        Validator $validator,
-        array $requirements
+        private ProcessProxy $processProxy,
+        private TechnologyIdentifier $technologyIdentifier,
+        private RequirementsChecker $requirementsChecker,
+        private Validator $validator,
+        private array $requirements
     ) {
-        $this->technologyIdentifier = $technologyIdentifier;
-        $this->processProxy = $processProxy;
-        $this->requirementsChecker = $requirementsChecker;
-        $this->validator = $validator;
-        $this->requirements = $requirements;
     }
 
     /**

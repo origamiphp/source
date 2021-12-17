@@ -9,27 +9,16 @@ namespace App\ValueObject;
  */
 class PrepareAnswers
 {
-    private string $name;
-    private string $location;
-    private string $type;
-    private array $settings;
-    private ?string $domains;
-
     /**
      * @param array<string, string> $settings
      */
     public function __construct(
-        string $name,
-        string $location,
-        string $type,
-        ?string $domains,
-        array $settings
+        private string $name,
+        private string $location,
+        private string $type,
+        private ?string $domains,
+        private array $settings
     ) {
-        $this->name = $name;
-        $this->location = $location;
-        $this->type = $type;
-        $this->domains = $domains;
-        $this->settings = $settings;
     }
 
     public function getName(): string
@@ -53,7 +42,7 @@ class PrepareAnswers
     }
 
     /**
-     * @return array[]
+     * @return array<string, string>
      */
     public function getSettings(): array
     {

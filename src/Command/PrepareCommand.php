@@ -21,18 +21,12 @@ class PrepareCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Prepares Docker images (i.e. pull and build) of a previously installed environment';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-
     public function __construct(
-        ApplicationContext $applicationContext,
-        Docker $docker,
-        ?string $name = null
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        string $name = null
     ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->docker = $docker;
     }
 
     /**

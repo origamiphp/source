@@ -16,13 +16,10 @@ class ConfigurationFiles
 {
     public const INSTALLATION_DIRECTORY = '/var/docker';
 
-    protected Mkcert $mkcert;
-    protected Database $database;
-
-    public function __construct(Mkcert $mkcert, Database $database)
-    {
-        $this->mkcert = $mkcert;
-        $this->database = $database;
+    public function __construct(
+        protected Mkcert $mkcert,
+        protected Database $database
+    ) {
     }
 
     /**
