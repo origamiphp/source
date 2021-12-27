@@ -24,27 +24,15 @@ class DebugCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Shows system information and the configuration of the current environment';
 
-    private Docker $docker;
-    private Mutagen $mutagen;
-    private Mkcert $mkcert;
-    private ApplicationContext $applicationContext;
-    private string $installDir;
-
     public function __construct(
-        Docker $docker,
-        Mutagen $mutagen,
-        Mkcert $mkcert,
-        ApplicationContext $applicationContext,
-        string $installDir,
+        private Docker $docker,
+        private Mutagen $mutagen,
+        private Mkcert $mkcert,
+        private ApplicationContext $applicationContext,
+        private string $installDir,
         string $name = null
     ) {
         parent::__construct($name);
-
-        $this->docker = $docker;
-        $this->mutagen = $mutagen;
-        $this->mkcert = $mkcert;
-        $this->applicationContext = $applicationContext;
-        $this->installDir = $installDir;
     }
 
     /**

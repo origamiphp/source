@@ -18,17 +18,12 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class EnvironmentSubscriber implements EventSubscriberInterface
 {
-    private Hosts $hosts;
-    private Docker $docker;
-    private Mutagen $mutagen;
-    private ApplicationData $applicationData;
-
-    public function __construct(Hosts $hosts, Docker $docker, Mutagen $mutagen, ApplicationData $applicationData)
-    {
-        $this->hosts = $hosts;
-        $this->docker = $docker;
-        $this->mutagen = $mutagen;
-        $this->applicationData = $applicationData;
+    public function __construct(
+        private Hosts $hosts,
+        private Docker $docker,
+        private Mutagen $mutagen,
+        private ApplicationData $applicationData
+    ) {
     }
 
     /**
@@ -71,7 +66,7 @@ class EnvironmentSubscriber implements EventSubscriberInterface
                     $this->hosts->fixHostsFile($domains);
                 }
             }
-        } catch (OrigamiExceptionInterface $exception) {
+        } catch (OrigamiExceptionInterface) {
             $io->error('Unable to check whether the custom domains are defined in your hosts file.');
         }
 

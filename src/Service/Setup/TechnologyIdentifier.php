@@ -40,7 +40,7 @@ class TechnologyIdentifier
                     }
                 }
             }
-        } catch (FilesystemException|JsonException $exception) {
+        } catch (FilesystemException|JsonException) {
             // Ignore the thrown exception and return nothing.
         }
 

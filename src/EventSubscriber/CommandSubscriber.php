@@ -15,13 +15,10 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class CommandSubscriber implements EventSubscriberInterface
 {
-    private RequirementsChecker $requirementsChecker;
-    private ReleaseChecker $releaseChecker;
-
-    public function __construct(RequirementsChecker $requirementsChecker, ReleaseChecker $releaseChecker)
-    {
-        $this->requirementsChecker = $requirementsChecker;
-        $this->releaseChecker = $releaseChecker;
+    public function __construct(
+        private RequirementsChecker $requirementsChecker,
+        private ReleaseChecker $releaseChecker
+    ) {
     }
 
     /**
@@ -56,7 +53,7 @@ class CommandSubscriber implements EventSubscriberInterface
         $commandName = $command->getName() ?? '';
 
         // Allow to only trigger the check on environment variables with custom commands.
-        if (strpos($commandName, 'origami:') === false || $commandName === RootCommand::getDefaultName()) {
+        if (!str_contains($commandName, 'origami:') || $commandName === RootCommand::getDefaultName()) {
             return;
         }
 

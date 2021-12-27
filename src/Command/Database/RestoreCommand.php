@@ -20,15 +20,12 @@ class RestoreCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Restores a database dump of the running environment';
 
-    private ApplicationContext $applicationContext;
-    private Database $database;
-
-    public function __construct(ApplicationContext $applicationContext, Database $database, string $name = null)
-    {
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private Database $database,
+        string $name = null
+    ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->database = $database;
     }
 
     /**

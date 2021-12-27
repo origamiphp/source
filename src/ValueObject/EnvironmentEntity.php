@@ -23,24 +23,13 @@ class EnvironmentEntity
         self::TYPE_SYMFONY,
     ];
 
-    private string $name;
-    private string $location;
-    private string $type;
-    private ?string $domains;
-    private bool $active;
-
     public function __construct(
-        string $name,
-        string $location,
-        string $type,
-        ?string $domains = null,
-        bool $active = false
+        private string $name,
+        private string $location,
+        private string $type,
+        private ?string $domains = null,
+        private bool $active = false
     ) {
-        $this->name = $name;
-        $this->location = $location;
-        $this->type = $type;
-        $this->domains = $domains;
-        $this->active = $active;
     }
 
     public function getName(): string

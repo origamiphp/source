@@ -15,11 +15,8 @@ class Packagist
     private const STABLE_RELEASES_URL = 'https://repo.packagist.org/p2/ajardin/origami.json';
     private const DEV_RELEASES_URL = 'https://repo.packagist.org/p2/ajardin/origami~dev.json';
 
-    private HttpClientInterface $httpClient;
-
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(private HttpClientInterface $httpClient)
     {
-        $this->httpClient = $httpClient;
     }
 
     /**
@@ -46,7 +43,7 @@ class Packagist
         try {
             $response = $this->httpClient->request(Request::METHOD_GET, $url);
             $releases = $response->toArray();
-        } catch (TransportExceptionInterface|HttpExceptionInterface|DecodingExceptionInterface $exception) {
+        } catch (TransportExceptionInterface|HttpExceptionInterface|DecodingExceptionInterface) {
             return null;
         }
 

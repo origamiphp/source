@@ -14,19 +14,13 @@ use Symfony\Component\Console\Input\InputInterface;
 
 class ApplicationContext
 {
-    private ApplicationData $applicationData;
-    private ProcessProxy $processProxy;
-    private Validator $validator;
     private EnvironmentEntity $environment;
 
     public function __construct(
-        ApplicationData $applicationData,
-        ProcessProxy $processProxy,
-        Validator $validator
+        private ApplicationData $applicationData,
+        private ProcessProxy $processProxy,
+        private Validator $validator
     ) {
-        $this->applicationData = $applicationData;
-        $this->processProxy = $processProxy;
-        $this->validator = $validator;
     }
 
     /**

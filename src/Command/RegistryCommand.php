@@ -18,13 +18,11 @@ class RegistryCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Shows the list and status of all previously installed environments';
 
-    private ApplicationData $applicationData;
-
-    public function __construct(ApplicationData $applicationData, ?string $name = null)
-    {
+    public function __construct(
+        private ApplicationData $applicationData,
+        string $name = null
+    ) {
         parent::__construct($name);
-
-        $this->applicationData = $applicationData;
     }
 
     /**

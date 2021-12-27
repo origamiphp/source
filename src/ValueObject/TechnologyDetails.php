@@ -9,13 +9,10 @@ namespace App\ValueObject;
  */
 class TechnologyDetails
 {
-    private string $name;
-    private string $version;
-
-    public function __construct(string $technology, string $version)
-    {
-        $this->name = $technology;
-        $this->version = $version;
+    public function __construct(
+        private string $name,
+        private string $version
+    ) {
     }
 
     public function getName(): string

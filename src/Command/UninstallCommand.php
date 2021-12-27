@@ -24,24 +24,14 @@ class UninstallCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Uninstalls an environment by deleting all Docker data and associated configuration';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-    private ConfigurationFiles $uninstaller;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        ApplicationContext $applicationContext,
-        Docker $docker,
-        ConfigurationFiles $uninstaller,
-        EventDispatcherInterface $eventDispatcher,
-        ?string $name = null
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        private ConfigurationFiles $uninstaller,
+        private EventDispatcherInterface $eventDispatcher,
+        string $name = null
     ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->docker = $docker;
-        $this->uninstaller = $uninstaller;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**

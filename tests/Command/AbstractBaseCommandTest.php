@@ -86,13 +86,9 @@ final class AbstractBaseCommandTest extends TestCase
              */
             protected static $defaultName = 'origami:test';
 
-            protected ApplicationContext $applicationContext;
-
-            public function __construct(ApplicationContext $applicationContext, string $name = null)
+            public function __construct(protected ApplicationContext $applicationContext, string $name = null)
             {
                 parent::__construct($name);
-
-                $this->applicationContext = $applicationContext;
             }
 
             /**

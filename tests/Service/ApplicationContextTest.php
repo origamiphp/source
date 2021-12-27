@@ -181,6 +181,13 @@ final class ApplicationContextTest extends TestCase
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
 
+        $input = $this->prophesize(InputInterface::class);
+        $input
+            ->hasArgument('environment')
+            ->shouldBeCalledOnce()
+            ->willReturn(false)
+        ;
+
         $processProxy
             ->getWorkingDirectory()
             ->shouldBeCalledOnce()
@@ -189,7 +196,7 @@ final class ApplicationContextTest extends TestCase
 
         $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
         $this->expectException(InvalidEnvironmentException::class);
-        $applicationContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
+        $applicationContext->loadEnvironment($input->reveal());
     }
 
     /**

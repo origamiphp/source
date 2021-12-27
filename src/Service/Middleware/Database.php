@@ -19,15 +19,11 @@ class Database
     public const DEFAULT_SERVICE_PASSWORD = 'YourPwdShouldBeLongAndSecure';
     public const DEFAULT_SERVICE_DATABASE = 'origami';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-    private string $installDir;
-
-    public function __construct(ApplicationContext $applicationContext, Docker $docker, string $installDir)
-    {
-        $this->docker = $docker;
-        $this->applicationContext = $applicationContext;
-        $this->installDir = $installDir;
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        private string $installDir
+    ) {
     }
 
     /**

@@ -11,15 +11,11 @@ use App\ValueObject\EnvironmentEntity;
 
 class Docker
 {
-    private ApplicationContext $applicationContext;
-    private ProcessFactory $processFactory;
-    private string $installDir;
-
-    public function __construct(ApplicationContext $applicationContext, ProcessFactory $processFactory, string $installDir)
-    {
-        $this->applicationContext = $applicationContext;
-        $this->processFactory = $processFactory;
-        $this->installDir = $installDir;
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private ProcessFactory $processFactory,
+        private string $installDir
+    ) {
     }
 
     /**

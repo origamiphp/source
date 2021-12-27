@@ -24,24 +24,14 @@ class StartCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Starts an environment previously installed';
 
-    private ApplicationContext $applicationContext;
-    private ProcessProxy $processProxy;
-    private Docker $docker;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        ApplicationContext $applicationContext,
-        ProcessProxy $processProxy,
-        Docker $docker,
-        EventDispatcherInterface $eventDispatcher,
-        ?string $name = null
+        private ApplicationContext $applicationContext,
+        private ProcessProxy $processProxy,
+        private Docker $docker,
+        private EventDispatcherInterface $eventDispatcher,
+        string $name = null
     ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->processProxy = $processProxy;
-        $this->docker = $docker;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**

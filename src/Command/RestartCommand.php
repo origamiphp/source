@@ -23,21 +23,13 @@ class RestartCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Restarts an environment previously started';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-    private EventDispatcherInterface $eventDispatcher;
-
     public function __construct(
-        ApplicationContext $applicationContext,
-        Docker $docker,
-        EventDispatcherInterface $eventDispatcher,
-        ?string $name = null
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        private EventDispatcherInterface $eventDispatcher,
+        string $name = null
     ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->docker = $docker;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**

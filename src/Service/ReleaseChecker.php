@@ -24,15 +24,11 @@ Consider upgrading (from <fg=green;options=bold>%s</> to <fg=red;options=bold>%s
 
 TEXT;
 
-    private ApplicationVersion $applicationVersion;
-    private Packagist $packagist;
-    private GitHub $github;
-
-    public function __construct(ApplicationVersion $applicationVersion, Packagist $packagist, GitHub $github)
-    {
-        $this->applicationVersion = $applicationVersion;
-        $this->packagist = $packagist;
-        $this->github = $github;
+    public function __construct(
+        private ApplicationVersion $applicationVersion,
+        private Packagist $packagist,
+        private GitHub $github
+    ) {
     }
 
     /**
@@ -47,17 +43,46 @@ TEXT;
         $currentStatus = $this->applicationVersion->getValue();
 
         try {
-            $release = strpos($currentStatus, '@') === false
-                ? $this->processStableRelease($currentStatus)
-                : $this->processDevRelease($currentStatus)
+            $release = str_contains($currentStatus, '@')
+                ? $this->processDevRelease($currentStatus)
+                : $this->processStableRelease($currentStatus)
             ;
-        } catch (OrigamiExceptionInterface $exception) {
+        } catch (OrigamiExceptionInterface) {
             return; // The checks on release availability must be non-blocking for the users.
         }
 
         if ($release) {
             $this->printMessage($io, $release, $currentStatus);
         }
+    }
+
+    /**
+     * Compares the current status to the latest available "dev" release.
+     *
+     * @throws PackagistException
+     * @throws GitHubException
+     */
+    private function processDevRelease(string $currentStatus): ?string
+    {
+        if (!$latestRelease = $this->packagist->getLatestDevRelease()) {
+            throw new PackagistException('Unable to retrieve the latest "dev" release.');
+        }
+
+        if (!$message = $this->github->getCommitMessage($latestRelease['source']['reference'])) {
+            throw new GitHubException('Unable to retrieve the commit message.');
+        }
+
+        $currentCommit = explode('@', $currentStatus)[1];
+        $releaseCommit = basename($message);
+
+        if (str_starts_with($releaseCommit, $currentCommit)) {
+            return null;
+        }
+
+        $matches = [];
+        preg_match('/^Update to version v(?<version>\d\.\d\.\d)/', $releaseCommit, $matches);
+
+        return $matches['version'] ?? substr($releaseCommit, 0, \strlen($currentCommit));
     }
 
     /**
@@ -80,40 +105,11 @@ TEXT;
     }
 
     /**
-     * Compares the current status to the latest available "dev" release.
-     *
-     * @throws PackagistException
-     * @throws GitHubException
-     */
-    private function processDevRelease(string $currentStatus): ?string
-    {
-        if (!$latestRelease = $this->packagist->getLatestDevRelease()) {
-            throw new PackagistException('Unable to retrieve the latest "dev" release.');
-        }
-
-        if (!$message = $this->github->getCommitMessage($latestRelease['source']['reference'])) {
-            throw new GitHubException('Unable to retrieve the commit message.');
-        }
-
-        $currentCommit = explode('@', $currentStatus)[1];
-        $releaseCommit = basename($message);
-
-        if (strpos($releaseCommit, $currentCommit) === 0) {
-            return null;
-        }
-
-        $matches = [];
-        preg_match('/^Update to version v(?<version>\d\.\d\.\d)/', $releaseCommit, $matches);
-
-        return $matches['version'] ?? substr($releaseCommit, 0, \strlen($currentCommit));
-    }
-
-    /**
      * Prints the upgrade suggestion in the console.
      */
     private function printMessage(OrigamiStyle $io, string $release, string $currentStatus): void
     {
-        $version = strpos($currentStatus, '@') !== false
+        $version = str_contains($currentStatus, '@')
             ? explode('@', $currentStatus)[1]
             : $currentStatus
         ;

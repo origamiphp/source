@@ -22,21 +22,13 @@ class UpdateCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Updates the configuration of a previously installed environment';
 
-    private ApplicationContext $applicationContext;
-    private EnvironmentBuilder $builder;
-    private ConfigurationFiles $configuration;
-
     public function __construct(
-        ApplicationContext $applicationContext,
-        EnvironmentBuilder $builder,
-        ConfigurationFiles $configuration,
-        ?string $name = null
+        private ApplicationContext $applicationContext,
+        private EnvironmentBuilder $builder,
+        private ConfigurationFiles $configuration,
+        string $name = null
     ) {
         parent::__construct($name);
-
-        $this->applicationContext = $applicationContext;
-        $this->builder = $builder;
-        $this->configuration = $configuration;
     }
 
     /**

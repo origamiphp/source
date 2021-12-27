@@ -14,11 +14,8 @@ class GitHub
 {
     private const GITHUB_COMMIT_URL = 'https://api.github.com/repos/ajardin/origami/commits/{ref}';
 
-    private HttpClientInterface $httpClient;
-
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(private HttpClientInterface $httpClient)
     {
-        $this->httpClient = $httpClient;
     }
 
     /**
@@ -31,7 +28,7 @@ class GitHub
         try {
             $response = $this->httpClient->request(Request::METHOD_GET, $url);
             $details = $response->toArray();
-        } catch (HttpExceptionInterface|TransportExceptionInterface|DecodingExceptionInterface $exception) {
+        } catch (HttpExceptionInterface|TransportExceptionInterface|DecodingExceptionInterface) {
             return null;
         }
 

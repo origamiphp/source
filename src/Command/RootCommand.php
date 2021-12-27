@@ -22,15 +22,12 @@ class RootCommand extends AbstractBaseCommand
     /** {@inheritdoc} */
     protected static $defaultDescription = 'Shows instructions for configuring your terminal to manually use Docker commands';
 
-    private ApplicationContext $applicationContext;
-    private Docker $docker;
-
-    public function __construct(ApplicationContext $currentContext, Docker $docker, ?string $name = null)
-    {
+    public function __construct(
+        private ApplicationContext $applicationContext,
+        private Docker $docker,
+        string $name = null
+    ) {
         parent::__construct($name);
-
-        $this->applicationContext = $currentContext;
-        $this->docker = $docker;
     }
 
     /**
