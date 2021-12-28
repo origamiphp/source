@@ -137,7 +137,7 @@ final class ConfigurationFilesTest extends TestCase
         $type = $environment->getType();
 
         $finder = new Finder();
-        $finder->files()->in(__DIR__."/../../../src/Resources/templates/{$type}");
+        $finder->files()->in(__DIR__."/../../../src/Resources/docker-templates/{$type}");
 
         foreach ($finder as $file) {
             $pathname = $file->getPathname();

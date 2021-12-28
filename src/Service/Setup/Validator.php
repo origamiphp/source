@@ -27,7 +27,7 @@ class Validator
         $filesystem = new Filesystem();
 
         $finder = new Finder();
-        $finder->files()->in($this->projectDir."/src/Resources/templates/{$environment->getType()}")->depth(0);
+        $finder->files()->in($this->projectDir."/src/Resources/docker-templates/{$environment->getType()}")->depth(0);
 
         foreach ($finder as $file) {
             $filename = str_replace(

@@ -100,7 +100,7 @@ class Database
             throw new DatabaseException('The database type in use is not yet supported.');
         }
 
-        $fragment = __DIR__."/../../Resources/fragments/{$type}.yml";
+        $fragment = __DIR__."/../../Resources/docker-fragments/{$type}.yml";
         if (!$service = file_get_contents($fragment)) {
             // @codeCoverageIgnoreStart
             throw new FilesystemException(sprintf("Unable to load the database fragment.\n%s", $fragment));
@@ -127,7 +127,7 @@ class Database
      * @throws InvalidConfigurationException
      * @throws FilesystemException
      */
-    private function getDatabaseType(): ?string
+    public function getDatabaseType(): ?string
     {
         $environment = $this->applicationContext->getActiveEnvironment();
         $configurationPath = $environment->getLocation().$this->installDir.'/docker-compose.yml';

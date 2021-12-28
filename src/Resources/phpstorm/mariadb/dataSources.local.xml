@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="origami" uuid="f250b268-6a0c-4fc1-89ae-5cd89e0aeb13">
+      <database-info product="MariaDB">
+        <extra-name-characters>#@</extra-name-characters>
+        <identifier-quote-string>`</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
+      <user-name>root</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node kind="schema" qname="origami" />
+        </introspection-scope>
+      </schema-mapping>
+    </data-source>
+  </component>
+</project>

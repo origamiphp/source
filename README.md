@@ -53,6 +53,9 @@ convenience; it is your configuration now. 😉
 
 ## 🪄 Available Commands
 
+### `origami configure:phpstorm`
+Copies the PhpStorm configuration associated to the current environment.
+
 ### `origami data`
 Shows real-time usage statistics of the running environment.
 
