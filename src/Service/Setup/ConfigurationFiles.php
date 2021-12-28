@@ -29,7 +29,7 @@ class ConfigurationFiles
      */
     public function install(EnvironmentEntity $environment, array $settings): void
     {
-        $source = __DIR__."/../../Resources/templates/{$environment->getType()}";
+        $source = __DIR__."/../../Resources/docker-templates/{$environment->getType()}";
         $destination = $environment->getLocation().self::INSTALLATION_DIRECTORY;
 
         $this->copyConfiguration($source, $destination);

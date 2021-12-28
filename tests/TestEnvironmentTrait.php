@@ -85,7 +85,7 @@ trait TestEnvironmentTrait
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
 
         if (is_dir(__DIR__.'/../src')) {
-            $source = __DIR__."/../src/Resources/templates/{$environment->getType()}/";
+            $source = __DIR__."/../src/Resources/docker-templates/{$environment->getType()}/";
         } else {
             throw new RuntimeException('Unable to find the environment configuration to install.');
         }

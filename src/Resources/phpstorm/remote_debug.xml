@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="origami" type="PhpRemoteDebugRunConfigurationType"
+                 factoryName="PHP Remote Debug" filter_connections="FILTER" server_name="origami" session_id="xdebug">
+    <method v="2" />
+  </configuration>
+</component>

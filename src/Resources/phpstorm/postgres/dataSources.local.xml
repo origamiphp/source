@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="origami" uuid="bc0040bc-5607-4d8d-b870-704efea934be">
+      <database-info product="PostgreSQL">
+        <identifier-quote-string>&quot;</identifier-quote-string>
+      </database-info>
+      <case-sensitivity plain-identifiers="lower" quoted-identifiers="exact" />
+      <user-name>postgres</user-name>
+      <schema-mapping>
+        <introspection-scope>
+          <node kind="database" qname="origami" />
+        </introspection-scope>
+      </schema-mapping>
+    </data-source>
+  </component>
+</project>

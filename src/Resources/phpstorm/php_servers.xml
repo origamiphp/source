@@ -1,0 +1,9 @@
+  <component name="PhpServers">
+    <servers>
+      <server host="localhost" id="4eff0656-b80d-4a12-ad43-0cfbed7ad087" name="origami" port="443" use_path_mappings="true">
+        <path_mappings>
+          <mapping local-root="$PROJECT_DIR$" remote-root="/var/www/html" />
+        </path_mappings>
+      </server>
+    </servers>
+  </component>
