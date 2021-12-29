@@ -171,6 +171,34 @@ class Docker
     }
 
     /**
+     * Removes only the database service of the current environment.
+     */
+    public function removeDatabaseService(): bool
+    {
+        $environment = $this->applicationContext->getActiveEnvironment();
+
+        $action = ['rm', '--stop', '--force', 'database'];
+        $command = array_merge(['docker', 'compose'], $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
+     * Removes only the database volume of the current environment.
+     */
+    public function removeDatabaseVolume(): bool
+    {
+        $environment = $this->applicationContext->getActiveEnvironment();
+
+        $action = ['rm', "{$environment->getType()}_{$environment->getName()}_database"];
+        $command = array_merge(['docker', 'volume'], $action);
+        $environmentVariables = $this->getEnvironmentVariables($environment);
+
+        return $this->processFactory->runForegroundProcess($command, $environmentVariables)->isSuccessful();
+    }
+
+    /**
      * Executes the native MySQL dump process.
      */
     public function dumpMysqlDatabase(string $path): bool

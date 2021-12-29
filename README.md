@@ -62,6 +62,9 @@ Shows real-time usage statistics of the running environment.
 ### `origami database:dump`
 Generates a database dump of the running environment.
 
+### `origami:database:reset` 
+Recreates the database volume of the running environment.
+
 ### `origami database:restore`
 Restores a database dump of the running environment.
 
