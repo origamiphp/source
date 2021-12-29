@@ -107,6 +107,12 @@ final class DockerTest extends TestCase
 
         // @see \App\Middleware\Binary\Docker::removeServices
         yield 'uninstall' => ['removeServices'];
+
+        // @see \App\Middleware\Binary\Docker::removeDatabaseService
+        yield 'remove database service' => ['removeDatabaseService'];
+
+        // @see \App\Middleware\Binary\Docker::removeDatabaseVolume
+        yield 'remove database volume' => ['removeDatabaseVolume'];
     }
 
     public function testItDisplaysResourceUsage(): void
