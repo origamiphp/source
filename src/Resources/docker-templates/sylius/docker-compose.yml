@@ -18,6 +18,7 @@ services:
 
   maildev:
     image: djfarrelly/maildev:latest
+    platform: linux/amd64
     depends_on:
       - php
     ports:
