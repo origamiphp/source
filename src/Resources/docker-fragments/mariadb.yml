@@ -1,8 +1,8 @@
   database:
     image: ${DOCKER_DATABASE_IMAGE}
     environment:
-      - MYSQL_ROOT_PASSWORD=YourPwdShouldBeLongAndSecure
-      - MYSQL_DATABASE=origami
+      - MARIADB_ROOT_PASSWORD=YourPwdShouldBeLongAndSecure
+      - MARIADB_DATABASE=origami
     ports:
       - "3306:3306"
     volumes:

@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Command\Database;
 
 use App\Command\Database\RestoreCommand;
-use App\Exception\DatabaseException;
+use App\Exception\InvalidConfigurationException;
 use App\Service\ApplicationContext;
+use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -27,12 +29,19 @@ final class RestoreCommandTest extends TestCase
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
-    public function testItExecutesProcessSuccessfully(): void
+    /**
+     * @dataProvider provideDatabaseConfigurations
+     */
+    public function testItTriggersDatabaseRestore(string $type, string $username, string $password, string $method): void
     {
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $database = $this->prophesize(Database::class);
+        $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
+
+        $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+        touch($backupFile);
 
         $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
@@ -46,11 +55,30 @@ final class RestoreCommandTest extends TestCase
         ;
 
         $database
-            ->restore(Argument::type('string'))
+            ->getDatabaseType()
             ->shouldBeCalledOnce()
+            ->willReturn($type)
         ;
 
-        $command = new RestoreCommand($applicationContext->reveal(), $database->reveal());
+        $database
+            ->getDatabaseUsername()
+            ->shouldBeCalledOnce()
+            ->willReturn($username)
+        ;
+
+        $database
+            ->getDatabasePassword()
+            ->shouldBeCalledOnce()
+            ->willReturn($password)
+        ;
+
+        $docker
+            ->{$method}('username', 'password', Argument::type('string'))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $command = new RestoreCommand($applicationContext->reveal(), $database->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
@@ -58,8 +86,12 @@ final class RestoreCommandTest extends TestCase
     {
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $database = $this->prophesize(Database::class);
+        $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
+
+        $backupFile = $this->location.'/'.Database::DEFAULT_BACKUP_FILENAME;
+        touch($backupFile);
 
         $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))
@@ -73,12 +105,19 @@ final class RestoreCommandTest extends TestCase
         ;
 
         $database
-            ->restore(Argument::type('string'))
+            ->getDatabaseType()
             ->shouldBeCalledOnce()
-            ->willThrow(DatabaseException::class)
+            ->willThrow(InvalidConfigurationException::class)
         ;
 
-        $command = new RestoreCommand($applicationContext->reveal(), $database->reveal());
+        $command = new RestoreCommand($applicationContext->reveal(), $database->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
+    }
+
+    public function provideDatabaseConfigurations(): Iterator
+    {
+        yield 'mariadb' => ['mariadb', 'username', 'password', 'restoreMysqlDatabase'];
+        yield 'mysql' => ['mysql', 'username', 'password', 'restoreMysqlDatabase'];
+        yield 'postgres' => ['postgres', 'username', 'password', 'restorePostgresDatabase'];
     }
 }

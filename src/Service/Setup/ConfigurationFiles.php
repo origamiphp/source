@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Service\Setup;
 
-use App\Exception\DatabaseException;
 use App\Exception\FilesystemException;
+use App\Exception\InvalidConfigurationException;
 use App\Exception\MkcertException;
 use App\Service\Middleware\Binary\Mkcert;
-use App\Service\Middleware\Database;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;
 
 class ConfigurationFiles
 {
     public const INSTALLATION_DIRECTORY = '/var/docker';
+    private const DATABASE_PLACEHOLDER = '# <== DATABASE PLACEHOLDER ==>';
 
-    public function __construct(
-        protected Mkcert $mkcert,
-        protected Database $database
-    ) {
+    public function __construct(private Mkcert $mkcert)
+    {
     }
 
     /**
      * Installs the Docker environment configuration.
      *
-     * @throws FilesystemException|MkcertException|DatabaseException
+     * @throws FilesystemException
+     * @throws MkcertException
+     * @throws InvalidConfigurationException
      */
     public function install(EnvironmentEntity $environment, array $settings): void
     {
@@ -35,7 +35,7 @@ class ConfigurationFiles
         $this->copyConfiguration($source, $destination);
 
         if (isset($settings['database'])) {
-            $this->database->replaceDatabasePlaceholder($settings['database'], $destination);
+            $this->replaceDatabasePlaceholder($settings['database'], $destination);
         }
 
         $this->fillDockerComposeYamlFile("{$destination}/docker-compose.yml", $settings);
@@ -72,6 +72,39 @@ class ConfigurationFiles
 
         // Create the directory where Mkcert will store locally-trusted development certificate for Nginx
         $filesystem->mkdir("{$destination}/nginx/certs");
+    }
+
+    /**
+     * Replaces the database placeholder in the environment configuration by the fragment associated to the given image.
+     *
+     * @throws FilesystemException
+     * @throws InvalidConfigurationException
+     */
+    public function replaceDatabasePlaceholder(string $image, string $destination): void
+    {
+        if (!preg_match('/^(?<type>[[:alpha:]]+(\/[[:alpha:]]+)?):.+$/', $image, $matches)) {
+            throw new InvalidConfigurationException('');
+        }
+
+        $fragment = __DIR__."/../../Resources/docker-fragments/{$matches['type']}.yml";
+        if (!$service = file_get_contents($fragment)) {
+            // @codeCoverageIgnoreStart
+            throw new FilesystemException(sprintf("Unable to load the database fragment.\n%s", $fragment));
+            // @codeCoverageIgnoreEnd
+        }
+
+        $filename = "{$destination}/docker-compose.yml";
+        if (!$content = file_get_contents($filename)) {
+            // @codeCoverageIgnoreStart
+            throw new FilesystemException(sprintf("Unable to load the configuration content.\n%s", $filename));
+            // @codeCoverageIgnoreEnd
+        }
+
+        if (!file_put_contents($filename, str_replace(self::DATABASE_PLACEHOLDER, rtrim($service), $content))) {
+            // @codeCoverageIgnoreStart
+            throw new FilesystemException(sprintf("Unable to update the environment configuration.\n%s", $filename));
+            // @codeCoverageIgnoreEnd
+        }
     }
 
     /**

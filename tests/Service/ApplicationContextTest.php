@@ -36,6 +36,7 @@ final class ApplicationContextTest extends TestCase
         $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
+        $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
@@ -52,10 +53,11 @@ final class ApplicationContextTest extends TestCase
             ->willReturn(true)
         ;
 
-        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal(), $installDir);
         $applicationContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
         static::assertSame($environment, $applicationContext->getActiveEnvironment());
         static::assertSame("{$environment->getType()}_{$environment->getName()}", $applicationContext->getProjectName());
+        static::assertIsArray($applicationContext->getEnvironmentConfiguration());
     }
 
     /**
@@ -68,6 +70,7 @@ final class ApplicationContextTest extends TestCase
         $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
+        $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
@@ -103,10 +106,11 @@ final class ApplicationContextTest extends TestCase
             ->willReturn(true)
         ;
 
-        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal(), $installDir);
         $applicationContext->loadEnvironment($input->reveal());
         static::assertSame($environment, $applicationContext->getActiveEnvironment());
         static::assertSame("{$environment->getType()}_{$environment->getName()}", $applicationContext->getProjectName());
+        static::assertIsArray($applicationContext->getEnvironmentConfiguration());
     }
 
     /**
@@ -119,6 +123,7 @@ final class ApplicationContextTest extends TestCase
         $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
+        $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
@@ -165,10 +170,11 @@ final class ApplicationContextTest extends TestCase
             ->willReturn(true)
         ;
 
-        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal(), $installDir);
         $applicationContext->loadEnvironment($input->reveal());
         static::assertSame($environment, $applicationContext->getActiveEnvironment());
         static::assertSame("{$environment->getType()}_{$environment->getName()}", $applicationContext->getProjectName());
+        static::assertIsArray($applicationContext->getEnvironmentConfiguration());
     }
 
     /**
@@ -180,6 +186,7 @@ final class ApplicationContextTest extends TestCase
         $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
+        $installDir = '/var/docker';
 
         $input = $this->prophesize(InputInterface::class);
         $input
@@ -194,7 +201,7 @@ final class ApplicationContextTest extends TestCase
             ->willReturn('.')
         ;
 
-        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal(), $installDir);
         $this->expectException(InvalidEnvironmentException::class);
         $applicationContext->loadEnvironment($input->reveal());
     }
@@ -209,6 +216,7 @@ final class ApplicationContextTest extends TestCase
         $database = $this->prophesize(ApplicationData::class);
         $processProxy = $this->prophesize(ProcessProxy::class);
         $validator = $this->prophesize(Validator::class);
+        $installDir = '/var/docker';
 
         $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
@@ -227,7 +235,7 @@ final class ApplicationContextTest extends TestCase
 
         $this->expectException(InvalidConfigurationException::class);
 
-        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal());
+        $applicationContext = new ApplicationContext($database->reveal(), $processProxy->reveal(), $validator->reveal(), $installDir);
         $applicationContext->loadEnvironment($this->prophesize(InputInterface::class)->reveal());
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Service\Setup;
 
 use App\Service\Middleware\Binary\Mkcert;
-use App\Service\Middleware\Database;
 use App\Service\Setup\ConfigurationFiles;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentEntity;
@@ -34,15 +33,9 @@ final class ConfigurationFilesTest extends TestCase
         array $settings = []
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
-        $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
-
-        $database
-            ->replaceDatabasePlaceholder(Argument::type('string'), Argument::type('string'))
-            ->shouldBeCalledOnce()
-        ;
 
         if ($domains = $environment->getDomains()) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -60,7 +53,7 @@ final class ConfigurationFilesTest extends TestCase
             ;
         }
 
-        $installer = new ConfigurationFiles($mkcert->reveal(), $database->reveal());
+        $installer = new ConfigurationFiles($mkcert->reveal());
         $installer->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination);
@@ -76,16 +69,10 @@ final class ConfigurationFilesTest extends TestCase
         array $settings = []
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
-        $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
-
-        $database
-            ->replaceDatabasePlaceholder(Argument::type('string'), Argument::type('string'))
-            ->shouldBeCalledOnce()
-        ;
 
         if ($domains = $environment->getDomains()) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
@@ -103,7 +90,7 @@ final class ConfigurationFilesTest extends TestCase
             ;
         }
 
-        $updater = new ConfigurationFiles($mkcert->reveal(), $database->reveal());
+        $updater = new ConfigurationFiles($mkcert->reveal());
         $updater->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination);
@@ -118,7 +105,6 @@ final class ConfigurationFilesTest extends TestCase
         ?string $domains = null
     ): void {
         $mkcert = $this->prophesize(Mkcert::class);
-        $database = $this->prophesize(Database::class);
 
         $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
         $this->installEnvironmentConfiguration($environment);
@@ -126,7 +112,7 @@ final class ConfigurationFilesTest extends TestCase
 
         static::assertDirectoryExists($destination);
 
-        $uninstaller = new ConfigurationFiles($mkcert->reveal(), $database->reveal());
+        $uninstaller = new ConfigurationFiles($mkcert->reveal());
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);

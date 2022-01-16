@@ -68,6 +68,7 @@ class UpdateCommand extends AbstractBaseCommand
                 $this->configuration->install($environment, $userInputs->getSettings());
 
                 $io->success('Environment successfully updated.');
+                $io->info('If you changed the database service, please consider using the "origami database:reset" command.');
             }
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());

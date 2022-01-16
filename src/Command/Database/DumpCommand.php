@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Command\Database;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\DatabaseException;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
+use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
@@ -24,6 +28,7 @@ class DumpCommand extends AbstractBaseCommand
     public function __construct(
         private ApplicationContext $applicationContext,
         private Database $database,
+        private Docker $docker,
         string $name = null
     ) {
         parent::__construct($name);
@@ -58,7 +63,7 @@ class DumpCommand extends AbstractBaseCommand
             }
 
             $path = ltrim($input->getArgument('path'), '/');
-            $this->database->dump($environment->getLocation().'/'.$path);
+            $this->dump($environment->getLocation().'/'.$path);
 
             $io->success('Database dump successfully executed.');
         } catch (OrigamiExceptionInterface $exception) {
@@ -68,5 +73,39 @@ class DumpCommand extends AbstractBaseCommand
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Triggers the database dump process according to the database type.
+     *
+     * @throws DatabaseException
+     * @throws InvalidConfigurationException
+     * @throws FilesystemException
+     */
+    private function dump(string $path): void
+    {
+        switch ($this->database->getDatabaseType()) {
+            case 'mariadb':
+            case 'mysql':
+                $username = $this->database->getDatabaseUsername();
+                $password = $this->database->getDatabasePassword();
+
+                if (!$this->docker->dumpMysqlDatabase($username, $password, $path)) {
+                    throw new DatabaseException('Unable to complete the MySQL dump process.');
+                }
+                break;
+
+            case 'postgres':
+                $username = $this->database->getDatabaseUsername();
+                $password = $this->database->getDatabasePassword();
+
+                if (!$this->docker->dumpPostgresDatabase($username, $password, $path)) {
+                    throw new DatabaseException('Unable to complete the Postgres dump process.');
+                }
+                break;
+
+            default:
+                throw new DatabaseException('The database type in use is not yet supported.');
+        }
     }
 }

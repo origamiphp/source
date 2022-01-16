@@ -201,14 +201,14 @@ class Docker
     /**
      * Executes the native MySQL dump process.
      */
-    public function dumpMysqlDatabase(string $path): bool
+    public function dumpMysqlDatabase(string $username, string $password, string $path): bool
     {
         $environment = $this->applicationContext->getActiveEnvironment();
 
         $command = str_replace(
-            ['{container}', '{password}', '{database}', '{filename}'],
-            ['$(docker compose ps --quiet database)', Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
-            'docker exec --interactive {container} mysqldump --user=root --password={password} {database} > {filename}'
+            ['{container}', '{username}', '{password}', '{database}', '{filename}'],
+            ['$(docker compose ps --quiet database)', $username, $password, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} mysqldump --user={username} --password={password} {database} > {filename}'
         );
         $environmentVariables = $this->getEnvironmentVariables($environment);
 
@@ -218,14 +218,14 @@ class Docker
     /**
      * Executes the native Postgres dump process.
      */
-    public function dumpPostgresDatabase(string $path): bool
+    public function dumpPostgresDatabase(string $username, string $password, string $path): bool
     {
         $environment = $this->applicationContext->getActiveEnvironment();
 
         $command = str_replace(
-            ['{container}', '{password}', '{database}', '{filename}'],
-            ['$(docker compose ps --quiet database)', Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
-            'docker exec --interactive {container} pg_dump --clean --dbname=postgresql://postgres:{password}@127.0.0.1:5432/{database} > {filename}'
+            ['{container}', '{username}', '{password}', '{database}', '{filename}'],
+            ['$(docker compose ps --quiet database)', $username, $password, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} pg_dump --clean --dbname=postgresql://{username}:{password}@127.0.0.1:5432/{database} > {filename}'
         );
 
         $environmentVariables = $this->getEnvironmentVariables($environment);
@@ -236,14 +236,14 @@ class Docker
     /**
      * Executes the native MySQL restore process.
      */
-    public function restoreMysqlDatabase(string $path): bool
+    public function restoreMysqlDatabase(string $username, string $password, string $path): bool
     {
         $environment = $this->applicationContext->getActiveEnvironment();
 
         $command = str_replace(
-            ['{container}', '{password}', '{database}', '{filename}'],
-            ['$(docker compose ps --quiet database)', Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
-            'docker exec --interactive {container} mysql --user=root --password={password} {database} < {filename}'
+            ['{container}', '{username}', '{password}', '{database}', '{filename}'],
+            ['$(docker compose ps --quiet database)', $username, $password, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} mysql --user={username} --password={password} {database} < {filename}'
         );
         $environmentVariables = $this->getEnvironmentVariables($environment);
 
@@ -253,14 +253,14 @@ class Docker
     /**
      * Executes the native Postgres restore process.
      */
-    public function restorePostgresDatabase(string $path): bool
+    public function restorePostgresDatabase(string $username, string $password, string $path): bool
     {
         $environment = $this->applicationContext->getActiveEnvironment();
 
         $command = str_replace(
-            ['{container}', '{password}', '{database}', '{filename}'],
-            ['$(docker compose ps --quiet database)', Database::DEFAULT_SERVICE_PASSWORD, Database::DEFAULT_SERVICE_DATABASE, $path],
-            'docker exec --interactive {container} psql --dbname=postgresql://postgres:{password}@127.0.0.1:5432/{database} < {filename}'
+            ['{container}', '{username}', '{password}', '{database}', '{filename}'],
+            ['$(docker compose ps --quiet database)', $username, $password, Database::DEFAULT_SERVICE_DATABASE, $path],
+            'docker exec --interactive {container} psql --dbname=postgresql://{username}:{password}@127.0.0.1:5432/{database} < {filename}'
         );
         $environmentVariables = $this->getEnvironmentVariables($environment);
 

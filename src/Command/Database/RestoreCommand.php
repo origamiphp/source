@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace App\Command\Database;
 
 use App\Command\AbstractBaseCommand;
+use App\Exception\DatabaseException;
+use App\Exception\FilesystemException;
+use App\Exception\InvalidConfigurationException;
 use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
+use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Service\Wrapper\OrigamiStyle;
 use Symfony\Component\Console\Command\Command;
@@ -24,6 +28,7 @@ class RestoreCommand extends AbstractBaseCommand
     public function __construct(
         private ApplicationContext $applicationContext,
         private Database $database,
+        private Docker $docker,
         string $name = null
     ) {
         parent::__construct($name);
@@ -58,7 +63,7 @@ class RestoreCommand extends AbstractBaseCommand
             }
 
             $path = ltrim($input->getArgument('path'), '/');
-            $this->database->restore($environment->getLocation().'/'.$path);
+            $this->restore($environment->getLocation().'/'.$path);
 
             $io->success('Database restore successfully executes.');
         } catch (OrigamiExceptionInterface $exception) {
@@ -68,5 +73,43 @@ class RestoreCommand extends AbstractBaseCommand
         }
 
         return Command::SUCCESS;
+    }
+
+    /**
+     * Triggers the database restore process according to the database type.
+     *
+     * @throws DatabaseException
+     * @throws InvalidConfigurationException
+     * @throws FilesystemException
+     */
+    private function restore(string $path): void
+    {
+        if (!is_file($path)) {
+            throw new DatabaseException('Unable to find the backup file to restore.');
+        }
+
+        switch ($this->database->getDatabaseType()) {
+            case 'mariadb':
+            case 'mysql':
+                $username = $this->database->getDatabaseUsername();
+                $password = $this->database->getDatabasePassword();
+
+                if (!$this->docker->restoreMysqlDatabase($username, $password, $path)) {
+                    throw new DatabaseException('Unable to complete the MySQL restore process.');
+                }
+                break;
+
+            case 'postgres':
+                $username = $this->database->getDatabaseUsername();
+                $password = $this->database->getDatabasePassword();
+
+                if (!$this->docker->restorePostgresDatabase($username, $password, $path)) {
+                    throw new DatabaseException('Unable to complete the Postgres restore process.');
+                }
+                break;
+
+            default:
+                throw new DatabaseException('The database type in use is not yet supported.');
+        }
     }
 }
