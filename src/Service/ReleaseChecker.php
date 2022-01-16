@@ -79,7 +79,6 @@ TEXT;
             return null;
         }
 
-        $matches = [];
         preg_match('/^Update to version v(?<version>\d\.\d\.\d)/', $releaseCommit, $matches);
 
         return $matches['version'] ?? substr($releaseCommit, 0, \strlen($currentCommit));

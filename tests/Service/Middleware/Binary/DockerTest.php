@@ -313,7 +313,7 @@ final class DockerTest extends TestCase
         ;
 
         $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
-        static::assertTrue($docker->dumpMysqlDatabase('/path/to/dump_file.sql'));
+        static::assertTrue($docker->dumpMysqlDatabase('username', 'password', '/path/to/dump_file.sql'));
     }
 
     public function testItRestoresMysqlDatabase(): void
@@ -351,7 +351,7 @@ final class DockerTest extends TestCase
         ;
 
         $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
-        static::assertTrue($docker->restoreMysqlDatabase('/path/to/dump_file.sql'));
+        static::assertTrue($docker->restoreMysqlDatabase('username', 'password', '/path/to/dump_file.sql'));
     }
 
     public function testItDumpsPostgresDatabase(): void
@@ -389,7 +389,7 @@ final class DockerTest extends TestCase
         ;
 
         $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
-        static::assertTrue($docker->dumpPostgresDatabase('/path/to/dump_file.sql'));
+        static::assertTrue($docker->dumpPostgresDatabase('username', 'password', '/path/to/dump_file.sql'));
     }
 
     public function testItRestoresPostgresDatabase(): void
@@ -427,6 +427,6 @@ final class DockerTest extends TestCase
         ;
 
         $docker = new Docker($applicationContext->reveal(), $processFactory->reveal(), $installDir);
-        static::assertTrue($docker->restorePostgresDatabase('/path/to/dump_file.sql'));
+        static::assertTrue($docker->restorePostgresDatabase('username', 'password', '/path/to/dump_file.sql'));
     }
 }

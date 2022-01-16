@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\Command\Database;
 
 use App\Command\Database\DumpCommand;
-use App\Exception\DatabaseException;
+use App\Exception\InvalidConfigurationException;
 use App\Service\ApplicationContext;
+use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
+use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -27,10 +29,14 @@ final class DumpCommandTest extends TestCase
     use TestCommandTrait;
     use TestEnvironmentTrait;
 
-    public function testItExecutesProcessSuccessfully(): void
+    /**
+     * @dataProvider provideDatabaseConfigurations
+     */
+    public function testItTriggersDatabaseDump(string $type, string $username, string $password, string $method): void
     {
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $database = $this->prophesize(Database::class);
+        $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
@@ -46,11 +52,30 @@ final class DumpCommandTest extends TestCase
         ;
 
         $database
-            ->dump(Argument::type('string'))
+            ->getDatabaseType()
             ->shouldBeCalledOnce()
+            ->willReturn($type)
         ;
 
-        $command = new DumpCommand($applicationContext->reveal(), $database->reveal());
+        $database
+            ->getDatabaseUsername()
+            ->shouldBeCalledOnce()
+            ->willReturn($username)
+        ;
+
+        $database
+            ->getDatabasePassword()
+            ->shouldBeCalledOnce()
+            ->willReturn($password)
+        ;
+
+        $docker
+            ->{$method}('username', 'password', Argument::type('string'))
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
+
+        $command = new DumpCommand($applicationContext->reveal(), $database->reveal(), $docker->reveal());
         static::assertResultIsSuccessful($command, $environment);
     }
 
@@ -58,6 +83,7 @@ final class DumpCommandTest extends TestCase
     {
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $database = $this->prophesize(Database::class);
+        $docker = $this->prophesize(Docker::class);
 
         $environment = $this->createEnvironment();
 
@@ -73,12 +99,19 @@ final class DumpCommandTest extends TestCase
         ;
 
         $database
-            ->dump(Argument::type('string'))
+            ->getDatabaseType()
             ->shouldBeCalledOnce()
-            ->willThrow(DatabaseException::class)
+            ->willThrow(InvalidConfigurationException::class)
         ;
 
-        $command = new DumpCommand($applicationContext->reveal(), $database->reveal());
+        $command = new DumpCommand($applicationContext->reveal(), $database->reveal(), $docker->reveal());
         static::assertExceptionIsHandled($command);
+    }
+
+    public function provideDatabaseConfigurations(): Iterator
+    {
+        yield 'mariadb' => ['mariadb', 'username', 'password', 'dumpMysqlDatabase'];
+        yield 'mysql' => ['mysql', 'username', 'password', 'dumpMysqlDatabase'];
+        yield 'postgres' => ['postgres', 'username', 'password', 'dumpPostgresDatabase'];
     }
 }

@@ -145,7 +145,6 @@ class EnvironmentBuilder
         $lowerBoundVersion = $versionParser->parseConstraints($assumption)->getLowerBound()->getVersion();
         $version = $versionParser->normalize($lowerBoundVersion);
 
-        $matches = [];
         if (preg_match('/(?<version>\d+.\d+)/', $version, $matches)) {
             $version = $matches['version'];
         }

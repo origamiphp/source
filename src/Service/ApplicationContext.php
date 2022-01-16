@@ -11,15 +11,18 @@ use App\Service\Setup\Validator;
 use App\Service\Wrapper\ProcessProxy;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class ApplicationContext
 {
     private EnvironmentEntity $environment;
+    private ?array $configuration = null;
 
     public function __construct(
         private ApplicationData $applicationData,
         private ProcessProxy $processProxy,
-        private Validator $validator
+        private Validator $validator,
+        private string $installDir,
     ) {
     }
 
@@ -73,6 +76,34 @@ class ApplicationContext
     public function getProjectName(): string
     {
         return "{$this->environment->getType()}_{$this->environment->getName()}";
+    }
+
+    /**
+     * Retrieves the configuration from the environment "docker-compose.yml" file.
+     *
+     * @throws FilesystemException
+     *
+     * @return array[]
+     */
+    public function getEnvironmentConfiguration(): array
+    {
+        if ($this->configuration) {
+            return $this->configuration;
+        }
+
+        $environment = $this->getActiveEnvironment();
+        $configurationPath = $environment->getLocation().$this->installDir.'/docker-compose.yml';
+
+        if (!is_file($configurationPath)) {
+            throw new FilesystemException(sprintf("Unable to find the file.\n%s", $configurationPath));
+        }
+
+        $configuration = Yaml::parseFile($configurationPath);
+        if (!\is_array($configuration)) {
+            throw new FilesystemException(sprintf("Unable to parse the file content as YAML.\n%s", $configurationPath));
+        }
+
+        return $this->configuration = $configuration;
     }
 
     /**
