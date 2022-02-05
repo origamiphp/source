@@ -10,18 +10,18 @@ use App\Service\ApplicationContext;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:update',
+    description: 'Updates the configuration of a previously installed environment'
+)]
 class UpdateCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:update';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Updates the configuration of a previously installed environment';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private EnvironmentBuilder $builder,

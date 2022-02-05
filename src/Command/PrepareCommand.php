@@ -9,18 +9,18 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:prepare',
+    description: 'Prepares Docker images (i.e. pull and build) of a previously installed environment'
+)]
 class PrepareCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:prepare';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Prepares Docker images (i.e. pull and build) of a previously installed environment';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Docker $docker,

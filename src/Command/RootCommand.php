@@ -9,19 +9,19 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\HttpFoundation\Request;
 
+#[AsCommand(
+    name: 'origami:root',
+    description: 'Shows instructions for configuring your terminal to manually use Docker commands'
+)]
 class RootCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:root';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows instructions for configuring your terminal to manually use Docker commands';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Docker $docker,

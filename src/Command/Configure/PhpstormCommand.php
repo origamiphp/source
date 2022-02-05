@@ -15,18 +15,18 @@ use App\ValueObject\EnvironmentEntity;
 use DOMDocument;
 use DOMElement;
 use DOMXPath;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
+#[AsCommand(
+    name: 'origami:configure:phpstorm',
+    description: 'Copies the PhpStorm configuration associated to the current environment'
+)]
 class PhpstormCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:configure:phpstorm';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Copies the PhpStorm configuration associated to the current environment';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Database $database,

@@ -13,18 +13,18 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:database:restore',
+    description: 'Restores a database dump of the running environment'
+)]
 class RestoreCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:database:restore';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Restores a database dump of the running environment';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Database $database,

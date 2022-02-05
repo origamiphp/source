@@ -8,19 +8,19 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:logs',
+    description: 'Shows the logs generated in real-time by the running environment'
+)]
 class LogsCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:logs';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows the logs generated in real-time by the running environment';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Docker $docker,

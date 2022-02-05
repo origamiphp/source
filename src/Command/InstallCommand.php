@@ -10,18 +10,18 @@ use App\Service\Setup\ConfigurationFiles;
 use App\Service\Setup\EnvironmentBuilder;
 use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+#[AsCommand(
+    name: 'origami:install',
+    description: 'Installs a local Docker environment for the project in the current directory'
+)]
 class InstallCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:install';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Installs a local Docker environment for the project in the current directory';
-
     public function __construct(
         private EnvironmentBuilder $builder,
         private ConfigurationFiles $configuration,

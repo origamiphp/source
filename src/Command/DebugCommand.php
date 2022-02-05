@@ -13,17 +13,17 @@ use App\Service\Middleware\Binary\Mkcert;
 use App\Service\Middleware\Binary\Mutagen;
 use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:debug',
+    description: 'Shows system information and the configuration of the current environment'
+)]
 class DebugCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:debug';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows system information and the configuration of the current environment';
-
     public function __construct(
         private Docker $docker,
         private Mutagen $mutagen,
