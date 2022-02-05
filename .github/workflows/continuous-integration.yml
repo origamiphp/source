@@ -67,4 +67,6 @@ jobs:
           verbose: true
 
       - name: 'Compiles the project into a PHAR archive'
-        run: make box
+        run: |
+          composer global require humbug/box
+          make box

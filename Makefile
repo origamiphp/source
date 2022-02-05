@@ -9,9 +9,9 @@ export TTY := $(shell if [ -z "$${GITHUB_ACTIONS}" ]; then echo "--tty"; else ec
 
 box: ## Compiles the project into a PHAR archive
 	@composer dump-env prod
-	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app" ajardin/humbug-box validate --verbose --ansi
-	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app" ajardin/humbug-box compile --verbose --ansi
-	@docker run --rm --interactive $${TTY} --volume="$$(pwd):/app" ajardin/humbug-box info --verbose --ansi
+	@box validate --verbose --ansi
+	@box compile --verbose --ansi
+	@box info --verbose --ansi
 	@php build/origami.phar --version
 	@rm .env.local.php
 .PHONY: box
