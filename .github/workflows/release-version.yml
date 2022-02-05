@@ -44,7 +44,9 @@ jobs:
           composer install --optimize-autoloader --classmap-authoritative --ansi
 
       - name: 'Compiles the project into a PHAR archive'
-        run: make box
+        run: |
+          composer global require humbug/box
+          make box
 
       - name: 'Prepares the local Git repository which contains the PHAR archive'
         run: |
