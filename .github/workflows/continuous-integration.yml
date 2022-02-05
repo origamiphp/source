@@ -25,7 +25,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           ini-values: phar.readonly=0
-          extensions: intl, mbstring, xml
+          extensions: ctype, intl, mbstring, xml
           coverage: pcov
 
       - name: 'Installs the Composer dependencies'

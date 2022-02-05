@@ -19,7 +19,8 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.0'
-          extensions: intl, mbstring, xml
+          ini-values: phar.readonly=0
+          extensions: ctype, intl, mbstring, xml
           coverage: none
         env:
           fail-fast: true
