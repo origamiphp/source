@@ -10,18 +10,18 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+#[AsCommand(
+    name: 'origami:stop',
+    description: 'Stops an environment previously started'
+)]
 class StopCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:stop';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Stops an environment previously started';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Docker $docker,

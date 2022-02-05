@@ -6,18 +6,18 @@ namespace App\Command;
 
 use App\Service\ApplicationData;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:registry',
+    description: 'Shows the list and status of all previously installed environments'
+)]
 class RegistryCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:registry';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows the list and status of all previously installed environments';
-
     public function __construct(
         private ApplicationData $applicationData,
         string $name = null

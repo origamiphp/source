@@ -9,17 +9,17 @@ use App\Exception\OrigamiExceptionInterface;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
+#[AsCommand(
+    name: 'origami:data',
+    description: 'Shows real-time usage statistics of the running environment'
+)]
 class DataCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:data';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Shows real-time usage statistics of the running environment';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Docker $docker,

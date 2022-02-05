@@ -11,19 +11,19 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Setup\ConfigurationFiles;
 use App\Service\Wrapper\OrigamiStyle;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+#[AsCommand(
+    name: 'origami:uninstall',
+    description: 'Uninstalls an environment by deleting all Docker data and associated configuration'
+)]
 class UninstallCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:uninstall';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Uninstalls an environment by deleting all Docker data and associated configuration';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private Docker $docker,

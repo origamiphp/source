@@ -11,19 +11,19 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\OrigamiStyle;
 use App\Service\Wrapper\ProcessProxy;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
+#[AsCommand(
+    name: 'origami:start',
+    description: 'Starts an environment previously installed'
+)]
 class StartCommand extends AbstractBaseCommand
 {
-    /** {@inheritdoc} */
-    protected static $defaultName = 'origami:start';
-    /** {@inheritdoc} */
-    protected static $defaultDescription = 'Starts an environment previously installed';
-
     public function __construct(
         private ApplicationContext $applicationContext,
         private ProcessProxy $processProxy,
