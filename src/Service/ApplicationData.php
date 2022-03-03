@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\ValueObject\EnvironmentCollection;
 use App\ValueObject\EnvironmentEntity;
 use Ergebnis\Environment\Variables;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -16,14 +18,18 @@ use Symfony\Component\Serializer\Serializer;
 
 class ApplicationData
 {
-    public const DATA_FILENAME = '.origami';
+    /** @deprecated */
+    public const OLDER_DATA_FILENAME = '.origami';
+
+    public const DATA_FILE_FOLDER = '.config'.\DIRECTORY_SEPARATOR.'origami';
+    public const DATA_FILE_PATH = self::DATA_FILE_FOLDER.\DIRECTORY_SEPARATOR.'.environments';
 
     private string $path;
     private Serializer $serializer;
     private EnvironmentCollection $environments;
 
     /**
-     * @throws FilesystemException
+     * @throws IOException
      */
     public function __construct(Variables $systemVariables)
     {
@@ -32,9 +38,36 @@ class ApplicationData
             : $systemVariables->get('HOMEDRIVE').$systemVariables->get('HOMEPATH')              // @codeCoverageIgnore
         ;
 
-        $this->path = $home.\DIRECTORY_SEPARATOR.self::DATA_FILENAME;
-        if (!@is_file($this->path) && !@touch($this->path)) {
-            throw new FilesystemException('Unable to create the data file.');           // @codeCoverageIgnore
+        $olderPath = $home.\DIRECTORY_SEPARATOR.self::OLDER_DATA_FILENAME;
+
+        $directoryPath = $home.\DIRECTORY_SEPARATOR.self::DATA_FILE_FOLDER;
+        $this->path = $home.\DIRECTORY_SEPARATOR.self::DATA_FILE_PATH;
+
+        $filesystem = new Filesystem();
+
+        if (!$filesystem->exists($directoryPath)) {
+            try {
+                $filesystem->mkdir($directoryPath);
+            } catch (IOExceptionInterface) {
+                throw new IOException('Unable to create the directory '.$directoryPath);
+            }
+        }
+
+        /* @deprecated */
+        if ($filesystem->exists($olderPath)) {
+            try {
+                $filesystem->rename($olderPath, $this->path);
+            } catch (IOExceptionInterface) {
+                throw new IOException(sprintf('Unable to rename the data file from %s to %s ', $olderPath, $this->path));
+            }
+        }
+
+        if (!$filesystem->exists($this->path)) {
+            try {
+                $filesystem->touch($this->path);
+            } catch (IOExceptionInterface) {
+                throw new IOException('Unable to create the data file at '.$this->path);
+            }
         }
 
         $this->serializer = new Serializer([new ObjectNormalizer(), new ArrayDenormalizer()], [new JsonEncoder()]);
