@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Tests\Service;
 
-use App\Exception\FilesystemException;
 use App\Exception\InvalidEnvironmentException;
 use App\Service\ApplicationData;
 use App\Tests\TestEnvironmentTrait;
@@ -12,6 +11,7 @@ use App\ValueObject\EnvironmentCollection;
 use App\ValueObject\EnvironmentEntity;
 use Ergebnis\Environment\FakeVariables;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Filesystem\Exception\IOException;
 
 /**
  * @internal
@@ -22,9 +22,6 @@ final class ApplicationDataTest extends TestCase
 {
     use TestEnvironmentTrait;
 
-    /**
-     * @throws FilesystemException
-     */
     public function testItCreatesTheDatabaseFile(): void
     {
         static::assertFileDoesNotExist($this->getDatabasePath());
@@ -35,19 +32,33 @@ final class ApplicationDataTest extends TestCase
         static::assertFileExists($this->getDatabasePath());
     }
 
+    /**
+     * @deprecated
+     */
+    public function testItMovesTheOlderDatabaseFile(): void
+    {
+        touch($this->getOlderDatabasePath());
+
+        static::assertFileExists($this->getOlderDatabasePath());
+
+        $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
+        new ApplicationData($fakeVariables);
+
+        static::assertFileDoesNotExist($this->getOlderDatabasePath());
+        static::assertFileExists($this->getDatabasePath());
+    }
+
     public function testItThrowsAnExceptionIfTheDatabaseIsNotCreated(): void
     {
-        $this->expectException(FilesystemException::class);
+        $this->expectException(IOException::class);
 
         $fakeVariables = FakeVariables::fromArray(['HOME' => '/fake/location']);
         new ApplicationData($fakeVariables);
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function testItRetrievesTheEnvironmentList(): void
     {
+        mkdir($this->getDatabaseFolder(), 0777, true);
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new ApplicationData($fakeVariables);
@@ -78,11 +89,9 @@ final class ApplicationDataTest extends TestCase
         static::assertCount(2, $environments);
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function testItRetrievesTheActiveEnvironment(): void
     {
+        mkdir($this->getDatabaseFolder(), 0777, true);
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new ApplicationData($fakeVariables);
@@ -105,11 +114,9 @@ final class ApplicationDataTest extends TestCase
         static::assertNull($database->getActiveEnvironment());
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function testItRetrievesAnEnvironmentByName(): void
     {
+        mkdir($this->getDatabaseFolder(), 0777, true);
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new ApplicationData($fakeVariables);
@@ -127,11 +134,9 @@ final class ApplicationDataTest extends TestCase
         static::assertNull($database->getEnvironmentByName('nothing'));
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function testItRetrievesAnEnvironmentByLocation(): void
     {
+        mkdir($this->getDatabaseFolder(), 0777, true);
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new ApplicationData($fakeVariables);
@@ -151,10 +156,10 @@ final class ApplicationDataTest extends TestCase
 
     /**
      * @throws InvalidEnvironmentException
-     * @throws FilesystemException
      */
     public function testItAddsAnEnvironment(): void
     {
+        mkdir($this->getDatabaseFolder(), 0777, true);
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new ApplicationData($fakeVariables);
@@ -173,11 +178,9 @@ final class ApplicationDataTest extends TestCase
         static::assertJsonFileEqualsJsonFile($this->getFakeDatabaseAfterAdditionPath(), $this->getDatabasePath());
     }
 
-    /**
-     * @throws FilesystemException
-     */
     public function testItRemovesAnEnvironment(): void
     {
+        mkdir($this->getDatabaseFolder(), 0777, true);
         copy($this->getFakeDatabasePath(), $this->getDatabasePath());
         $fakeVariables = FakeVariables::fromArray(['HOME' => $this->location]);
         $database = new ApplicationData($fakeVariables);
@@ -201,7 +204,25 @@ final class ApplicationDataTest extends TestCase
      */
     private function getDatabasePath(): string
     {
-        return $this->location.\DIRECTORY_SEPARATOR.ApplicationData::DATA_FILENAME;
+        return $this->location.\DIRECTORY_SEPARATOR.ApplicationData::DATA_FILE_PATH;
+    }
+
+    /**
+     * Retrieves the older path to the test database.
+     *
+     * @deprecated
+     */
+    private function getOlderDatabasePath(): string
+    {
+        return $this->location.\DIRECTORY_SEPARATOR.ApplicationData::OLDER_DATA_FILENAME;
+    }
+
+    /**
+     * Retrieves the folder to the test database.
+     */
+    private function getDatabaseFolder(): string
+    {
+        return $this->location.\DIRECTORY_SEPARATOR.ApplicationData::DATA_FILE_FOLDER;
     }
 
     /**
