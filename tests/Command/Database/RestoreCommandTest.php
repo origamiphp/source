@@ -9,13 +9,14 @@ use App\Exception\InvalidConfigurationException;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
-use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @internal
@@ -26,7 +27,6 @@ use Symfony\Component\Console\Input\InputInterface;
 final class RestoreCommandTest extends TestCase
 {
     use ProphecyTrait;
-    use TestCommandTrait;
     use TestEnvironmentTrait;
 
     /**
@@ -79,7 +79,13 @@ final class RestoreCommandTest extends TestCase
         ;
 
         $command = new RestoreCommand($applicationContext->reveal(), $database->reveal(), $docker->reveal());
-        static::assertResultIsSuccessful($command, $environment);
+        $commandTester = new CommandTester($command);
+        $commandTester->setInputs(['yes']);
+        $commandTester->execute([]);
+
+        $display = $commandTester->getDisplay();
+        static::assertStringContainsString('[OK] ', $display);
+        static::assertSame(Command::SUCCESS, $commandTester->getStatusCode());
     }
 
     public function testItGracefullyExitsWhenAnExceptionOccurred(): void
@@ -111,7 +117,13 @@ final class RestoreCommandTest extends TestCase
         ;
 
         $command = new RestoreCommand($applicationContext->reveal(), $database->reveal(), $docker->reveal());
-        static::assertExceptionIsHandled($command);
+        $commandTester = new CommandTester($command);
+        $commandTester->setInputs(['yes']);
+        $commandTester->execute([]);
+
+        $display = $commandTester->getDisplay();
+        static::assertStringContainsString('[ERROR] ', $display);
+        static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
     public function provideDatabaseConfigurations(): Iterator
