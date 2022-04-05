@@ -87,6 +87,7 @@ class ApplicationData
      */
     public function getActiveEnvironment(): ?EnvironmentEntity
     {
+        /** @var EnvironmentEntity $environment */
         foreach ($this->environments as $environment) {
             if ($environment->isActive()) {
                 return $environment;
@@ -101,6 +102,7 @@ class ApplicationData
      */
     public function getEnvironmentByName(string $name): ?EnvironmentEntity
     {
+        /** @var EnvironmentEntity $environment */
         foreach ($this->environments as $environment) {
             if ($name === $environment->getName()) {
                 return $environment;
@@ -115,6 +117,7 @@ class ApplicationData
      */
     public function getEnvironmentByLocation(string $location): ?EnvironmentEntity
     {
+        /** @var EnvironmentEntity $environment */
         foreach ($this->environments as $environment) {
             if ($location === $environment->getLocation()) {
                 return $environment;

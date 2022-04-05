@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Service\ApplicationData;
 use App\Service\Wrapper\OrigamiStyle;
+use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\Table;
@@ -37,6 +38,7 @@ class RegistryCommand extends AbstractBaseCommand
             $table = new Table($output);
             $table->setHeaders(['Name', 'Location', 'Type', 'Domains', 'Status']);
 
+            /** @var EnvironmentEntity $environment */
             foreach ($environments as $environment) {
                 $table->addRow([
                     $environment->getName(),
