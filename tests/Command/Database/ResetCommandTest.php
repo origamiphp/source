@@ -78,6 +78,19 @@ final class ResetCommandTest extends TestCase
         $applicationContext = $this->prophesize(ApplicationContext::class);
         $docker = $this->prophesize(Docker::class);
 
+        $environment = $this->createEnvironment();
+
+        $applicationContext
+            ->loadEnvironment(Argument::type(InputInterface::class))
+            ->shouldBeCalledOnce()
+        ;
+
+        $applicationContext
+            ->getActiveEnvironment()
+            ->shouldBeCalledOnce()
+            ->willReturn($environment)
+        ;
+
         $command = new ResetCommand($applicationContext->reveal(), $docker->reveal());
         $commandTester = new CommandTester($command);
         $commandTester->execute([]);

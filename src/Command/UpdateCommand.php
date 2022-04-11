@@ -59,7 +59,7 @@ class UpdateCommand extends AbstractBaseCommand
             }
 
             $question = sprintf(
-                'Are you sure you want to update the "%s" environment?',
+                'Are you sure you want to update the <options=bold>%s</> environment?',
                 $environment->getName()
             );
 

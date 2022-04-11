@@ -58,7 +58,7 @@ class UninstallCommand extends AbstractBaseCommand
             $environment = $this->applicationContext->getActiveEnvironment();
 
             $question = sprintf(
-                'Are you sure you want to uninstall the "%s" environment?',
+                'Are you sure you want to uninstall the <options=bold>%s</> environment?',
                 $environment->getName()
             );
 

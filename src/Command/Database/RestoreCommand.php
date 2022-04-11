@@ -62,6 +62,15 @@ class RestoreCommand extends AbstractBaseCommand
                 $this->printEnvironmentDetails($environment, $io);
             }
 
+            $question = sprintf(
+                'Are you really sure you want to restore the <options=bold>%s</> database?',
+                $environment->getName()
+            );
+
+            if (!$io->confirm($question, false)) {
+                return Command::SUCCESS;
+            }
+
             $path = ltrim($input->getArgument('path'), '/');
             $this->restore($environment->getLocation().'/'.$path);
 

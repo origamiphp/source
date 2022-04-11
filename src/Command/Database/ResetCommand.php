@@ -37,26 +37,33 @@ class ResetCommand extends AbstractBaseCommand
         $io = new OrigamiStyle($input, $output);
 
         try {
-            if ($io->confirm('Are you really sure you want to reset the database?', false)) {
-                $this->applicationContext->loadEnvironment($input);
-                $environment = $this->applicationContext->getActiveEnvironment();
+            $this->applicationContext->loadEnvironment($input);
+            $environment = $this->applicationContext->getActiveEnvironment();
 
-                if ($output->isVerbose()) {
-                    $this->printEnvironmentDetails($environment, $io);
-                }
-
-                // First, we need to stop and remove the existing service.
-                if (!$this->docker->removeDatabaseService() || !$this->docker->removeDatabaseVolume()) {
-                    throw new InvalidEnvironmentException('An error occurred while removing the database service.');
-                }
-
-                // Finally, we can recreate the service with a new volume.
-                if (!$this->docker->startServices()) {
-                    throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
-                }
-
-                $io->success('Database reset successfully executed.');
+            if ($output->isVerbose()) {
+                $this->printEnvironmentDetails($environment, $io);
             }
+
+            $question = sprintf(
+                'Are you really sure you want to reset the <options=bold>%s</> database?',
+                $environment->getName()
+            );
+
+            if (!$io->confirm($question, false)) {
+                return Command::SUCCESS;
+            }
+
+            // First, we need to stop and remove the existing service.
+            if (!$this->docker->removeDatabaseService() || !$this->docker->removeDatabaseVolume()) {
+                throw new InvalidEnvironmentException('An error occurred while removing the database service.');
+            }
+
+            // Finally, we can recreate the service with a new volume.
+            if (!$this->docker->startServices()) {
+                throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
+            }
+
+            $io->success('Database reset successfully executed.');
         } catch (OrigamiExceptionInterface $exception) {
             $io->error($exception->getMessage());
 
