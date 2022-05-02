@@ -1,0 +1,4 @@
+version: "3.7"
+
+# This file is automatically created by Origami, but it will never be updated again.
+# Use this file to manage your customizations, and do not update the "docker-compose.yml" file.

@@ -1,5 +1,8 @@
 version: "3.7"
 
+# This file is managed automatically by Origami and must not be updated manually.
+# If you want to make customizations, edit the "docker-compose.override.yml" file instead.
+
 services:
   blackfire:
     image: blackfire/blackfire:2

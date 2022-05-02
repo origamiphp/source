@@ -132,6 +132,8 @@ final class ConfigurationFilesTest extends TestCase
             static::assertFileExists($destination.'/'.$relativePath);
         }
 
+        static::assertFileExists($destination.'/docker-compose.override.yml');
+
         /** @var string $projectConfiguration */
         $projectConfiguration = file_get_contents("{$destination}/docker-compose.yml");
         static::assertStringNotContainsString('${DOCKER_PHP_IMAGE}', $projectConfiguration);
