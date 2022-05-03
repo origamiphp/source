@@ -62,18 +62,11 @@ class StartCommand extends AbstractBaseCommand
                     throw new InvalidEnvironmentException('An error occurred while starting the Docker services.');
                 }
 
-                $domains = $environment->getDomains();
-
                 $event = new EnvironmentStartedEvent($environment, $io);
                 $this->eventDispatcher->dispatch($event);
 
                 $io->success('Docker services successfully started.');
-
-                $message = sprintf(
-                    'Please visit %s to access your environment.',
-                    ($domains !== null ? "https://{$domains}" : 'https://127.0.0.1')
-                );
-                $io->info($message);
+                $io->info('Please visit https://localhost to access your environment.');
             } else {
                 throw new InvalidEnvironmentException('Unable to start an environment when there is already a running one.');
             }

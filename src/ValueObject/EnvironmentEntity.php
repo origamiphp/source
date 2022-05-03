@@ -27,7 +27,6 @@ class EnvironmentEntity
         private string $name,
         private string $location,
         private string $type,
-        private ?string $domains = null,
         private bool $active = false
     ) {
     }
@@ -45,11 +44,6 @@ class EnvironmentEntity
     public function getType(): string
     {
         return $this->type;
-    }
-
-    public function getDomains(): ?string
-    {
-        return $this->domains;
     }
 
     public function isActive(): bool

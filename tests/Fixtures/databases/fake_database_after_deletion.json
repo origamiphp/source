@@ -3,7 +3,6 @@
         "name": "fake-environment-2",
         "location": "\/fake\/location\/2",
         "type": "symfony",
-        "domains": "symfony.test",
         "active": true
     }
 ]

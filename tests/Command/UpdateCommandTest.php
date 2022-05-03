@@ -40,7 +40,7 @@ final class UpdateCommandTest extends TestCase
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
 
         $environment = $this->createEnvironment();
-        $answers = new PrepareAnswers($environment->getName(), $environment->getLocation(), $environment->getType(), null, []);
+        $answers = new PrepareAnswers($environment->getName(), $environment->getLocation(), $environment->getType(), []);
 
         $applicationContext
             ->loadEnvironment(Argument::type(InputInterface::class))

@@ -72,14 +72,12 @@ final class ApplicationDataTest extends TestCase
                         'fake-environment-1',
                         '/fake/location/1',
                         'magento',
-                        'magento.test',
                         false
                     ),
                     new EnvironmentEntity(
                         'fake-environment-2',
                         '/fake/location/2',
                         'symfony',
-                        'symfony.test',
                         true
                     ),
                 ]
@@ -101,7 +99,6 @@ final class ApplicationDataTest extends TestCase
                 'fake-environment-2',
                 '/fake/location/2',
                 'symfony',
-                'symfony.test',
                 true
             ),
             $database->getActiveEnvironment()
@@ -125,8 +122,7 @@ final class ApplicationDataTest extends TestCase
             new EnvironmentEntity(
                 'fake-environment-1',
                 '/fake/location/1',
-                'magento',
-                'magento.test'
+                'magento'
             ),
             $database->getEnvironmentByName('fake-environment-1')
         );
@@ -145,8 +141,7 @@ final class ApplicationDataTest extends TestCase
             new EnvironmentEntity(
                 'fake-environment-1',
                 '/fake/location/1',
-                'magento',
-                'magento.test'
+                'magento'
             ),
             $database->getEnvironmentByLocation('/fake/location/1')
         );
@@ -167,8 +162,7 @@ final class ApplicationDataTest extends TestCase
         $environment = new EnvironmentEntity(
             'fake-environment-3',
             '/fake/location/3',
-            'sylius',
-            'sylius.test'
+            'sylius'
         );
 
         $database->add($environment);
@@ -188,8 +182,7 @@ final class ApplicationDataTest extends TestCase
         $environment = new EnvironmentEntity(
             'fake-environment-1',
             '/fake/location/1',
-            'magento',
-            'magento.test'
+            'magento'
         );
 
         $database->remove($environment);

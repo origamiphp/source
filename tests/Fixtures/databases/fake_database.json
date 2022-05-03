@@ -3,14 +3,12 @@
         "name": "fake-environment-1",
         "location": "\/fake\/location\/1",
         "type": "magento",
-        "domains": "magento.test",
         "active": false
     },
     {
         "name": "fake-environment-2",
         "location": "\/fake\/location\/2",
         "type": "symfony",
-        "domains": "symfony.test",
         "active": true
     }
 ]

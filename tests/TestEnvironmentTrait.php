@@ -6,7 +6,6 @@ namespace App\Tests;
 
 use App\Service\Setup\ConfigurationFiles;
 use App\ValueObject\EnvironmentEntity;
-use Generator;
 use ReflectionClass;
 use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
@@ -46,23 +45,6 @@ trait TestEnvironmentTrait
         $this->location = '';
     }
 
-    public function provideMultipleInstallContexts(): Generator
-    {
-        yield 'Symfony environment and custom domain' => [
-            'symfony-project',
-            EnvironmentEntity::TYPE_SYMFONY,
-            'mydomain.test',
-            ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'],
-        ];
-
-        yield 'Symfony environment and no custom domain' => [
-            'symfony-project',
-            EnvironmentEntity::TYPE_SYMFONY,
-            null,
-            ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'],
-        ];
-    }
-
     /**
      * Retrieves a new fake Environment instance.
      */
@@ -71,8 +53,7 @@ trait TestEnvironmentTrait
         return new EnvironmentEntity(
             'origami',
             $this->location,
-            EnvironmentEntity::TYPE_SYMFONY,
-            'mydomain.test'
+            EnvironmentEntity::TYPE_SYMFONY
         );
     }
 

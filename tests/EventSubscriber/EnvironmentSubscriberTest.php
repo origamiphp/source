@@ -9,11 +9,9 @@ use App\Event\EnvironmentStartedEvent;
 use App\Event\EnvironmentStoppedEvent;
 use App\Event\EnvironmentUninstalledEvent;
 use App\EventSubscriber\EnvironmentSubscriber;
-use App\Exception\UnsupportedOperatingSystemException;
 use App\Service\ApplicationData;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Binary\Mutagen;
-use App\Service\Middleware\Hosts;
 use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +33,6 @@ final class EnvironmentSubscriberTest extends TestCase
 
     public function testItCreatesTheEnvironmentAfterInstall(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -53,37 +50,18 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItCreatesTheEnvironmentAfterInstallEvenWithAnException(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
 
         $environment = $this->prophesize(EnvironmentEntity::class);
         $io = $this->prophesize(OrigamiStyle::class);
-        $domains = 'mydomain.test';
-
-        $environment
-            ->getDomains()
-            ->shouldBeCalledOnce()
-            ->willReturn($domains)
-        ;
-
-        $hosts
-            ->hasDomains($domains)
-            ->shouldBeCalledOnce()
-            ->willThrow(UnsupportedOperatingSystemException::class)
-        ;
-
-        $hosts
-            ->fixHostsFile($domains)
-            ->shouldNotBeCalled()
-        ;
 
         $database
             ->add($environment->reveal())
@@ -95,119 +73,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
-    }
-
-    public function testItAnalyzesAndFixesSystemHostsFile(): void
-    {
-        $hosts = $this->prophesize(Hosts::class);
-        $docker = $this->prophesize(Docker::class);
-        $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(ApplicationData::class);
-
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $io = $this->prophesize(OrigamiStyle::class);
-        $domains = 'mydomain.test';
-
-        $environment
-            ->getDomains()
-            ->shouldBeCalledOnce()
-            ->willReturn($domains)
-        ;
-
-        $hosts
-            ->hasDomains($domains)
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
-
-        $io
-            ->warning(Argument::type('string'))
-            ->shouldBeCalledOnce()
-        ;
-
-        $io
-            ->confirm(Argument::type('string'), false)
-            ->shouldBeCalledOnce()
-            ->willReturn(true)
-        ;
-
-        $hosts
-            ->fixHostsFile($domains)
-            ->shouldBeCalledOnce()
-        ;
-
-        $database
-            ->add($environment->reveal())
-            ->shouldBeCalledOnce()
-        ;
-
-        $database
-            ->save()
-            ->shouldBeCalledOnce()
-        ;
-
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
-        $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
-    }
-
-    public function testItAnalyzesAndDoesNotFixSystemHostsFile(): void
-    {
-        $hosts = $this->prophesize(Hosts::class);
-        $docker = $this->prophesize(Docker::class);
-        $mutagen = $this->prophesize(Mutagen::class);
-        $database = $this->prophesize(ApplicationData::class);
-
-        $environment = $this->prophesize(EnvironmentEntity::class);
-        $io = $this->prophesize(OrigamiStyle::class);
-        $domains = 'mydomain.test';
-
-        $environment
-            ->getDomains()
-            ->shouldBeCalledOnce()
-            ->willReturn($domains)
-        ;
-
-        $hosts
-            ->hasDomains($domains)
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
-
-        $io
-            ->warning(Argument::type('string'))
-            ->shouldBeCalledOnce()
-        ;
-
-        $io
-            ->confirm(Argument::type('string'), false)
-            ->shouldBeCalledOnce()
-            ->willReturn(false)
-        ;
-
-        $hosts
-            ->fixHostsFile($domains)
-            ->shouldNotBeCalled()
-        ;
-
-        $database
-            ->add($environment->reveal())
-            ->shouldBeCalledOnce()
-        ;
-
-        $database
-            ->save()
-            ->shouldBeCalledOnce()
-        ;
-
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentInstall(new EnvironmentInstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStartsTheEnvironmentSuccessfully(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -236,13 +107,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStartsTheEnvironmentWithOnSharedSSHAgent(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -277,13 +147,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStartsTheEnvironmentWithAnErrorWithMutagen(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -318,13 +187,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentStart(new EnvironmentStartedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStopsTheEnvironmentSuccessfully(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -348,13 +216,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItStopsTheEnvironmentWithAnErrorOnMutagen(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -383,13 +250,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentStop(new EnvironmentStoppedEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentSuccessfully(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -413,13 +279,12 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $io->reveal()));
     }
 
     public function testItUninstallsTheEnvironmentWithAnErrorOnMutagen(): void
     {
-        $hosts = $this->prophesize(Hosts::class);
         $docker = $this->prophesize(Docker::class);
         $mutagen = $this->prophesize(Mutagen::class);
         $database = $this->prophesize(ApplicationData::class);
@@ -448,7 +313,7 @@ final class EnvironmentSubscriberTest extends TestCase
             ->shouldBeCalledOnce()
         ;
 
-        $subscriber = new EnvironmentSubscriber($hosts->reveal(), $docker->reveal(), $mutagen->reveal(), $database->reveal());
+        $subscriber = new EnvironmentSubscriber($docker->reveal(), $mutagen->reveal(), $database->reveal());
         $subscriber->onEnvironmentUninstall(new EnvironmentUninstalledEvent($environment->reveal(), $io->reveal()));
     }
 }
