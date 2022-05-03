@@ -277,8 +277,13 @@ class Docker
         $location = $environment->getLocation();
         $projectName = $this->applicationContext->getProjectName();
 
+        $composeFile = is_file($location.$this->installDir.'/docker-compose.override.yml')
+            ? $location.$this->installDir.'/docker-compose.yml'.':'.$location.$this->installDir.'/docker-compose.override.yml'
+            : $location.$this->installDir.'/docker-compose.yml'
+        ;
+
         return [
-            'COMPOSE_FILE' => $location.$this->installDir.'/docker-compose.yml',
+            'COMPOSE_FILE' => $composeFile,
             'COMPOSE_PROJECT_NAME' => $projectName,
             'PROJECT_NAME' => $projectName, // deprecated
             'PROJECT_LOCATION' => $location,

@@ -40,6 +40,13 @@ class ConfigurationFiles
 
         $this->fillDockerComposeYamlFile("{$destination}/docker-compose.yml", $settings);
 
+        if (!is_file("{$destination}/docker-compose.override.yml")) {
+            copy(
+                __DIR__.'/../../Resources/docker-templates/docker-compose.override.yml',
+                "{$destination}/docker-compose.override.yml"
+            );
+        }
+
         if ($domains = $environment->getDomains()) {
             $certificate = "{$destination}/nginx/certs/custom.pem";
             $privateKey = "{$destination}/nginx/certs/custom.key";
