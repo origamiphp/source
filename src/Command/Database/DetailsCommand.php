@@ -41,6 +41,8 @@ class DetailsCommand extends AbstractBaseCommand
             $io->listing([
                 "Type: {$this->database->getDatabaseType()}",
                 "Version: {$this->database->getDatabaseVersion()}",
+                'Host (from project or containers): database',
+                'Host (from OS): 127.0.0.1',
                 "Username: {$this->database->getDatabaseUsername()}",
                 "Password: {$this->database->getDatabasePassword()}",
             ]);
