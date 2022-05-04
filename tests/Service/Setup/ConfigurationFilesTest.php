@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Service\Setup;
 
 use App\Service\Middleware\Binary\Mkcert;
+use App\Service\RequirementsChecker;
 use App\Service\Setup\ConfigurationFiles;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
-use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Finder\Finder;
 
@@ -23,96 +23,71 @@ final class ConfigurationFilesTest extends TestCase
     use ProphecyTrait;
     use TestEnvironmentTrait;
 
-    /**
-     * @dataProvider provideMultipleInstallContexts
-     */
-    public function testItInstallsConfigurationFilesWithBlackfireCredentials(
-        string $name,
-        string $type,
-        ?string $domains = null,
-        array $settings = []
-    ): void {
+    public function testItInstallsConfigurationFilesWithBlackfireCredentials(): void
+    {
         $mkcert = $this->prophesize(Mkcert::class);
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
 
-        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $environment = $this->createEnvironment();
+        $settings = ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'];
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
 
-        if ($domains = $environment->getDomains()) {
-            $certificate = "{$destination}/nginx/certs/custom.pem";
-            $privateKey = "{$destination}/nginx/certs/custom.key";
+        $requirementsChecker
+            ->canMakeLocallyTrustedCertificates()
+            ->willReturn(true)
+        ;
 
-            $mkcert
-                ->generateCertificate($certificate, $privateKey, explode(' ', $domains))
-                ->shouldBeCalledOnce()
-                ->willReturn(true)
-            ;
-        } else {
-            $mkcert
-                ->generateCertificate(Argument::any(), Argument::any(), Argument::any())
-                ->shouldNotBeCalled()
-            ;
-        }
+        $mkcert
+            ->generateCertificate($destination)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $installer = new ConfigurationFiles($mkcert->reveal());
+        $installer = new ConfigurationFiles($mkcert->reveal(), $requirementsChecker->reveal());
         $installer->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination);
     }
 
-    /**
-     * @dataProvider provideMultipleInstallContexts
-     */
-    public function testItUpdatesAnEnvironment(
-        string $name,
-        string $type,
-        ?string $domains = null,
-        array $settings = []
-    ): void {
+    public function testItUpdatesAnEnvironment(): void
+    {
         $mkcert = $this->prophesize(Mkcert::class);
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
 
-        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $environment = $this->createEnvironment();
+        $settings = ['database' => 'mariadb:10.5', 'php' => 'ajardin/php:8.0'];
         $this->installEnvironmentConfiguration($environment);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
 
-        if ($domains = $environment->getDomains()) {
-            $certificate = "{$destination}/nginx/certs/custom.pem";
-            $privateKey = "{$destination}/nginx/certs/custom.key";
+        $requirementsChecker
+            ->canMakeLocallyTrustedCertificates()
+            ->willReturn(true)
+        ;
 
-            $mkcert
-                ->generateCertificate($certificate, $privateKey, explode(' ', $domains))
-                ->shouldBeCalledOnce()
-                ->willReturn(true)
-            ;
-        } else {
-            $mkcert
-                ->generateCertificate(Argument::any(), Argument::any(), Argument::any())
-                ->shouldNotBeCalled()
-            ;
-        }
+        $mkcert
+            ->generateCertificate($destination)
+            ->shouldBeCalledOnce()
+            ->willReturn(true)
+        ;
 
-        $updater = new ConfigurationFiles($mkcert->reveal());
+        $updater = new ConfigurationFiles($mkcert->reveal(), $requirementsChecker->reveal());
         $updater->install($environment, $settings);
 
         $this->assertConfigurationIsInstalled($environment, $destination);
     }
 
-    /**
-     * @dataProvider provideMultipleInstallContexts
-     */
-    public function testItUninstallsEnvironment(
-        string $name,
-        string $type,
-        ?string $domains = null
-    ): void {
+    public function testItUninstallsEnvironment(): void
+    {
         $mkcert = $this->prophesize(Mkcert::class);
+        $requirementsChecker = $this->prophesize(RequirementsChecker::class);
 
-        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $environment = $this->createEnvironment();
         $this->installEnvironmentConfiguration($environment);
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
 
         static::assertDirectoryExists($destination);
 
-        $uninstaller = new ConfigurationFiles($mkcert->reveal());
+        $uninstaller = new ConfigurationFiles($mkcert->reveal(), $requirementsChecker->reveal());
         $uninstaller->uninstall($environment);
 
         static::assertDirectoryDoesNotExist($destination);

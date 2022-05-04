@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Service\Setup;
 
 use App\Exception\FilesystemException;
-use App\Exception\InvalidConfigurationException;
-use App\Service\RequirementsChecker;
 use App\Service\Wrapper\OrigamiStyle;
 use App\Service\Wrapper\ProcessProxy;
 use App\ValueObject\EnvironmentEntity;
@@ -21,8 +19,6 @@ class EnvironmentBuilder
     public function __construct(
         private ProcessProxy $processProxy,
         private TechnologyIdentifier $technologyIdentifier,
-        private RequirementsChecker $requirementsChecker,
-        private Validator $validator,
         private array $requirements
     ) {
     }
@@ -40,24 +36,15 @@ class EnvironmentBuilder
         if ($environment !== null) {
             $name = $environment->getName();
             $type = $environment->getType();
-            $domains = $environment->getDomains();
         } else {
             $name = $this->askEnvironmentName($io, basename($location));
-            $type = $this->askEnvironmentType($io, $technology !== null ? $technology->getName() : null);
+            $type = $this->askEnvironmentType($io, $technology?->getName());
         }
 
-        $version = $this->askEnvironmentVersion($io, $type, $technology !== null ? $technology->getVersion() : null);
+        $version = $this->askEnvironmentVersion($io, $type, $technology?->getVersion());
         $settings = $this->askEnvironmentSettings($io, $type, $version);
 
-        if ($environment === null) {
-            if ($this->requirementsChecker->canMakeLocallyTrustedCertificates()) {
-                $domains = $this->askDomains($io, $name);
-            } else {
-                $io->warning('Generation of the locally-trusted development certificate skipped.');
-            }
-        }
-
-        return new PrepareAnswers($name, $location, $type, $domains ?? null, $settings);
+        return new PrepareAnswers($name, $location, $type, $settings);
     }
 
     /**
@@ -121,22 +108,6 @@ class EnvironmentBuilder
     }
 
     /**
-     * Asks question about the environment domains.
-     */
-    private function askDomains(OrigamiStyle $io, string $name): ?string
-    {
-        if ($io->confirm('Do you want to generate a locally-trusted development <options=bold>certificate</>?', false)) {
-            $domains = $io->ask(
-                'Which <options=bold>domains</> does this certificate belong to?',
-                "{$name}.test",
-                fn (string $answer): string => $this->localDomainsCallback($answer)
-            );
-        }
-
-        return $domains ?? null;
-    }
-
-    /**
      * Parses the given version to retrieve a X.Y format.
      */
     private function parseVersionAssumption(string $assumption): string
@@ -150,19 +121,5 @@ class EnvironmentBuilder
         }
 
         return $version;
-    }
-
-    /**
-     * Validates the response provided by the user to the local domains question.
-     *
-     * @throws InvalidConfigurationException
-     */
-    private function localDomainsCallback(string $answer): string
-    {
-        if (!$this->validator->validateHostname($answer)) {
-            throw new InvalidConfigurationException('The hostname provided is invalid.');
-        }
-
-        return $answer;
     }
 }

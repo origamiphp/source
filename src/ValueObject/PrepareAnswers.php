@@ -16,7 +16,6 @@ class PrepareAnswers
         private string $name,
         private string $location,
         private string $type,
-        private ?string $domains,
         private array $settings
     ) {
     }
@@ -34,11 +33,6 @@ class PrepareAnswers
     public function getType(): string
     {
         return $this->type;
-    }
-
-    public function getDomains(): ?string
-    {
-        return $this->domains;
     }
 
     /**

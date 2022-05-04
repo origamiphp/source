@@ -9,7 +9,6 @@ use App\Service\ApplicationData;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\EnvironmentCollection;
-use App\ValueObject\EnvironmentEntity;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Console\Tester\CommandTester;
@@ -44,13 +43,10 @@ final class RegistryCommandTest extends TestCase
         static::assertStringContainsString('[NOTE] ', $display);
     }
 
-    /**
-     * @dataProvider provideMultipleInstallContexts
-     */
-    public function testItPrintsEnvironmentDetailsInTable(string $name, string $type, ?string $domains = null): void
+    public function testItPrintsEnvironmentDetailsInTable(): void
     {
         $database = $this->prophesize(ApplicationData::class);
-        $environment = new EnvironmentEntity($name, $this->location, $type, $domains);
+        $environment = $this->createEnvironment();
 
         $database
             ->getAllEnvironments()
@@ -66,15 +62,6 @@ final class RegistryCommandTest extends TestCase
         static::assertStringContainsString($environment->getName(), $display);
         static::assertStringContainsString($environment->getLocation(), $display);
         static::assertStringContainsString($environment->getType(), $display);
-
-        if ($domains = $environment->getDomains()) {
-            static::assertStringContainsString($domains, $display);
-        }
-
-        if ($environment->isActive()) {
-            static::assertStringContainsString('Started', $display);
-        } else {
-            static::assertStringContainsString('Stopped', $display);
-        }
+        static::assertStringContainsString('Stopped', $display);
     }
 }

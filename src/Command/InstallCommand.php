@@ -43,8 +43,7 @@ class InstallCommand extends AbstractBaseCommand
             $environment = new EnvironmentEntity(
                 $userInputs->getName(),
                 $userInputs->getLocation(),
-                $userInputs->getType(),
-                $userInputs->getDomains()
+                $userInputs->getType()
             );
 
             $this->configuration->install($environment, $userInputs->getSettings());

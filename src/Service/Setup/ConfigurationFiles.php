@@ -8,6 +8,7 @@ use App\Exception\FilesystemException;
 use App\Exception\InvalidConfigurationException;
 use App\Exception\MkcertException;
 use App\Service\Middleware\Binary\Mkcert;
+use App\Service\RequirementsChecker;
 use App\ValueObject\EnvironmentEntity;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -16,8 +17,10 @@ class ConfigurationFiles
     public const INSTALLATION_DIRECTORY = '/var/docker';
     private const DATABASE_PLACEHOLDER = '# <== DATABASE PLACEHOLDER ==>';
 
-    public function __construct(private Mkcert $mkcert)
-    {
+    public function __construct(
+        private Mkcert $mkcert,
+        private RequirementsChecker $requirementsChecker,
+    ) {
     }
 
     /**
@@ -47,11 +50,8 @@ class ConfigurationFiles
             );
         }
 
-        if ($domains = $environment->getDomains()) {
-            $certificate = "{$destination}/nginx/certs/custom.pem";
-            $privateKey = "{$destination}/nginx/certs/custom.key";
-
-            $this->mkcert->generateCertificate($certificate, $privateKey, explode(' ', $domains));
+        if ($this->requirementsChecker->canMakeLocallyTrustedCertificates()) {
+            $this->mkcert->generateCertificate($destination);
         }
     }
 

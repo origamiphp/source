@@ -41,8 +41,8 @@ final class InstallCommandTest extends TestCase
         $configurationFiles = $this->prophesize(ConfigurationFiles::class);
         $eventDispatcher = $this->prophesize(EventDispatcher::class);
 
-        $answers = new PrepareAnswers('name', 'location', 'type', null, []);
-        $environment = new EnvironmentEntity('name', 'location', 'type', null);
+        $answers = new PrepareAnswers('name', 'location', 'type', []);
+        $environment = new EnvironmentEntity('name', 'location', 'type');
 
         $environmentBuilder
             ->prepare(Argument::type(OrigamiStyle::class))

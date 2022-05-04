@@ -28,15 +28,18 @@ class Mkcert
      *
      * @throws MkcertException
      */
-    public function generateCertificate(string $certificate, string $privateKey, array $domains): bool
+    public function generateCertificate(string $destination): bool
     {
         $this->installCertificateAuthority();
+
+        $certificate = "{$destination}/nginx/certs/custom.pem";
+        $privateKey = "{$destination}/nginx/certs/custom.key";
 
         $command = array_merge(
             ['mkcert', '-cert-file', $certificate, '-key-file', $privateKey],
             self::DEFAULT_DOMAINS,
-            $domains
         );
+
         $process = $this->processFactory->runBackgroundProcess($command);
 
         return $process->isSuccessful();

@@ -7,7 +7,6 @@ namespace App\Tests\Service\Middleware\Binary;
 use App\Exception\MkcertException;
 use App\Service\Middleware\Binary\Mkcert;
 use App\Service\Wrapper\ProcessFactory;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -41,20 +40,13 @@ final class MkcertTest extends TestCase
         static::assertSame('mkcert version', $mkcert->getVersion());
     }
 
-    /**
-     * @dataProvider provideCertificateDomains
-     *
-     * @param string[] $domains
-     */
-    public function testItGeneratesCertificate(array $domains): void
+    public function testItGeneratesCertificate(): void
     {
-        $processFactory = $this->prophesize(ProcessFactory::class);
-
         $installProcess = $this->prophesize(Process::class);
-        $installCommand = ['mkcert', '-install'];
 
+        $processFactory = $this->prophesize(ProcessFactory::class);
         $processFactory
-            ->runBackgroundProcess($installCommand)
+            ->runBackgroundProcess(['mkcert', '-install'])
             ->shouldBeCalledOnce()
             ->willReturn($installProcess->reveal())
         ;
@@ -66,10 +58,7 @@ final class MkcertTest extends TestCase
         ;
 
         $generateProcess = $this->prophesize(Process::class);
-        $generateCommand = array_merge(
-            ['mkcert', '-cert-file', './custom.pem', '-key-file', './custom.key', 'localhost', '127.0.0.1', '::1'],
-            $domains
-        );
+        $generateCommand = ['mkcert', '-cert-file', './nginx/certs/custom.pem', '-key-file', './nginx/certs/custom.key', 'localhost', '127.0.0.1', '::1'];
 
         $processFactory
             ->runBackgroundProcess($generateCommand)
@@ -84,23 +73,16 @@ final class MkcertTest extends TestCase
         ;
 
         $mkcert = new Mkcert($processFactory->reveal());
-        static::assertTrue($mkcert->generateCertificate('./custom.pem', './custom.key', $domains));
+        static::assertTrue($mkcert->generateCertificate('.'));
     }
 
-    /**
-     * @dataProvider provideCertificateDomains
-     *
-     * @param string[] $domains
-     */
-    public function testItThrowsAnExceptionWhenInstallFails(array $domains): void
+    public function testItThrowsAnExceptionWhenInstallFails(): void
     {
-        $processFactory = $this->prophesize(ProcessFactory::class);
-
         $installProcess = $this->prophesize(Process::class);
-        $installCommand = ['mkcert', '-install'];
 
+        $processFactory = $this->prophesize(ProcessFactory::class);
         $processFactory
-            ->runBackgroundProcess($installCommand)
+            ->runBackgroundProcess(['mkcert', '-install'])
             ->shouldBeCalledOnce()
             ->willReturn($installProcess->reveal())
         ;
@@ -119,15 +101,6 @@ final class MkcertTest extends TestCase
         $this->expectException(MkcertException::class);
 
         $mkcert = new Mkcert($processFactory->reveal());
-        static::assertTrue($mkcert->generateCertificate('./custom.pem', './custom.key', $domains));
-    }
-
-    /**
-     * @return Iterator<array<int, string[]>>
-     */
-    public function provideCertificateDomains(): Iterator
-    {
-        yield 'Single domain' => [['mydomain.test']];
-        yield 'Multiple domains' => [['mydomain.test', '*.mydomain.test']];
+        static::assertTrue($mkcert->generateCertificate('.'));
     }
 }

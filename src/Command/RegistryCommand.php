@@ -36,7 +36,7 @@ class RegistryCommand extends AbstractBaseCommand
         $environments = $this->applicationData->getAllEnvironments();
         if ($environments->count() > 0) {
             $table = new Table($output);
-            $table->setHeaders(['Name', 'Location', 'Type', 'Domains', 'Status']);
+            $table->setHeaders(['Name', 'Location', 'Type', 'Status']);
 
             /** @var EnvironmentEntity $environment */
             foreach ($environments as $environment) {
@@ -44,7 +44,6 @@ class RegistryCommand extends AbstractBaseCommand
                     $environment->getName(),
                     $environment->getLocation(),
                     $environment->getType(),
-                    $environment->getDomains() ?? '',
                     $environment->isActive() ? '<fg=green>Started</>' : '<fg=red>Stopped</>',
                 ]);
             }
