@@ -52,6 +52,7 @@ class InstallCommand extends AbstractBaseCommand
             $this->eventDispatcher->dispatch($event);
 
             $io->success('Environment successfully installed.');
+            $io->note('The "origami database:details" command will help you to set up the connection in your project.');
             $io->info(
                 "You can now use the following commands to start the environment.\n"
                 .'  * "origami start '.$environment->getName()."\" from any location.\n"
