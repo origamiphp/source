@@ -141,6 +141,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
         // https://symfony.com/doc/current/setup.html#technical-requirements
         EnvironmentEntity::TYPE_SYMFONY => [
+            '6.1' => [
+                'database' => ['mariadb:10.7', 'mariadb:10.6', 'mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0', 'mysql:5.7', 'mysql:5.6', 'postgres:14-alpine', 'postgres:13-alpine', 'postgres:12-alpine', 'postgres:11-alpine', 'postgres:10-alpine', 'postgres:9-alpine'],
+                'php' => ['ajardin/php:8.1'],
+            ],
             '6.0' => [
                 'database' => ['mariadb:10.7', 'mariadb:10.6', 'mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0', 'mysql:5.7', 'mysql:5.6', 'postgres:14-alpine', 'postgres:13-alpine', 'postgres:12-alpine', 'postgres:11-alpine', 'postgres:10-alpine', 'postgres:9-alpine'],
                 'php' => ['ajardin/php:8.1', 'ajardin/php:8.0'],
