@@ -1,6 +1,5 @@
   database:
     image: ${DOCKER_DATABASE_IMAGE}
-    platform: linux/amd64
     environment:
       - MYSQL_ROOT_PASSWORD=YourPwdShouldBeLongAndSecure
       - MYSQL_DATABASE=origami
