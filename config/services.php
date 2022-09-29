@@ -36,6 +36,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('app.requirements', [
         // https://www.drupal.org/docs/system-requirements
         EnvironmentEntity::TYPE_DRUPAL => [
+            '10' => [
+                'database' => ['mariadb:10.7', 'mariadb:10.6', 'mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mysql:8.0-oracle', 'mysql:5.7-oracle', 'postgres:12-alpine'],
+                'php' => ['ajardin/php:8.1'],
+            ],
             '9.4' => [
                 'database' => ['mariadb:10.7', 'mariadb:10.6', 'mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mysql:8.0-oracle', 'mysql:5.7-oracle', 'postgres:10-alpine'],
                 'php' => ['ajardin/php:8.1', 'ajardin/php:8.0', 'ajardin/php:7.4'],
