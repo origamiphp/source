@@ -63,6 +63,10 @@ services:
       - ${PROJECT_LOCATION}/var/docker/php/php-fpm-fcgi.ini:/usr/local/etc/php/php-fpm-fcgi.ini:ro
       # SSH socket
       - /run/host-services/ssh-auth.sock:/run/host-services/ssh-auth.sock
+      # Composer cache directory
+      - type: bind
+        source: ${COMPOSER_CACHE_DIR:-~/Library/Caches/composer}
+        target: /.composer/cache
     tty: true
 
   php_xdebug:
