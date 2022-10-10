@@ -66,37 +66,37 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         EnvironmentEntity::TYPE_MAGENTO2 => [
             '2.4.5' => [
                 'database' => ['mariadb:10.4', 'mysql:8.0-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.17'],
                 'php' => ['ajardin/php:8.1'],
                 'redis' => ['redis:6-alpine'],
             ],
             '2.4.4' => [
                 'database' => ['mariadb:10.4', 'mysql:8.0-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.16'],
                 'php' => ['ajardin/php:8.1'],
                 'redis' => ['redis:6-alpine'],
             ],
             '2.4.3' => [
                 'database' => ['mariadb:10.4', 'mysql:8.0-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.16'],
                 'php' => ['ajardin/php:7.4'],
                 'redis' => ['redis:6-alpine'],
             ],
             '2.4.2' => [
                 'database' => ['mariadb:10.4', 'mysql:8.0-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.9'],
                 'php' => ['ajardin/php:7.4'],
                 'redis' => ['redis:6-alpine'],
             ],
             '2.4.1' => [
                 'database' => ['mariadb:10.4', 'mysql:8.0-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.7'],
                 'php' => ['ajardin/php:7.4'],
                 'redis' => ['redis:5-alpine'],
             ],
             '2.4.0' => [
                 'database' => ['mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mysql:8.0-oracle', 'mysql:5.7-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.6'],
                 'php' => ['ajardin/php:7.4', 'ajardin/php:7.3'],
                 'redis' => ['redis:5-alpine'],
             ],
