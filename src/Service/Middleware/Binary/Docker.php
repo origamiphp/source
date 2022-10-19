@@ -278,7 +278,7 @@ class Docker
         $projectName = $this->applicationContext->getProjectName();
 
         $composeFile = is_file($location.$this->installDir.'/docker-compose.override.yml')
-            ? $location.$this->installDir.'/docker-compose.yml'.':'.$location.$this->installDir.'/docker-compose.override.yml'
+            ? $location.$this->installDir.'/docker-compose.yml:'.$location.$this->installDir.'/docker-compose.override.yml'
             : $location.$this->installDir.'/docker-compose.yml'
         ;
 

@@ -12,6 +12,7 @@ use Symfony\Component\Console\Tester\CommandTester;
 
 /**
  * @internal
+ *
  * @covers \App\Command\DefaultCommand
  */
 final class DefaultCommandTest extends WebTestCase

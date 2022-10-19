@@ -81,9 +81,9 @@ class ApplicationContext
     /**
      * Retrieves the configuration from the environment "docker-compose.yml" file.
      *
-     * @throws FilesystemException
-     *
      * @return array[]
+     *
+     * @throws FilesystemException
      */
     public function getEnvironmentConfiguration(): array
     {

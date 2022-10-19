@@ -164,10 +164,7 @@ class ApplicationData
     private function getRegisteredEnvironments(): array
     {
         if ($records = file_get_contents($this->path)) {
-            $entities = $this->serializer->deserialize($records, 'App\ValueObject\EnvironmentEntity[]', 'json');
-            if (\is_array($entities)) {
-                return $entities;
-            }
+            return $this->serializer->deserialize($records, 'App\ValueObject\EnvironmentEntity[]', 'json');
         }
 
         return [];
