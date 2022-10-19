@@ -5,9 +5,6 @@
     "amphp/byte-stream": {
         "version": "v1.8.0"
     },
-    "codecov/codecov-php": {
-        "version": "dev-master"
-    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.1"
     },
@@ -344,9 +341,6 @@
     "symfony/polyfill-mbstring": {
         "version": "v1.15.0"
     },
-    "symfony/polyfill-php81": {
-        "version": "v1.23.0"
-    },
     "symfony/process": {
         "version": "v5.0.7"
     },
@@ -357,12 +351,12 @@
         "version": "v5.1.0"
     },
     "symfony/routing": {
-        "version": "6.0",
+        "version": "6.1",
         "recipe": {
             "repo": "github.com/symfony/recipes",
             "branch": "main",
-            "version": "6.0",
-            "ref": "eb3b377a4dc07006c4bdb2c773652cc9434f5246"
+            "version": "6.1",
+            "ref": "a44010c0d06989bd4f154aa07d2542d47caf5b83"
         },
         "files": [
             "config/packages/routing.yaml",
