@@ -50,10 +50,10 @@ class TechnologyIdentifier
     /**
      * Loads the Composer configuration from the filesystem as an associative array.
      *
+     * @return array[]
+     *
      * @throws JsonException
      * @throws FilesystemException
-     *
-     * @return array[]
      */
     private function loadConfiguration(string $filename): array
     {
