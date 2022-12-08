@@ -12,8 +12,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services = $containerConfigurator->services();
 
     $services->defaults()
-        ->autowire(true)
-        ->autoconfigure(true)
+        ->autowire()
+        ->autoconfigure()
         ->bind('$projectDir', '%kernel.project_dir%')
         ->bind('$installDir', '%app.install_dir%')
         ->bind('$requirements', '%app.requirements%')
@@ -25,9 +25,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     ;
 
     $services
-        ->set(SystemVariables::class)->autowire(true)
+        ->set(SystemVariables::class)->autowire()
         ->set(Variables::class, SystemVariables::class)
-        ->set(ExecutableFinder::class)->autowire(true)
+        ->set(ExecutableFinder::class)->autowire()
     ;
 
     $parameters = $containerConfigurator->parameters();
