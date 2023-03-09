@@ -20,12 +20,13 @@ services:
 # <== DATABASE PLACEHOLDER ==>
 
   maildev:
-    image: djfarrelly/maildev:latest
-    platform: linux/amd64
+    image: maildev/maildev
+    environment:
+      MAILDEV_SMTP_PORT: 25
     depends_on:
       - php
     ports:
-      - "1080:80"
+      - "1080:1080"
 
   nginx:
     image: ajardin/nginx:latest
