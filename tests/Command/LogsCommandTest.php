@@ -10,7 +10,6 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -102,7 +101,7 @@ final class LogsCommandTest extends TestCase
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
-    public function provideCommandModifiers(): Iterator
+    public function provideCommandModifiers(): \Iterator
     {
         yield 'no modifiers' => [null, null];
         yield 'tail only' => [50, null];

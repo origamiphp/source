@@ -8,7 +8,6 @@ use App\Exception\InvalidConfigurationException;
 use App\Service\ApplicationContext;
 use App\Service\Middleware\Database;
 use App\Tests\TestEnvironmentTrait;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\PhpUnit\ProphecyTrait;
 use Symfony\Component\Yaml\Yaml;
@@ -185,7 +184,7 @@ final class DatabaseTest extends TestCase
         $database->getDatabasePassword();
     }
 
-    public function provideDatabaseConfigurations(): Iterator
+    public function provideDatabaseConfigurations(): \Iterator
     {
         yield 'mariadb 10.7' => ['mariadb', '10.7'];
         yield 'mariadb 10.6' => ['mariadb', '10.6'];

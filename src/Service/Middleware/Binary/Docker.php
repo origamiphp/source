@@ -270,7 +270,7 @@ class Docker
     /**
      * Retrieves environment variables required to run processes.
      *
-     * @return array<string, string>
+     * @return array{COMPOSE_FILE: string, COMPOSE_PROJECT_NAME: string, PROJECT_NAME: string, PROJECT_LOCATION: string}
      */
     public function getEnvironmentVariables(EnvironmentEntity $environment): array
     {

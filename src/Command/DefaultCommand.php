@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use Exception;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -22,7 +21,7 @@ class DefaultCommand extends Command
     /**
      * {@inheritdoc}
      *
-     * @throws Exception
+     * @throws \Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

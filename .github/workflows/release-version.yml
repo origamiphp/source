@@ -46,7 +46,7 @@ jobs:
 
       - name: 'Compiles the project into a PHAR archive'
         run: |
-          composer global require humbug/box
+          composer global require humbug/box:4.2.0
           make box
 
       - name: 'Prepares the local Git repository which contains the PHAR archive'

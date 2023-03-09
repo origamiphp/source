@@ -7,7 +7,6 @@ namespace App\Service\Setup;
 use App\Exception\FilesystemException;
 use App\ValueObject\EnvironmentEntity;
 use App\ValueObject\TechnologyDetails;
-use JsonException;
 
 class TechnologyIdentifier
 {
@@ -40,7 +39,7 @@ class TechnologyIdentifier
                     }
                 }
             }
-        } catch (FilesystemException|JsonException) {
+        } catch (FilesystemException|\JsonException) {
             // Ignore the thrown exception and return nothing.
         }
 
@@ -52,7 +51,7 @@ class TechnologyIdentifier
      *
      * @return array[]
      *
-     * @throws JsonException
+     * @throws \JsonException
      * @throws FilesystemException
      */
     private function loadConfiguration(string $filename): array
@@ -63,7 +62,7 @@ class TechnologyIdentifier
 
         $result = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         if (!\is_array($result)) {
-            throw new JsonException('The Composer configuration is not a valid JSON.');
+            throw new \JsonException('The Composer configuration is not a valid JSON.');
         }
 
         return $result;

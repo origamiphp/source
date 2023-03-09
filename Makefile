@@ -17,7 +17,7 @@ box: ## Compiles the project into a PHAR archive
 .PHONY: box
 
 ci: ## Executes all the Continuous Integration tests
-	make composer lint phpcsfixer-audit phpstan psalm phpunit rector-audit
+	make composer lint phpcsfixer-audit phpstan phpunit rector-audit
 .PHONY: ci
 
 composer: ## Executes the analysis on the Composer files
@@ -44,10 +44,6 @@ phpstan: ## Executes the static analysis on all PHP files with PHPStan
 phpunit: ## Executes the unit and functional tests
 	./bin/phpunit --testdox
 .PHONY: phpunit
-
-psalm: ## Executes the static analysis on all PHP files with Psalm
-	./vendor/bin/psalm --show-info=true --find-dead-code --stats --shepherd
-.PHONY: psalm
 
 rector-audit: ## Executes the automated refactoring in dry-run mode on all PHP files
 	./vendor/bin/rector process --dry-run

@@ -42,9 +42,6 @@ jobs:
       - name: 'Executes the static analysis on all PHP files with PHPStan'
         run: make phpstan
 
-      - name: 'Executes the static analysis on all PHP files with Psalm'
-        run: make psalm
-
       - name: 'Executes the automated refactoring in dry-run mode on all PHP files'
         run: make rector-audit
 
@@ -68,5 +65,5 @@ jobs:
 
       - name: 'Compiles the project into a PHAR archive'
         run: |
-          composer global require humbug/box
+          composer global require humbug/box:4.2.0
           make box

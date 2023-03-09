@@ -10,7 +10,6 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Tests\TestEnvironmentTrait;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -126,7 +125,7 @@ final class RestoreCommandTest extends TestCase
         static::assertSame(Command::FAILURE, $commandTester->getStatusCode());
     }
 
-    public function provideDatabaseConfigurations(): Iterator
+    public function provideDatabaseConfigurations(): \Iterator
     {
         yield 'mariadb' => ['mariadb', 'username', 'password', 'restoreMysqlDatabase'];
         yield 'mysql' => ['mysql', 'username', 'password', 'restoreMysqlDatabase'];
