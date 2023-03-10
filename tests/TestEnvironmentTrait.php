@@ -6,8 +6,6 @@ namespace App\Tests;
 
 use App\Service\Setup\ConfigurationFiles;
 use App\ValueObject\EnvironmentEntity;
-use ReflectionClass;
-use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 
 trait TestEnvironmentTrait
@@ -23,7 +21,7 @@ trait TestEnvironmentTrait
 
         $this->location = sys_get_temp_dir()
             .\DIRECTORY_SEPARATOR.'origami'
-            .\DIRECTORY_SEPARATOR.(new ReflectionClass(static::class))->getShortName()
+            .\DIRECTORY_SEPARATOR.(new \ReflectionClass(static::class))->getShortName()
         ;
 
         $destination = $this->location.ConfigurationFiles::INSTALLATION_DIRECTORY;
@@ -68,7 +66,7 @@ trait TestEnvironmentTrait
         if (is_dir(__DIR__.'/../src')) {
             $source = __DIR__."/../src/Resources/docker-templates/{$environment->getType()}/";
         } else {
-            throw new RuntimeException('Unable to find the environment configuration to install.');
+            throw new \RuntimeException('Unable to find the environment configuration to install.');
         }
 
         $filesystem->mirror($source, $destination);

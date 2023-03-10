@@ -11,7 +11,6 @@ use App\Service\Middleware\Binary\Docker;
 use App\Service\Middleware\Database;
 use App\Tests\TestCommandTrait;
 use App\Tests\TestEnvironmentTrait;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -108,7 +107,7 @@ final class DumpCommandTest extends TestCase
         static::assertExceptionIsHandled($command);
     }
 
-    public function provideDatabaseConfigurations(): Iterator
+    public function provideDatabaseConfigurations(): \Iterator
     {
         yield 'mariadb' => ['mariadb', 'username', 'password', 'dumpMysqlDatabase'];
         yield 'mysql' => ['mysql', 'username', 'password', 'dumpMysqlDatabase'];

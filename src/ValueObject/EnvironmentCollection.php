@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace App\ValueObject;
 
 use App\Exception\InvalidEnvironmentException;
-use ArrayIterator;
-use Countable;
-use IteratorAggregate;
 
 /**
  * @codeCoverageIgnore
  */
-class EnvironmentCollection implements Countable, IteratorAggregate
+class EnvironmentCollection implements \Countable, \IteratorAggregate
 {
     /**
      * @param EnvironmentEntity[] $values
@@ -32,9 +29,9 @@ class EnvironmentCollection implements Countable, IteratorAggregate
     /**
      * {@inheritdoc}
      */
-    public function getIterator(): ArrayIterator
+    public function getIterator(): \ArrayIterator
     {
-        return new ArrayIterator($this->values);
+        return new \ArrayIterator($this->values);
     }
 
     /**

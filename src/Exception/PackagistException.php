@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-use Exception;
-
-class PackagistException extends Exception implements OrigamiExceptionInterface
+class PackagistException extends \Exception implements OrigamiExceptionInterface
 {
 }

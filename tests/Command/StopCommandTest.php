@@ -12,7 +12,6 @@ use App\Tests\TestEnvironmentTrait;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
-use stdClass;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -57,7 +56,7 @@ final class StopCommandTest extends TestCase
 
         $eventDispatcher
             ->dispatch(Argument::any())
-            ->willReturn(new stdClass())
+            ->willReturn(new \stdClass())
         ;
 
         $command = new StopCommand($applicationContext->reveal(), $docker->reveal(), $eventDispatcher->reveal());

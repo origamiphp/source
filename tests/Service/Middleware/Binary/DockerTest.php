@@ -8,7 +8,6 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Binary\Docker;
 use App\Service\Wrapper\ProcessFactory;
 use App\Tests\TestEnvironmentTrait;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Prophecy\PhpUnit\ProphecyTrait;
@@ -85,7 +84,7 @@ final class DockerTest extends TestCase
         static::assertTrue($docker->{$function}());
     }
 
-    public function provideDockerComposeScenarios(): Iterator
+    public function provideDockerComposeScenarios(): \Iterator
     {
         // @see \App\Middleware\Binary\Docker::pullServices
         yield 'pull' => ['pullServices'];
@@ -194,7 +193,7 @@ final class DockerTest extends TestCase
         static::assertTrue($docker->showServicesLogs($tail, $service));
     }
 
-    public function provideDockerComposeLogsScenarios(): Iterator
+    public function provideDockerComposeLogsScenarios(): \Iterator
     {
         yield 'no·modifiers' => [];
         yield 'tail only' => [42, null];

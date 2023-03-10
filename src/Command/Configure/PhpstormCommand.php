@@ -12,9 +12,6 @@ use App\Service\ApplicationContext;
 use App\Service\Middleware\Database;
 use App\Service\Wrapper\OrigamiStyle;
 use App\ValueObject\EnvironmentEntity;
-use DOMDocument;
-use DOMElement;
-use DOMXPath;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -101,14 +98,14 @@ class PhpstormCommand extends AbstractBaseCommand
     {
         $configurationFile = $environment->getLocation().'/.idea/workspace.xml';
 
-        $document = new DOMDocument();
+        $document = new \DOMDocument();
         $document->load($configurationFile);
 
-        if (!$document->documentElement instanceof DOMElement) {
+        if (!$document->documentElement instanceof \DOMElement) {
             throw new FilesystemException('The configuration file of PhpStorm seems to be misformed.');
         }
 
-        $entries = (new DOMXPath($document))->query('/project/component[@name="PhpServers"]');
+        $entries = (new \DOMXPath($document))->query('/project/component[@name="PhpServers"]');
         if ($entries && $entries->count() !== 0 && ($existingNode = $entries->item(0))) {
             $document->documentElement->removeChild($existingNode);
         }

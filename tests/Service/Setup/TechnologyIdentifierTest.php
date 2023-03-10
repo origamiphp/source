@@ -7,7 +7,6 @@ namespace App\Tests\Service\Setup;
 use App\Service\Setup\TechnologyIdentifier;
 use App\Tests\TestEnvironmentTrait;
 use App\ValueObject\TechnologyDetails;
-use Iterator;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -58,7 +57,7 @@ final class TechnologyIdentifierTest extends TestCase
         static::assertNull($technologyIdentifier->identify($this->location));
     }
 
-    public function provideSupportedTechnologies(): Iterator
+    public function provideSupportedTechnologies(): \Iterator
     {
         yield 'drupal/core' => ['drupal', '{"require":{"drupal/core": "dev-master"}}'];
         yield 'drupal/core-recommended' => ['drupal', '{"require":{"drupal/core-recommended": "dev-master"}}'];
