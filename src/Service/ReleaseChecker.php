@@ -18,7 +18,7 @@ class ReleaseChecker
     private const CONSOLE_MESSAGE = <<<'TEXT'
 <options=bold>There is a new version available for download.</>
 
-Consider upgrading (from <fg=green;options=bold>%s</> to <fg=red;options=bold>%s</>) by following the steps described below.
+Consider upgrading (from <fg=red;options=bold>%s</> to <fg=green;options=bold>%s</>) by following the steps described below.
   👉 Retrieve the latest version of the tool with <fg=yellow;options=bold>composer global update ajardin/origami</>.
   👉 Update your local environment configuration with <fg=yellow;options=bold>origami update</>.
 
@@ -113,7 +113,7 @@ TEXT;
             : $currentStatus
         ;
 
-        $message = sprintf(self::CONSOLE_MESSAGE, $release, $version);
+        $message = sprintf(self::CONSOLE_MESSAGE, $version, $release);
         $io->text($message);
     }
 }
