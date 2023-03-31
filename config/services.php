@@ -64,6 +64,12 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
         // https://devdocs.magento.com/guides/v2.4/install-gde/system-requirements.html
         EnvironmentEntity::TYPE_MAGENTO2 => [
+            '2.4.6' => [
+                'database' => ['mariadb:10.6', 'mysql:8.0-oracle'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.17'],
+                'php' => ['ajardin/php:8.1', 'ajardin/php:8.2'],
+                'redis' => ['redis:7-alpine'],
+            ],
             '2.4.5' => [
                 'database' => ['mariadb:10.4', 'mysql:8.0-oracle'],
                 'elasticsearch' => ['ajardin/magento2-elasticsearch:7.17'],
@@ -149,6 +155,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
         // https://symfony.com/doc/current/setup.html#technical-requirements
         EnvironmentEntity::TYPE_SYMFONY => [
+            '6.2' => [
+                'database' => ['mariadb:10.7', 'mariadb:10.6', 'mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0-oracle', 'mysql:5.7-oracle', 'mysql:5.6', 'postgres:14-alpine', 'postgres:13-alpine', 'postgres:12-alpine', 'postgres:11-alpine', 'postgres:10-alpine', 'postgres:9-alpine'],
+                'php' => ['ajardin/php:8.1'],
+            ],
             '6.1' => [
                 'database' => ['mariadb:10.7', 'mariadb:10.6', 'mariadb:10.5', 'mariadb:10.4', 'mariadb:10.3', 'mariadb:10.2', 'mariadb:10.1', 'mysql:8.0-oracle', 'mysql:5.7-oracle', 'mysql:5.6', 'postgres:14-alpine', 'postgres:13-alpine', 'postgres:12-alpine', 'postgres:11-alpine', 'postgres:10-alpine', 'postgres:9-alpine'],
                 'php' => ['ajardin/php:8.1'],
