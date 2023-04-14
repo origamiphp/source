@@ -66,7 +66,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         EnvironmentEntity::TYPE_MAGENTO2 => [
             '2.4.6' => [
                 'database' => ['mariadb:10.6', 'mysql:8.0-oracle'],
-                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.17'],
+                'elasticsearch' => ['ajardin/magento2-elasticsearch:7.17', 'ajardin/magento2-elasticsearch:8.4'],
                 'php' => ['ajardin/php:8.1', 'ajardin/php:8.2'],
                 'redis' => ['redis:7-alpine'],
             ],
