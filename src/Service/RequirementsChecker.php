@@ -53,12 +53,7 @@ class RequirementsChecker
                 'name' => 'docker',
                 'description' => 'A self-sufficient runtime for containers.',
                 'status' => $this->executableFinder->find('docker') !== null,
-            ],
-            [
-                'name' => 'mutagen',
-                'description' => 'Fast and efficient way to synchronize code to Docker containers.',
-                'status' => $this->executableFinder->find('mutagen') !== null,
-            ],
+            ]
         ];
     }
 
@@ -75,6 +70,11 @@ class RequirementsChecker
                 'description' => 'A simple zero-config tool to make locally trusted development certificates.',
                 'status' => $this->canMakeLocallyTrustedCertificates(),
             ],
+            [
+                'name' => 'OrbStack',
+                'description' => 'A fast, light, and simple way to run Docker containers.',
+                'status' => $this->executableFinder->find('orb') !== null,
+            ]
         ];
     }
 
